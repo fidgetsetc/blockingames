@@ -888,6 +888,23 @@
       <input type="checkbox" id="enable3DAnimation">
     </div>
 
+    <!-- ═══════════════════════════════════════════════════════════
+         GAME LOAD METHOD — only change in this file
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="settings-section animate-on-scroll">
+      <label for="grabMethodSelect">Game Load Method:</label>
+      <select id="grabMethodSelect">
+        <option value="iframe">Normal (load in iframe)</option>
+        <option value="blob-local">Blob from local path (for SVG games)</option>
+        <option value="blob-jsdelivr">Blob from jsDelivr/GitHub (for SVG games)</option>
+      </select>
+      <p style="font-size:0.85em;color:#aaa;margin:4px 0 0;">
+        <strong>Normal:</strong> loads the game URL directly in the iframe.<br>
+        <strong>Blob local:</strong> fetches the file from its local path and injects it as a blob URL — useful when the game is an SVG that the browser won't render in a plain iframe.<br>
+        <strong>Blob jsDelivr:</strong> fetches from the <code>fidgetsetc/blockingames</code> GitHub repo via jsDelivr CDN and loads it as a blob URL.
+      </p>
+    </div>
+
     <div class="settings-section animate-on-scroll">
       <label>Manage Hidden Games:</label>
       <div id="hiddenGamesList" class="management-list"></div>
@@ -955,11 +972,12 @@
 
 // Banner messages shown in rotation under the title
 const BANNER_TEXTS = [
+  "Using index.svg? Go to Settings and change game method.",
   "Wowww...basic. Let's change it in the Theme Shop or just change the color in Settings.",
   "Unlock the terminal. By typing 'cmd'. Somehow.",
   "Made by a Mint user, probably works on ChromeOS and Windows.",
-  "The website has been tested to work on Chrome and Chromium based browsers as low as version 66. This doesn't mean every game works.",
-  "MADE BY BlockIn Games have been tested to work on Chrome and Chromium based browsers as low as version 98",
+  "BIG has been tested to work on Chromium based browsers as low as version 66. This doesn't mean every game works.",
+  "MADE BY BlockIn Games have been tested to work on Chromium based browsers as low as version 98.",
   "six seeeveeennnnnnnn (sorry)"
 ];
 
@@ -1041,6 +1059,8 @@ let rgbIntervalId = null;
 let currentHue = 0;
 let bannerTextIndex = 0;
 let currentLoadedGamePath = '';
+// ── NEW: persisted game load method ──────────────────────────
+let grabMethod = localStorage.getItem('epixgamesGrabMethod') || 'iframe';
 
 let scene, camera, renderer, animationObjects = [];
 let isAnimationEnabled = JSON.parse(localStorage.getItem('epixgames3DAnimationEnabled') || 'false');
@@ -1253,14 +1273,48 @@ function showTab(tabId) {
 }
 
 // --- Game Player ---
-function openGameInIframe(path) {
+// ── MODIFIED: supports three load methods ────────────────────
+async function openGameInIframe(path) {
   currentLoadedGamePath = path;
- gameIframe.src = path;
+
+  if (grabMethod === 'blob-local') {
+    // Fetch the game file from its local path and serve it as a blob URL.
+    // This lets SVG files (and anything blocked by plain iframe src) load correctly.
+    try {
+      const resp = await fetch(path);
+      if (!resp.ok) throw new Error(`Fetch failed: ${resp.status}`);
+      const text = await resp.text();
+      const blob = new Blob([text], { type: 'text/html' });
+      gameIframe.src = URL.createObjectURL(blob);
+    } catch (err) {
+      showMessageBox('Blob (local) load failed: ' + err.message + '<br>Falling back to normal load.');
+      gameIframe.src = path;
+    }
+  } else if (grabMethod === 'blob-jsdelivr') {
+    // Strip leading ./ or / then build a jsDelivr CDN URL pointing at
+    // https://github.com/fidgetsetc/blockingames
+    const stripped = path.replace(/^\.\//, '').replace(/^\//, '');
+    const jsdUrl = `https://cdn.jsdelivr.net/gh/fidgetsetc/blockingames@main/${stripped}`;
+    try {
+      const resp = await fetch(jsdUrl);
+      if (!resp.ok) throw new Error(`jsDelivr fetch failed: ${resp.status}`);
+      const text = await resp.text();
+      const blob = new Blob([text], { type: 'text/html' });
+      gameIframe.src = URL.createObjectURL(blob);
+    } catch (err) {
+      showMessageBox('Blob (jsDelivr) load failed: ' + err.message + '<br>Falling back to normal load.');
+      gameIframe.src = path;
+    }
+  } else {
+    // Normal: just point the iframe at the path directly
+    gameIframe.src = path;
+  }
+
   applyAnimation(gamePlayerOverlay, 'zoom-in-animation', null, 'flex');
   startMoneyGranting();
 }
 
-function reloadIframe() { if (currentLoadedGamePath) gameIframe.src = currentLoadedGamePath; }
+function reloadIframe() { if (currentLoadedGamePath) openGameInIframe(currentLoadedGamePath); }
 
 function exitIframe() {
   stopMoneyGranting();
@@ -2096,6 +2150,16 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('#settings-tab .settings-section').forEach(el => animationObserver.observe(el));
   animationObserver.observe(document.querySelector('.money-display'));
   document.querySelectorAll('#suggest-tab .animate-on-scroll').forEach(el => animationObserver.observe(el));
+
+  // ── NEW: wire up grab method selector ────────────────────────
+  const grabMethodSelect = document.getElementById('grabMethodSelect');
+  if (grabMethodSelect) {
+    grabMethodSelect.value = grabMethod;
+    grabMethodSelect.addEventListener('change', e => {
+      grabMethod = e.target.value;
+      localStorage.setItem('epixgamesGrabMethod', grabMethod);
+    });
+  }
 
   toggleAccentColorPickerState();
   cycleBannerText(0);
