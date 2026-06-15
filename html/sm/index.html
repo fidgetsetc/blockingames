@@ -13,6 +13,19 @@
     <script src="__settings__.js"></script>
 </head>
 <body>
+  <script>
+    // Force the engine to look in the current folder for the physics engine
+    window.ASSET_PREFIX = "./";
+    window.SCRIPT_PREFIX = "./";
+    
+    // Sometimes this specific override is needed for the WASM loader
+    window.Module = {
+        locateFile: function(path, prefix) {
+            return "./" + path;
+        }
+    };
+</script>
+<script src="__start__.js"></script>
     <script src="__modules__.js"></script>
     <script src="__start__.js"></script>
     <script src="__loading__.js"></script>
