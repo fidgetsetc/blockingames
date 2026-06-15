@@ -3,60 +3,55 @@
 <head>  
     <meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover' />
     <meta charset='utf-8'>
+    <title>Slice Master</title>
+    
     <link rel="stylesheet" type="text/css" href="styles.css">
     <link rel="manifest" href="manifest.json">
-    <style></style>
-    <title>Slice Master</title>
+    <link rel="canonical" href="https://1games.io/" data-react-helmet="true">
+    <meta name="robots" content="noindex">
+
+    <style type="text/css">
+        .no-select {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+    </style>
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>  
     <script src="playcanvas-stable.min.js"></script>
-	<meta name="robots" content="noindex">
-	<link rel="canonical" href="https://1games.io/" data-react-helmet="true">
     <script src="__settings__.js"></script>
 
-          <style type="text/css">
-            .no-select {
-            -webkit-touch-callout: none; /* iOS Safari */
-            -webkit-user-select: none; /* Safari */
-            -khtml-user-select: none; /* Konqueror HTML */
-            -moz-user-select: none; /* Old versions of Firefox */
-            -ms-user-select: none; /* Internet Explorer/Edge */
-            user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+    <script type="text/javascript">
+        setTimeout(function(){
+            if(document.getElementsByTagName("canvas").length) {
+                document.body.classList.add("no-select");
             }
-          </style>
-        
-          <script type="text/javascript">
-            setTimeout(function(){
-              if(document.getElementsByTagName("canvas").length) {
-                document.getElementsByTagName("body")[0].classList.add("no-select")
-              }
-            }, 2000);
-          </script> 
-           
-          </script>
-        </head>
+        }, 2000);
+    </script> 
+</head>
 <body>
     <script src="__modules__.js"></script>
-    <script src="__start__.js"></script>
     <script src="__loading__.js"></script>
-<script>function fnSendMsg(evt){
-          if(typeof window.parent.postMessage == 'function') {
-            window.parent.postMessage('keypress-from-game', '*');
-          } else if(typeof window.top.postMessage == 'function' && window.top != window.self) {
-            window.top.postMessage('keypress-from-game', '*');
-          }
+    <script src="__start__.js"></script>
+
+    <script>
+        function fnSendMsg(evt){
+            if(window.parent && typeof window.parent.postMessage == 'function') {
+                window.parent.postMessage('keypress-from-game', '*');
+            } else if(window.top && typeof window.top.postMessage == 'function' && window.top !== window.self) {
+                window.top.postMessage('keypress-from-game', '*');
+            }
         }
-        document.body.addEventListener('click', function(event) {
-          fnSendMsg(event);
-        });
-        document.addEventListener('keypress', function(event) {
-        	 fnSendMsg(event);
-        });
-        document.addEventListener('keydown', function (e) {
-        	 fnSendMsg(event);
-        });
-        document.addEventListener('keyup', function (e) {
-        	  fnSendMsg(event);
-        });
-        </script><script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"36842a64a44c47c8b55438dc59013b4d","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+        document.body.addEventListener('click', fnSendMsg);
+        document.addEventListener('keypress', fnSendMsg);
+        document.addEventListener('keydown', fnSendMsg);
+        document.addEventListener('keyup', fnSendMsg);
+    </script>
+    
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"36842a64a44c47c8b55438dc59013b4d","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
