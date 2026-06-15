@@ -365,13 +365,15 @@
     }
 
     /* Store */
-    .store-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 20px;
-      padding: 20px;
-      width: 100%;
-    }
+.store-grid {
+  display: grid !important;
+  width: 100% !important;
+  max-width: 1200px !important; /* Matches your .tab-content maximum size */
+  grid-template-columns: repeat(auto-fill, 200px) !important; /* Change 200px to your desired card width */
+  gap: 50px !important;
+  justify-content: center !important; /* Centers the cards horizontally within the tab */
+  box-sizing: border-box !important;
+}
 
     .store-item {
       background-color: #282c34;
@@ -383,6 +385,7 @@
       flex-direction: column;
       align-items: center;
       gap: 10px;
+      width: 200px;
     }
 
     .store-item img {
@@ -983,10 +986,15 @@ const STORE_ITEMS = [
 // Game list — add or remove games here
 // Each entry: { id, name, img, path, h2 (optional subtitle) }
 const STATIC_GAMES = [
-  { id: 'game-brick',                    name: 'Brick', h2: 'Theres a ton of locked tablets. Guess youll toss bricks!',                        img: './img/brick.png',                                                                        path: './html/brick/index.html' },
-  { id: 'game-bp',                    name: 'Bad Piggies', h2: 'Build contraptions to get to the end. Tip: Use cheats and use Field of Dreams to build almost anything',                        img: './img/bp.jpg',                                                                        path: './html/bp/index.html' },
-  { id: 'game-ctr',                    name: 'Cut The Rope', h2: 'Cut some ropes and feed candy to Om Nom!',                        img: './img/ctr.jpg',                                                                        path: './html/ctr/index.html' },
-  { id: 'game-sm',                    name: 'Slice Master', h2: 'Become the master of slicing stuff. NOTE THAT THIS IS A DIFFERENT GAME BUT IT IS EXTREMELY SIMILAR TO SLICE MASTER.',                        img: './img/sm.jpg',                                                                       path: './html/sm/index.html' }
+  { id: 'game-brick', name: 'Brick', h2: 'Theres a ton of locked tablets. Guess youll toss bricks!', img: './img/brick.png', path: './html/brick/index.html' },
+  { id: 'game-bp', name: 'Bad Piggies', h2: 'Build contraptions to get to the end. Tip: Use cheats and use Field of Dreams to build almost anything', img: './img/bp.jpg', path: './html/bp/index.html' },
+  { id: 'game-ctr', name: 'Cut The Rope', h2: 'Cut some ropes and feed candy to Om Nom!', img: './img/ctr.jpg', path: './html/ctr/index.html' },
+  { id: 'game-sm', name: 'Slice Master', h2: 'Become the master of slicing.', img: './img/sm.jpg', path: './html/sm/index.html' },
+  { id: 'game-smb', name: 'Super Mario Bros', h2: 'Rescue Peach from Bowser and defeat other monsters on the way.', img: './img/smb.jpg', path: './html/smb/index.html' },
+  { id: 'game-fnf', name: 'FNF', h2: 'Can you keep up with the rhythm?', img: './img/fnf.jpg', path: './html/fnf/index.html' },
+  { id: 'game-fb', name: 'Flappy Bird', h2: 'Flap! Flap! Flap thru pipes!', img: './img/fb.webp', path: './html/fb/index.html' },
+  { id: 'game-bb', name: 'Block Blast', h2: 'Place blocks and match to edges.', img: './img/bb2.png', path: './html/bb/index.html' },
+  { id: 'game-chat', name: '.Chat!', h2: 'Chat with many other users.', img: './img/chat.png', path: './html/chat/index.html' },
 ];
 
 
