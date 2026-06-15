@@ -952,10 +952,11 @@
 // Banner messages shown in rotation under the title
 const BANNER_TEXTS = [
   "Wowww...basic. Let's change it in the Theme Shop or just change the color in Settings.",
-  "Unlock the terminal.",
-  "Unlock 3D animations & custom colors in Settings! ⚙️",
-  "Chrome 55 compatible?! That's retro cool! 🚀",
-  "We just got a MAJOR upgrade to the site, fam! Get ready for some epic gaming! 😎"
+  "Unlock the terminal. By typing 'cmd'. Somehow.",
+  "Made by a Mint user, probably works on ChromeOS and Windows.",
+  "The website has been tested to work on Chrome and Chromium based browsers as low as version 66. This doesn't mean every game works.",
+  "MADE BY BlockIn Games have been tested to work on Chrome and Chromium based browsers as low as version 98",
+  "six seeeveeennnnnnnn (sorry)"
 ];
 
 // Links shown in the "More" tab
@@ -1647,26 +1648,7 @@ function renderAllGames() {
   }
 }
 
-function renderMoreLinks() {
-  moreLinksContainer.innerHTML = '';
-  MORE_LINKS.forEach(link => {
-    const div = document.createElement('div');
-    div.className = 'more-link-item animate-on-scroll';
-    const h3 = document.createElement('h3');
-    h3.textContent = link.title;
-    const p = document.createElement('p');
-    p.textContent = link.description;
-    const a = document.createElement('a');
-    a.href = link.url;
-    a.target = '_blank';
-    a.textContent = 'Visit Site';
-    div.appendChild(h3);
-    div.appendChild(p);
-    div.appendChild(a);
-    moreLinksContainer.appendChild(div);
-    animationObserver.observe(div);
-  });
-}
+
 
 // --- HTML Modifications ---
 function applyHtmlModifications() {
@@ -2097,7 +2079,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   renderStore();
-  renderMoreLinks();
+  
   document.querySelectorAll('#settings-tab .settings-section').forEach(el => animationObserver.observe(el));
   animationObserver.observe(document.querySelector('.money-display'));
   document.querySelectorAll('#suggest-tab .animate-on-scroll').forEach(el => animationObserver.observe(el));
@@ -2114,14 +2096,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (e.key === 'Escape' && isCommandPromptOpen) { toggleCommandPrompt(); e.preventDefault(); }
   });
-  document.addEventListener('keyup', e => { keyState[e.code] = false; });
-  commandInput.addEventListener('keypress', e => {
-    if (e.key === 'Enter') {
-      const line = commandInput.value.trim();
-      commandInput.value = '';
-      if (line) handleCommand(line);
+document.addEventListener('keyup', e => {
+  keyState[e.code] = false;
+});
+
+commandInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const line = commandInput.value.trim();
+    commandInput.value = '';
+
+    if (line) {
+      handleCommand(line);
     }
-  });
+  }
+});
 
   applyHtmlModifications();
 
