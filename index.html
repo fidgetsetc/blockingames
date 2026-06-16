@@ -894,14 +894,14 @@
     <div class="settings-section animate-on-scroll">
       <label for="grabMethodSelect">Game Load Method:</label>
       <select id="grabMethodSelect">
-        <option value="iframe">Normal (load in iframe)</option>
-        <option value="blob-local">Blob from local path (for SVG games)</option>
-        <option value="blob-jsdelivr">Blob from jsDelivr/GitHub (for SVG games)</option>
+        <option value="iframe">Normal</option>
+        <option value="blob-local">Blob local</option>
+        <option value="blob-jsdelivr">Blob jsDelivr</option>
       </select>
       <p style="font-size:0.85em;color:#aaa;margin:4px 0 0;">
-        <strong>Normal:</strong> loads the game URL directly in the iframe.<br>
-        <strong>Blob local:</strong> fetches the file from its local path and injects it as a blob URL — useful when the game is an SVG that the browser won't render in a plain iframe.<br>
-        <strong>Blob jsDelivr:</strong> fetches from the <code>fidgetsetc/blockingames</code> GitHub repo via jsDelivr CDN and loads it as a blob URL.
+        <strong>Normal:</strong> loads the game URL directly in the iframe. best for webpage<br>
+        <strong>Blob local:</strong> gets the game from this site. best for the full site localised. some games and made by games may not support this.<br>
+        <strong>Blob jsDelivr:</strong> gets the game from jsdelivr. best for svgs. some games and made by games may not support this.
       </p>
     </div>
 
