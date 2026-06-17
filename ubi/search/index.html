@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SearchUBI</title>
+    <style>
+        :root {
+            --bg-color: #121214;
+            --card-bg: #1a1a1e;
+            --text-color: #e4e4e7;
+            --text-muted: #a1a1aa;
+            --accent-color: #6366f1;
+            --border-color: #2e2e33;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 3rem;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        .search-wrapper {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-color);
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        #searchInput:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
+        }
+
+        .results-count {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            padding-left: 0.5rem;
+        }
+
+        #resultsList {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .result-item {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.25rem;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .result-item:hover {
+            transform: translateY(-2px);
+            border-color: #4338ca;
+        }
+
+        .result-title {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.2rem;
+        }
+
+        .result-title a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .result-title a:hover {
+            text-decoration: underline;
+        }
+
+        .result-url {
+            font-size: 0.85rem;
+            color: #10b981;
+            margin-bottom: 0.5rem;
+            word-break: break-all;
+        }
+
+        .result-desc {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .no-results {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem;
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            border: 1px dashed var(--border-color);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="search-container">
+        <h1>SearchUBI</h1>
+        <p class="subtitle">Search up anything in the UBI network</p>
+
+        <div class="search-wrapper">
+            <input type="text" id="searchInput" placeholder="Type to search URLs, titles, or descriptions..." autocomplete="off">
+        </div>
+
+        <div class="results-count" id="resultsCount"></div>
+        <ul id="resultsList"></ul>
+    </div>
+
+    <script>
+        // --- THE "DATABASE" ---
+        // You can add, remove, or modify URLs here.
+        const urlDatabase = [
+            {
+                title: "BlockIn Games",
+                url: "https://blockin.ubi",
+                description: "The site for games, for the community, by just one teen."
+            },
+            {
+                title: "DuckMath",
+                url: "https://duck.ubi",
+                description: "Yet another game site. Way more games than BlockIn."
+            },
+            {
+                title: "DogeUB Browser (broken)",
+                url: "https://doge.ubi",
+                description: "Access any site you want..plus some apps and games. (broken)"
+            },
+            {
+                title: "GN-Math (broken)",
+                url: "https://gn.ubi",
+                description: "ANOTHER game site! This one has some questionable games tho. (broken)"
+            }
+        ];
+
+        // DOM Elements
+        const searchInput = document.getElementById('searchInput');
+        const resultsList = document.getElementById('resultsList');
+        const resultsCount = document.getElementById('resultsCount');
+
+        // Render function
+        function displayResults(results) {
+            // Clear current list
+            resultsList.innerHTML = '';
+            
+            // Update the count text
+            resultsCount.textContent = `Found ${results.length} result(s)`;
+
+            if (results.length === 0) {
+                resultsList.innerHTML = `<li class="no-results">No matches found. Try searching for something else, or lower your expectations.</li>`;
+                return;
+            }
+
+            // Loop through and build the HTML items
+            results.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'result-item';
+                li.innerHTML = `
+                    <h3 class="result-title"><a href="${item.url}" target="_blank">${item.title}</a></h3>
+                    <div class="result-url">${item.url}</div>
+                    <p class="result-desc">${item.description}</p>
+                `;
+                resultsList.appendChild(li);
+            });
+        }
+
+        // Search logic
+        function performSearch(query) {
+            const cleanQuery = query.toLowerCase().trim();
+
+            // If empty search, display everything (or change to show nothing if preferred)
+            if (!cleanQuery) {
+                displayResults(urlDatabase);
+                return;
+            }
+
+            // Filter database based on match in title, url, or description
+            const filtered = urlDatabase.filter(item => {
+                return item.title.toLowerCase().includes(cleanQuery) || 
+                       item.url.toLowerCase().includes(cleanQuery) || 
+                       item.description.toLowerCase().includes(cleanQuery);
+            });
+
+            displayResults(filtered);
+        }
+
+        // Event Listener for typing
+        searchInput.addEventListener('input', (e) => {
+            performSearch(e.target.value);
+        });
+
+        // Initialize with all records showing
+        displayResults(urlDatabase);
+    </script>
+</body>
+</html>
