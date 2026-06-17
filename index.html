@@ -388,12 +388,13 @@
       width: 200px;
     }
 
-    .store-item img {
-      width: 100px; height: 100px;
-      object-fit: contain;
-      border-radius: 8px;
-      border: 2px solid var(--primary-color);
-    }
+.store-item img {
+  width: 200px; 
+  height: 112.5px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 2px solid var(--primary-color);
+}
 
     .store-item h4 { margin: 0; color: var(--secondary-color); font-size: 1.1em; }
     .store-item p { margin: 5px 0; font-size: 0.9em; color: var(--text-color); }
@@ -817,6 +818,243 @@
       h2 { font-size: 1.3em; }
       .game { width: 100%; max-width: 250px; }
     }
+
+    /* =====================================================
+       WEB 2.0 GLOSS THEME — Windows 7 / Vista inspired
+       ===================================================== */
+
+    /* CSS vars injected by JS: --gloss-r, --gloss-g, --gloss-b (0-255 ints) */
+    body.web20-gloss-theme {
+      background: var(--gloss-bg, #dde8f5) !important;
+      color: #1a1a2e !important;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+    }
+
+    body.web20-gloss-theme h1 {
+      font-family: 'Segoe UI', Tahoma, sans-serif !important;
+      color: #fff !important;
+      text-shadow:
+        0 1px 0 rgba(255,255,255,0.6),
+        0 2px 4px rgba(0,0,0,0.4) !important;
+      font-size: 2.4em !important;
+    }
+
+    body.web20-gloss-theme h2 {
+      font-family: 'Segoe UI', Tahoma, sans-serif !important;
+      color: rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),1) !important;
+      text-shadow: 0 1px 2px rgba(255,255,255,0.8) !important;
+    }
+
+    body.web20-gloss-theme p {
+      color: #2a2a3e !important;
+      font-family: 'Segoe UI', Tahoma, sans-serif !important;
+    }
+
+    /* Aero Glass panel mixin — used across cards, tabs, etc. */
+    body.web20-gloss-theme #tabs-container,
+    body.web20-gloss-theme .tab-content,
+    body.web20-gloss-theme .game,
+    body.web20-gloss-theme .store-item,
+    body.web20-gloss-theme .settings-section,
+    body.web20-gloss-theme #messageBox,
+    body.web20-gloss-theme .management-list,
+    body.web20-gloss-theme .more-link-item,
+    body.web20-gloss-theme .game-controls-bar {
+      background: linear-gradient(
+        180deg,
+        rgba(255,255,255,0.72) 0%,
+        rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.18) 50%,
+        rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.32) 100%
+      ) !important;
+      border: 1px solid rgba(255,255,255,0.85) !important;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.9),
+        0 4px 16px rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.25),
+        0 1px 3px rgba(0,0,0,0.18) !important;
+      border-radius: 8px !important;
+      backdrop-filter: blur(4px) !important;
+    }
+
+    /* Tab bar — pill strip */
+    body.web20-gloss-theme #tabs-container {
+      border-radius: 28px !important;
+      overflow: hidden !important;
+      padding: 4px !important;
+      gap: 4px !important;
+      display: flex !important;
+    }
+
+    body.web20-gloss-theme .tab-button {
+      background: rgba(255,255,255,0.45) !important;
+      color: #1a1a2e !important;
+      border: 1px solid rgba(255,255,255,0.7) !important;
+      border-radius: 20px !important;
+      font-family: 'Segoe UI', Tahoma, sans-serif !important;
+      font-size: 0.82em !important;
+      font-weight: 600 !important;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.9) !important;
+      transition: all 0.2s ease !important;
+    }
+
+    body.web20-gloss-theme .tab-button:hover {
+      background: rgba(255,255,255,0.65) !important;
+    }
+
+    body.web20-gloss-theme .tab-button.active {
+      background: linear-gradient(
+        180deg,
+        rgba(255,255,255,0.95) 0%,
+        rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.55) 50%,
+        rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.8) 100%
+      ) !important;
+      color: #fff !important;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.35) !important;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.9),
+        0 2px 6px rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.5) !important;
+    }
+
+    /* Gloss buttons */
+    body.web20-gloss-theme .play-now-button,
+    body.web20-gloss-theme .header-search-group button,
+    body.web20-gloss-theme .store-item button,
+    body.web20-gloss-theme .settings-section button,
+    body.web20-gloss-theme #messageBox button,
+    body.web20-gloss-theme .game-controls-bar button,
+    body.web20-gloss-theme .more-link-item a {
+      background: linear-gradient(
+        180deg,
+        rgba(255,255,255,0.90) 0%,
+        rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.55) 50%,
+        rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.85) 100%
+      ) !important;
+      color: #fff !important;
+      border: 1px solid rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.7) !important;
+      border-radius: 20px !important;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.85),
+        0 2px 6px rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.3) !important;
+      font-family: 'Segoe UI', Tahoma, sans-serif !important;
+      font-weight: 600 !important;
+      transition: all 0.15s ease !important;
+    }
+
+    body.web20-gloss-theme .play-now-button:hover,
+    body.web20-gloss-theme .header-search-group button:hover,
+    body.web20-gloss-theme .store-item button:hover:not(:disabled),
+    body.web20-gloss-theme .settings-section button:hover,
+    body.web20-gloss-theme #messageBox button:hover,
+    body.web20-gloss-theme .game-controls-bar button:hover,
+    body.web20-gloss-theme .more-link-item a:hover {
+      background: linear-gradient(
+        180deg,
+        rgba(255,255,255,1) 0%,
+        rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.75) 50%,
+        rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),1) 100%
+      ) !important;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.95),
+        0 4px 12px rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.45) !important;
+    }
+
+    body.web20-gloss-theme .store-item button:disabled {
+      background: rgba(180,180,180,0.5) !important;
+      box-shadow: none !important;
+      color: #888 !important;
+      border-color: rgba(180,180,180,0.4) !important;
+    }
+
+    /* Inputs */
+    body.web20-gloss-theme .header-search-group input[type="text"],
+    body.web20-gloss-theme .settings-section select,
+    body.web20-gloss-theme .settings-section input[type="color"] {
+      background: rgba(255,255,255,0.85) !important;
+      border: 1px solid rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.55) !important;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.12) !important;
+      border-radius: 12px !important;
+      color: #1a1a2e !important;
+    }
+
+    /* Search results */
+    body.web20-gloss-theme #searchResults {
+      background: rgba(255,255,255,0.88) !important;
+      border: 1px solid rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.4) !important;
+      color: #1a1a2e !important;
+    }
+    body.web20-gloss-theme #searchResults p { color: #1a1a2e !important; }
+    body.web20-gloss-theme #searchResults p:hover {
+      background-color: rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.15) !important;
+    }
+
+    /* Game cards */
+    body.web20-gloss-theme .game dt { color: rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),1) !important; }
+    body.web20-gloss-theme .game h2 { color: #444 !important; }
+    body.web20-gloss-theme .game img {
+      border: 1px solid rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.5) !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+    }
+
+    /* Store items */
+    body.web20-gloss-theme .store-item h4 { color: rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),1) !important; }
+    body.web20-gloss-theme .store-item p { color: #333 !important; }
+    body.web20-gloss-theme .store-item img {
+      border: 1px solid rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.4) !important;
+    }
+
+    /* Settings labels */
+    body.web20-gloss-theme .settings-section label { color: rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.9) !important; }
+
+    /* Management list */
+    body.web20-gloss-theme .management-item { color: #1a1a2e !important; }
+
+    /* Money */
+    body.web20-gloss-theme .money-display { color: #b8860b !important; }
+
+    /* Context menu */
+    body.web20-gloss-theme .context-menu {
+      background: rgba(255,255,255,0.92) !important;
+      border: 1px solid rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.5) !important;
+      box-shadow: 0 4px 16px rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.2) !important;
+    }
+    body.web20-gloss-theme .context-menu-item { color: #1a1a2e !important; }
+    body.web20-gloss-theme .context-menu-item:hover {
+      background-color: rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.18) !important;
+    }
+
+    /* Header / page background — the Aero "glass" outer window */
+    body.web20-gloss-theme::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background:
+        linear-gradient(160deg,
+          rgba(255,255,255,0.55) 0%,
+          rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.22) 40%,
+          rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.38) 100%
+        ),
+        linear-gradient(180deg,
+          #dde8f5 0%,
+          #b8cfee 100%
+        );
+    }
+
+    /* Title-bar stripe at the very top — like Win7 window chrome */
+    body.web20-gloss-theme header::before {
+      content: '';
+      display: block;
+      height: 36px;
+      margin: -20px -20px 12px -20px;
+      border-radius: 8px 8px 0 0;
+      background: linear-gradient(
+        180deg,
+        rgba(255,255,255,0.85) 0%,
+        rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.6) 50%,
+        rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.85) 100%
+      );
+      box-shadow: 0 2px 8px rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.4);
+    }
   </style>
 </head>
 <body>
@@ -988,17 +1226,18 @@ const BANNER_TEXTS = [
 // Store items — backgrounds, text colors, full themes
 // Types: 'background', 'text-color', 'full-theme', 'dynamic-theme'
 const STORE_ITEMS = [
-  { id: 'bg-stars',       name: 'Starry Night',                   type: 'background',     value: 'url(https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/500px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg) no-repeat center center / cover', cost: 50, img: 'https://placehold.co/100x100/000033/FFFFFF?text=Stars' },
-  { id: 'bg-neon',        name: 'Neon Grid',                      type: 'background',     value: 'url(https://static.vecteezy.com/system/resources/previews/020/562/054/non_2x/background-of-neon-grid-for-retro-futuristic-design-vector.jpg) no-repeat center center / cover', cost: 75, img: 'https://placehold.co/100x100/330033/FF00FF?text=Neon' },
-  { id: 'text-gold',      name: 'Gold Text',                      type: 'text-color',     value: 'gold', cost: 30, img: 'https://placehold.co/100x100/3c4048/FFD700?text=Gold' },
-  { id: 'text-lime',      name: 'Lime Text',                      type: 'text-color',     value: 'lime', cost: 30, img: 'https://placehold.co/100x100/3c4048/00FF00?text=Lime' },
-  { id: 'bg-gumball',     name: 'Amazing World of Gumball Theme', type: 'background',     value: 'url(https://images6.alphacoders.com/950/950030.jpg) no-repeat center center / cover', cost: 20, img: 'https://placehold.co/100x100/4CAF50/FFFFFF?text=Gumball' },
-  { id: 'bg-minecraft',   name: 'Minecraft Theme',                type: 'background',     value: 'url(https://wallpapers.com/images/featured/minecraft-s2kxfahyg30sob8q.jpg) no-repeat center center / cover', cost: 15, img: 'https://placehold.co/100x100/8BC34A/FFFFFF?text=Minecraft' },
-  { id: 'bg-amongus',     name: 'Among Us Theme',                 type: 'background',     value: 'url(https://i.redd.it/jo89zfzqi9t51.png) no-repeat center center / cover', cost: 10, img: 'https://placehold.co/100x100/FF5722/FFFFFF?text=AmongUs' },
-  { id: 'default-theme',  name: 'Default Theme',                  type: 'full-theme',     value: { '--home-background': '#282c34', '--home-text-color': '#ffffff' }, cost: 0, default: true, img: 'https://placehold.co/100x100/282c34/FFFFFF?text=Default' },
-  { id: 'rgb-theme',      name: 'RGB Theme',                      type: 'dynamic-theme',  value: {}, cost: 70, img: 'https://placehold.co/100x100/FF00FF/00FFFF?text=RGB' },
-  { id: 'classic-theme',  name: 'Early EPIXGAMES HTML Theme',        type: 'full-theme',     value: { '--home-background': '#4287f5', '--home-text-color': '#ffffff', '--bg-color': '#4287f5', '--primary-color': '#007bff', '--secondary-color': '#007bff', '--card-bg': 'transparent', '--button-bg': '#007bff', '--button-hover-bg': '#0056b3' }, cost: 40, img: 'https://placehold.co/100x100/4287f5/FFFFFF?text=Classic' },
-  { id: 'jr-theme',  name: 'Just Red',        type: 'full-theme',     value: { '--home-background': '#940707', '--home-text-color': '#ffffff', '--bg-color': '#940707', '--primary-color': '#007bff', '--secondary-color': '#f06060', '--card-bg': 'transparent', '--button-bg': '#f50a0a', '--button-hover-bg': '#f07171' }, cost: 40, img: 'https://placehold.co/100x100/940707/FFFFFF?text=Red' },
+  { id: 'bg-neon',        name: 'Neon Grid',                      type: 'background',     value: 'url(https://static.vecteezy.com/system/resources/previews/020/562/054/non_2x/background-of-neon-grid-for-retro-futuristic-design-vector.jpg) no-repeat center center / cover', cost: 75, img: './wpthumb/neon.png' },
+  { id: 'bg-gumball',     name: 'Amazing World of Gumball Theme', type: 'background',     value: 'url(https://images6.alphacoders.com/950/950030.jpg) no-repeat center center / cover', cost: 20, img: './wpthumb/gumball.png' },
+  { id: 'bg-minecraft',   name: 'Minecraft Theme',                type: 'background',     value: 'url(https://wallpapers.com/images/featured/minecraft-s2kxfahyg30sob8q.jpg) no-repeat center center / cover', cost: 15, img: './wpthumb/mc.png' },
+  { id: 'bg-amongus',     name: 'Among Us Theme',                 type: 'background',     value: 'url(https://i.redd.it/jo89zfzqi9t51.png) no-repeat center center / cover', cost: 10, img: './wpthumb/amogus.png' },
+  { id: 'default-theme',  name: 'Default Theme',                  type: 'full-theme',     value: { '--home-background': '#282c34', '--home-text-color': '#ffffff' }, cost: 0, default: true, img: './wpthumb/default.png' },
+  { id: 'rgb-theme',      name: 'RGB Theme',                      type: 'dynamic-theme',  value: {}, cost: 70, img: './wpthumb/rgb.png' },
+  { id: 'classic-theme',  name: 'Early EPIXGAMES HTML Theme',        type: 'full-theme',     value: { '--home-background': '#4287f5', '--home-text-color': '#ffffff', '--bg-color': '#4287f5', '--primary-color': '#007bff', '--secondary-color': '#007bff', '--card-bg': 'transparent', '--button-bg': '#007bff', '--button-hover-bg': '#0056b3' }, cost: 40, img: './wpthumb/early.png' },
+  { id: 'jr-theme',  name: 'Just Red',        type: 'full-theme',     value: { '--home-background': '#940707', '--home-text-color': '#ffffff', '--bg-color': '#940707', '--primary-color': '#007bff', '--secondary-color': '#f06060', '--card-bg': 'transparent', '--button-bg': '#f50a0a', '--button-hover-bg': '#f07171' }, cost: 40, img: './wpthumb/jr.png' },
+  { id: 'web20-gloss-theme', name: 'Web 2.0 Gloss (dynamic colors)', type: 'dynamic-theme', value: {}, cost: 60, img: './wpthumb/gloss.png' },
+  { id: 'bg-crosold',     name: 'ChromeOS (old)',                 type: 'background',     value: 'url(./wp/chromeold.webp) no-repeat center center / cover', cost: 10, img: './wpthumb/chromeos.png' },
+  { id: 'bg-crosoldhp',     name: 'HP ChromeOS (old)',                 type: 'background',     value: 'url(./wp/chromeoldhp.jpg) no-repeat center center / cover', cost: 10, img: './wpthumb/oldhp.png' },
+  { id: 'bg-crosnewhp',     name: 'HP ChromeOS (new)',                 type: 'background',     value: 'url(./wp/chromenewhp.jpg) no-repeat center center / cover', cost: 10, img: './wpthumb/newhp.png' },
 ];
 
 // Game list — add or remove games here
@@ -1141,6 +1380,7 @@ function updateAccentColors(color) {
   root.style.setProperty('--bg-color', darkenColor(color, 0.5));
   localStorage.setItem('epixgamesAccentColor', color);
   if (isAnimationEnabled && animationObjects.length > 0) update3DCubeColors(color);
+  if (appliedAccessory === 'web20-gloss-theme') applyGlossAccent(color);
 }
 
 // --- RGB Theme ---
@@ -1168,6 +1408,19 @@ function stopRgbEffect() {
     if (def) for (const p in def.value) root.style.setProperty(p, def.value[p]);
     updateAccentColors(localStorage.getItem('epixgamesAccentColor') || accentColorPicker.value);
   }
+}
+
+// --- Web 2.0 Gloss accent ---
+function applyGlossAccent(hex) {
+  const [r, g, b] = hexToRgb(hex);
+  root.style.setProperty('--gloss-r', r);
+  root.style.setProperty('--gloss-g', g);
+  root.style.setProperty('--gloss-b', b);
+  // Derive a soft pastel background from the accent
+  const bgR = Math.round(r * 0.18 + 200);
+  const bgG = Math.round(g * 0.18 + 210);
+  const bgB = Math.round(b * 0.22 + 215);
+  root.style.setProperty('--gloss-bg', `rgb(${bgR},${bgG},${bgB})`);
 }
 
 // --- Three.js ---
@@ -1487,7 +1740,7 @@ function applyAccessory(id) {
   if (!item) return;
 
   stopRgbEffect();
-  document.body.classList.remove('classic-theme', 'rgb-theme');
+  document.body.classList.remove('classic-theme', 'rgb-theme', 'web20-gloss-theme');
 
   const userPrefers3D = JSON.parse(localStorage.getItem('epixgames3DAnimationEnabled') || 'false');
   toggle3DAnimation(userPrefers3D && id !== 'classic-theme');
@@ -1520,6 +1773,9 @@ function applyAccessory(id) {
   } else if (item.type === 'dynamic-theme' && id === 'rgb-theme') {
     document.body.classList.add('rgb-theme');
     startRgbEffect();
+  } else if (item.type === 'dynamic-theme' && id === 'web20-gloss-theme') {
+    document.body.classList.add('web20-gloss-theme');
+    applyGlossAccent(localStorage.getItem('epixgamesAccentColor') || accentColorPicker.value);
   }
 
   appliedAccessory = id;
