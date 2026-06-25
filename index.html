@@ -1530,6 +1530,10 @@ function showTab(tabId) {
     renderHiddenGamesSettings();
     renderFavoriteGamesSettings();
   }
+
+  if (tabId === 'store-tab') {
+    renderStore();
+  }
 }
 
 // --- Game Player ---
