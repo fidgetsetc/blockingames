@@ -1,0 +1,324 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EPIXGAMES | Home 🎮</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* --- CORE VARIABLES --- */
+    :root {
+      --bg-color: #1a1a1a;
+      --primary-color: #4287f5;
+      --secondary-color: #61dafb;
+      --text-color: #ffffff;
+      --card-bg: #2d3138;
+      --button-bg: #61dafb;
+      --button-hover-bg: #21a1f1;
+      --danger-color: #f44336;
+    }
+
+    /* --- GLOBAL STYLES --- */
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      box-sizing: border-box;
+      overflow-x: hidden;
+    }
+
+    /* --- NAVIGATION --- */
+    #tabs-container {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      max-width: 900px;
+      margin-bottom: 30px;
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    .tab-button {
+      flex: 1;
+      padding: 15px;
+      background-color: var(--card-bg);
+      color: var(--text-color);
+      border: none;
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.8em;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .tab-button:last-child { border-right: none; }
+    .tab-button:hover { background-color: rgba(255, 255, 255, 0.1); }
+    .tab-button.active {
+      background-color: var(--button-bg);
+      color: #1a1a1a;
+    }
+
+    /* --- GAME GRIDS --- */
+    .tab-content {
+      display: none;
+      width: 100%;
+      max-width: 1200px;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .tab-content.active { display: block; }
+
+    .section-title {
+      font-family: 'Press Start 2P', cursive;
+      color: var(--secondary-color);
+      font-size: 1.5em;
+      margin: 40px 0 20px 0;
+      text-align: center;
+      text-shadow: 2px 2px #000;
+      width: 100%;
+      border-bottom: 2px solid #333;
+      padding-bottom: 10px;
+    }
+
+    .games-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 25px;
+      width: 100%;
+    }
+
+    .game-card {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+      padding: 15px;
+      text-align: center;
+      width: 200px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 2px solid transparent;
+      position: relative;
+    }
+
+    .game-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.6);
+      border-color: var(--secondary-color);
+    }
+
+    .game-card img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background-color: #000;
+    }
+
+    .game-card h3 {
+      font-size: 1em;
+      margin: 5px 0 15px 0;
+      color: var(--text-color);
+    }
+
+    .play-btn {
+      background-color: var(--button-bg);
+      color: #1a1a1a;
+      border: none;
+      border-radius: 6px;
+      padding: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      transition: 0.2s;
+    }
+
+    .play-btn:hover { background-color: var(--button-hover-bg); }
+
+    /* --- IFRAME PLAYER --- */
+    .player-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.95);
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .player-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .iframe-wrapper {
+      width: 90%;
+      height: 80%;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    iframe {
+      width: 100%; height: 100%;
+      border: none;
+    }
+    .controls {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+    }
+    .control-btn {
+      background: #444;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .control-btn:hover { background: #555; }
+    .btn-exit { background: var(--danger-color); }
+    .btn-exit:hover { background: #d32f2f; }
+
+    /* --- RESPONSIVE --- */
+    @media (max-width: 768px) {
+      .games-container { justify-content: center; }
+      .iframe-wrapper { width: 100%; height: 70%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav id="tabs-container">
+    <button class="tab-button active" onclick="showTab('upcoming')">Upcoming</button>
+    <button class="tab-button" onclick="showTab('beta')">Beta</button>
+  </nav>
+
+  <!-- Content Areas -->
+  <div id="content-wrapper">
+
+    <!-- Upcoming Tab -->
+    <div id="upcoming" class="tab-content active">
+      <h2 class="section-title">Upcoming games</h2>
+      <p style="text-align: center; color: #666; margin-bottom: 20px;">Try games that are soon gonna be on the main platform.</p>
+      <div id="upcoming-games-container" class="games-container">
+        <!-- Upcoming games injected via JS -->
+      </div>
+    </div>
+
+    <!-- Beta Tab -->
+    <div id="beta" class="tab-content">
+      <h2 class="section-title">Beta games</h2>
+      <p style="text-align: center; color: #666; margin-bottom: 20px;">Try betas of our games.</p>
+      <div id="beta-games-container" class="games-container">
+        <!-- Beta games injected via JS -->
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Game Player Overlay -->
+  <div id="gamePlayer" class="player-overlay">
+    <div class="iframe-wrapper">
+      <iframe id="gameFrame" src="" allowfullscreen></iframe>
+    </div>
+    <div class="controls">
+      <button class="control-btn" onclick="toggleFullscreen()">Fullscreen</button>
+      <button class="control-btn btn-exit" onclick="closeGame()">Exit Game</button>
+    </div>
+  </div>
+
+<script>
+  /* ================================================================
+   EPIXGAMES CONFIGURATION & DATA
+   ================================================================
+  */
+
+  // 1. UPCOMING GAMES LIST
+  const UPCOMING_GAMES = [
+    { name: 'Angry Birds SWF', url: './html/ab/index.html', img: 'https://placehold.co/200x120/2d3138/61dafb?text=Angry Birds' }
+  ];
+
+  // 2. BETA GAMES LIST
+  const BETA_GAMES = [
+    { name: 'Game Title', url: '#', img: 'https://placehold.co/200x120/2d3138/61dafb?text=Game' }
+  ];
+
+  // --- INITIALIZATION ---
+  document.addEventListener('DOMContentLoaded', () => {
+    renderAllGames();
+  });
+
+  // --- RENDER GAMES ---
+  function renderAllGames() {
+    const upcomingContainer = document.getElementById('upcoming-games-container');
+    const betaContainer = document.getElementById('beta-games-container');
+
+    upcomingContainer.innerHTML = '';
+    betaContainer.innerHTML = '';
+
+    UPCOMING_GAMES.forEach(game => {
+      upcomingContainer.appendChild(createGameCard(game));
+    });
+
+    BETA_GAMES.forEach(game => {
+      betaContainer.appendChild(createGameCard(game));
+    });
+  }
+
+  function createGameCard(game) {
+    const div = document.createElement('div');
+    div.className = 'game-card';
+    div.innerHTML = `
+      <img src="${game.img}" alt="${game.name}" onerror="this.src='https://placehold.co/200x120/333/FFF?text=Error'">
+      <h3>${game.name}</h3>
+      <button class="play-btn" onclick="launchGame('${game.name}')">Play</button>
+    `;
+    return div;
+  }
+
+  // --- LAUNCHER LOGIC ---
+  function launchGame(gameName) {
+    const game = [...UPCOMING_GAMES, ...BETA_GAMES].find(g => g.name === gameName);
+    if (game && game.url && game.url !== '#') {
+      document.getElementById('gameFrame').src = game.url;
+      document.getElementById('gamePlayer').classList.add('active');
+    }
+  }
+
+  function closeGame() {
+    document.getElementById('gameFrame').src = '';
+    document.getElementById('gamePlayer').classList.remove('active');
+  }
+
+  function toggleFullscreen() {
+    const iframe = document.getElementById('gameFrame');
+    if (iframe.requestFullscreen) iframe.requestFullscreen();
+    else if (iframe.webkitRequestFullscreen) iframe.webkitRequestFullscreen();
+  }
+
+  // --- TABS ---
+  function showTab(id) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.currentTarget.classList.add('active');
+  }
+
+</script>
+</body>
+</html>
