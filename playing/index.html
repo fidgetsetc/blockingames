@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Google</title>
+  <title>calcuator - Google Search</title>
   <link rel="icon" type="image/x-icon" href="https://www.gstatic.com/images/branding/searchlogo/ico/favicon.ico">
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -1276,7 +1276,7 @@
 <!-- Hidden file input for import -->
 <input type="file" id="fileInput" style="display:none;" accept=".json,.html">
 
-
+<script src="../themes.js"></script>
 <script>
 
 // ============================================================
@@ -1303,22 +1303,7 @@ const BANNER_TEXTS = [
 
 // Store items — backgrounds, text colors, full themes
 // Types: 'background', 'text-color', 'full-theme', 'dynamic-theme'
-const STORE_ITEMS = [
-  { id: 'bg-neon',        name: 'Neon Grid',                      type: 'background',     value: 'url(https://static.vecteezy.com/system/resources/previews/020/562/054/non_2x/background-of-neon-grid-for-retro-futuristic-design-vector.jpg) no-repeat center center / cover', cost: 20, img: './wpthumb/neon.png' },
-  { id: 'bg-gumball',     name: 'Amazing World of Gumball Theme', type: 'background',     value: 'url(https://images6.alphacoders.com/950/950030.jpg) no-repeat center center / cover', cost: 20, img: './wpthumb/gumball.png' },
-  { id: 'bg-minecraft',   name: 'Minecraft Theme',                type: 'background',     value: 'url(https://wallpapers.com/images/featured/minecraft-s2kxfahyg30sob8q.jpg) no-repeat center center / cover', cost: 20, img: './wpthumb/mc.png' },
-  { id: 'bg-amongus',     name: 'Among Us Theme',                 type: 'background',     value: 'url(https://i.redd.it/jo89zfzqi9t51.png) no-repeat center center / cover', cost: 20, img: './wpthumb/amogus.png' },
-  { id: 'default-theme',  name: 'Default Theme',                  type: 'full-theme',     value: { '--home-background': '#282c34', '--home-text-color': '#ffffff' }, cost: 0, default: true, img: './wpthumb/default.png' },
-  { id: 'rgb-theme',      name: 'RGB Theme',                      type: 'dynamic-theme',  value: {}, cost: 70, img: './wpthumb/rgb.png' },
-  { id: 'classic-theme',  name: 'Early EPIXGAMES HTML Theme',        type: 'full-theme',     value: { '--home-background': '#4287f5', '--home-text-color': '#ffffff', '--bg-color': '#4287f5', '--primary-color': '#007bff', '--secondary-color': '#007bff', '--card-bg': 'transparent', '--button-bg': '#007bff', '--button-hover-bg': '#0056b3' }, cost: 40, img: './wpthumb/early.png' },
-  { id: 'jr-theme',  name: 'Just Red',        type: 'full-theme',     value: { '--home-background': '#940707', '--home-text-color': '#ffffff', '--bg-color': '#940707', '--primary-color': '#007bff', '--secondary-color': '#f06060', '--card-bg': 'transparent', '--button-bg': '#f50a0a', '--button-hover-bg': '#f07171' }, cost: 40, img: './wpthumb/jr.png' },
-  { id: 'web20-gloss-theme', name: 'Web 2.0 Gloss (dynamic colors)', type: 'dynamic-theme', value: {}, cost: 60, img: './wpthumb/gloss.png' },
-  { id: 'bg-crosold',     name: 'ChromeOS (old)',                 type: 'background',     value: 'url(./wp/chromeold.webp) no-repeat center center / cover', cost: 10, img: './wpthumb/chromeos.png' },
-  { id: 'bg-crosoldhp',     name: 'HP ChromeOS (old)',                 type: 'background',     value: 'url(./wp/chromeoldhp.jpg) no-repeat center center / cover', cost: 10, img: './wpthumb/oldhp.png' },
-  { id: 'bg-crosnewhp',     name: 'HP ChromeOS (new)',                 type: 'background',     value: 'url(./wp/chromenewhp.jpg) no-repeat center center / cover', cost: 10, img: './wpthumb/newhp.png' },
-  { id: 'bg-android4',     name: 'Android 4 (FOR A LIMITED TIME, FOR THE RELEASE OF DD4, THIS IS FREE!)',                 type: 'background',     value: 'url(./wp/dd4.jpg) no-repeat center center / cover', cost: 0, img: './wpthumb/dd4.png' },
-  { id: 'bg-bm',     name: 'BirdMath Beta 1 (ANIMATED)',                 type: 'background',     value: 'url(./wp/bmb1.webp) no-repeat center center / cover', cost: 40, img: './wpthumb/bmb1.png' },
-];
+
 
 // Game list — add or remove games here
 // Each entry: { id, name, img, path, h2 (optional subtitle) }
@@ -1487,7 +1472,7 @@ function stopRgbEffect() {
   if (rgbIntervalId) {
     clearInterval(rgbIntervalId);
     rgbIntervalId = null;
-    const def = STORE_ITEMS.find(i => i.id === 'default-theme');
+    const def = THEMING.find(i => i.id === 'default-theme');
     if (def) for (const p in def.value) root.style.setProperty(p, def.value[p]);
     updateAccentColors(localStorage.getItem('epixgamesAccentColor') || accentColorPicker.value);
   }

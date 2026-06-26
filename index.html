@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Block-In Home</title>
+  <title>why is the school wifi sooo slowww - Google Search</title>
   <link rel="icon" type="image/x-icon" href="https://www.gstatic.com/images/branding/searchlogo/ico/favicon.ico">
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -635,6 +635,7 @@
   <button id="messageBoxCloseButton">Got it!</button>
 </div>
 
+<script src="themes.js"></script>
 <script>
 // State handles
 let money = parseInt(localStorage.getItem('epixgamesMoney') || localStorage.getItem('userCash') || '0');
@@ -660,23 +661,6 @@ const BANNER_TEXTS = [
   "A lot of the site hosts for this site are updated from a Fire 7."
 ];
 
-// Theme shop catalog with prepended './playing/' subdirectories for valid referencing
-const STORE_ITEMS = [
-  { id: 'bg-neon',        name: 'Neon Grid',                      type: 'background',     value: 'url(https://static.vecteezy.com/system/resources/previews/020/562/054/non_2x/background-of-neon-grid-for-retro-futuristic-design-vector.jpg) no-repeat center center / cover', cost: 20, img: './playing/wpthumb/neon.png' },
-  { id: 'bg-gumball',     name: 'Gumball Theme',                  type: 'background',     value: 'url(https://images6.alphacoders.com/950/950030.jpg) no-repeat center center / cover', cost: 20, img: './playing/wpthumb/gumball.png' },
-  { id: 'bg-minecraft',   name: 'Minecraft Theme',                type: 'background',     value: 'url(https://wallpapers.com/images/featured/minecraft-s2kxfahyg30sob8q.jpg) no-repeat center center / cover', cost: 20, img: './playing/wpthumb/mc.png' },
-  { id: 'bg-amongus',     name: 'Among Us Theme',                 type: 'background',     value: 'url(https://i.redd.it/jo89zfzqi9t51.png) no-repeat center center / cover', cost: 20, img: './playing/wpthumb/amogus.png' },
-  { id: 'default-theme',  name: 'Default Theme',                  type: 'full-theme',     value: { '--home-background': '#282c34', '--home-text-color': '#ffffff' }, cost: 0, default: true, img: './playing/wpthumb/default.png' },
-  { id: 'rgb-theme',      name: 'RGB Theme',                      type: 'dynamic-theme',  value: {}, cost: 70, img: './playing/wpthumb/rgb.png' },
-  { id: 'classic-theme',  name: 'EPIXGAMES Classic',              type: 'full-theme',     value: { '--home-background': '#4287f5', '--home-text-color': '#ffffff', '--bg-color': '#4287f5', '--primary-color': '#007bff', '--secondary-color': '#007bff', '--card-bg': 'transparent', '--button-bg': '#007bff', '--button-hover-bg': '#0056b3' }, cost: 40, img: './playing/wpthumb/early.png' },
-  { id: 'jr-theme',       name: 'Just Red',                       type: 'full-theme',     value: { '--home-background': '#940707', '--home-text-color': '#ffffff', '--bg-color': '#940707', '--primary-color': '#007bff', '--secondary-color': '#f06060', '--card-bg': 'transparent', '--button-bg': '#f50a0a', '--button-hover-bg': '#f07171' }, cost: 40, img: './playing/wpthumb/jr.png' },
-  { id: 'web20-gloss-theme', name: 'Web 2.0 Gloss',               type: 'dynamic-theme', value: {}, cost: 60, img: './playing/wpthumb/gloss.png' },
-  { id: 'bg-crosold',     name: 'ChromeOS (old)',                 type: 'background',     value: 'url(./playing/wp/chromeold.webp) no-repeat center center / cover', cost: 10, img: './playing/wpthumb/chromeos.png' },
-  { id: 'bg-crosoldhp',   name: 'HP ChromeOS (old)',              type: 'background',     value: 'url(./playing/wp/chromeoldhp.jpg) no-repeat center center / cover', cost: 10, img: './playing/wpthumb/oldhp.png' },
-  { id: 'bg-crosnewhp',   name: 'HP ChromeOS (new)',              type: 'background',     value: 'url(./playing/wp/chromenewhp.jpg) no-repeat center center / cover', cost: 10, img: './playing/wpthumb/newhp.png' },
-  { id: 'bg-android4',    name: 'Android 4 (LIMITED FREE OFFER)', type: 'background',     value: 'url(./playing/wp/dd4.jpg) no-repeat center center / cover', cost: 0, img: './playing/wpthumb/dd4.png' },
-  { id: 'bg-bm',          name: 'BirdMath Beta 1 (ANIMATED)',     type: 'background',     value: 'url(./playing/wp/bmb1.webp) no-repeat center center / cover', cost: 40, img: './playing/wpthumb/bmb1.png' }
-];
 
 let accentColorPicker, root, tabButtons, tabContents, storeItemsContainer;
 let resetEverythingButton, resetConfirmationMessage, messageBox, messageBoxText, messageBoxCloseButton;

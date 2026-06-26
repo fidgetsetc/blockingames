@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BlockIn Stream</title>
+  <title>best resaerch sites - Google Search</title>
   <link rel="icon" type="image/x-icon" href="https://www.gstatic.com/images/branding/searchlogo/ico/favicon.ico">
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
@@ -627,7 +627,7 @@
 <footer>
   2026 BlockIn &mdash; Change settings and themes in the <a href="/index.html" style="color:var(--accent-color);text-decoration:none;">Home</a> page.
 </footer>
-
+<script src="../themes.js"></script>
 <script>
 // ================================================================
 // CATALOGUE
@@ -894,26 +894,11 @@ function applyTheme(accessory) {
    '--primary-color','--secondary-color','--button-bg','--button-hover-bg',
    '--gloss-r','--gloss-g','--gloss-b','--gloss-bg'].forEach(v => root.style.removeProperty(v));
 
-  const THEMES = {
-    'default-theme':     { type: 'full-theme', value: { '--home-background': '#282c34', '--home-text-color': '#ffffff' } },
-    'rgb-theme':         { type: 'dynamic-theme' },
-    'classic-theme':     { type: 'full-theme', value: { '--home-background': '#4287f5', '--home-text-color': '#ffffff', '--bg-color': '#4287f5', '--primary-color': '#007bff', '--secondary-color': '#007bff', '--card-bg': 'transparent', '--button-bg': '#007bff', '--button-hover-bg': '#0056b3' } },
-    'jr-theme':          { type: 'full-theme', value: { '--home-background': '#940707', '--home-text-color': '#ffffff', '--bg-color': '#940707', '--primary-color': '#007bff', '--secondary-color': '#f06060', '--card-bg': 'transparent', '--button-bg': '#f50a0a', '--button-hover-bg': '#f07171' } },
-    'web20-gloss-theme': { type: 'dynamic-theme' },
-    'bg-neon':     { type: 'background', value: 'url(https://static.vecteezy.com/system/resources/previews/020/562/054/non_2x/background-of-neon-grid-for-retro-futuristic-design-vector.jpg) no-repeat center center / cover' },
-    'bg-gumball':  { type: 'background', value: 'url(https://images6.alphacoders.com/950/950030.jpg) no-repeat center center / cover' },
-    'bg-minecraft':{ type: 'background', value: 'url(https://wallpapers.com/images/featured/minecraft-s2kxfahyg30sob8q.jpg) no-repeat center center / cover' },
-    'bg-amongus':  { type: 'background', value: 'url(https://i.redd.it/jo89zfzqi9t51.png) no-repeat center center / cover' },
-    'bg-crosold':  { type: 'background', value: 'url(./wp/chromeold.webp) no-repeat center center / cover' },
-    'bg-crosoldhp':{ type: 'background', value: 'url(./wp/chromeoldhp.jpg) no-repeat center center / cover' },
-    'bg-crosnewhp':{ type: 'background', value: 'url(./wp/chromenewhp.jpg) no-repeat center center / cover' },
-    'bg-android4': { type: 'background', value: 'url(./wp/dd4.jpg) no-repeat center center / cover' },
-    'bg-bm':       { type: 'background', value: 'url(./wp/bmb1.webp) no-repeat center center / cover' },
-  };
+  
   const customThemes = JSON.parse(localStorage.getItem('epixgamesCustomThemes') || '[]');
-  customThemes.forEach(ct => { THEMES[ct.id] = ct; });
+  customThemes.forEach(ct => { STORE_ITEMS[ct.id] = ct; });
 
-  const theme = THEMES[accessory];
+  const theme = STORE_ITEMS[accessory];
   if (!theme) return;
 
   if (theme.type === 'full-theme') {
