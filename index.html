@@ -1055,6 +1055,67 @@
       );
       box-shadow: 0 2px 8px rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.4);
     }
+
+    /* Bookmark Menu */
+    .bookmark-menu {
+      position: absolute;
+      bottom: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--card-bg);
+      border: 1px solid var(--primary-color);
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      padding: 10px;
+      min-width: 260px;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .bookmark-menu.open { display: flex; }
+
+    .bookmark-menu-title {
+      font-size: 0.75em;
+      color: var(--secondary-color);
+      text-align: center;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      font-family: 'Press Start 2P', cursive;
+    }
+
+    .bookmark-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background-color: rgba(255,255,255,0.07);
+      text-decoration: none;
+      color: var(--text-color);
+      cursor: grab;
+      transition: background-color 0.2s ease;
+      border: 1px dashed rgba(255,255,255,0.15);
+      user-select: none;
+    }
+
+    .bookmark-option:hover { background-color: rgba(255,255,255,0.15); }
+    .bookmark-option:active { cursor: grabbing; }
+
+    .bookmark-icon { font-size: 1.5em; flex-shrink: 0; }
+
+    .bookmark-label { display: flex; flex-direction: column; gap: 2px; }
+    .bookmark-label strong { font-size: 0.9em; color: var(--secondary-color); }
+    .bookmark-label small { font-size: 0.75em; color: #aaa; }
+
+    /* drag hint animation */
+    @keyframes drag-pulse {
+      0%, 100% { border-color: rgba(255,255,255,0.15); }
+      50% { border-color: var(--accent-color); }
+    }
+    .bookmark-option { animation: drag-pulse 2.5s ease-in-out infinite; }
+    .bookmark-option:hover { animation: none; }
   </style>
 </head>
 <body>
@@ -1171,7 +1232,26 @@
     <button id="reloadGameButton">Reload Game</button>
     <button id="fullScreenButton">Enter Full Screen (No wait or ads!)</button>
     <button id="exitGameButton">Exit Game</button>
-    <button id="copyLinkButton">Copy Game Redirect Link</button>
+    <div style="position:relative;">
+      <button id="bookmarkButton">Bookmark Game</button>
+      <div id="bookmarkMenu" class="bookmark-menu">
+        <div class="bookmark-menu-title">Drag to Bookmark Bar</div>
+        <a id="bookmarkNormal" class="bookmark-option" href="#" draggable="true">
+          <span class="bookmark-icon">🔗</span>
+          <span class="bookmark-label">
+            <strong>Normal Bookmark</strong>
+            <small>Opens the game in this site</small>
+          </span>
+        </a>
+        <a id="bookmarklet" class="bookmark-option" href="#" draggable="true">
+          <span class="bookmark-icon">🪟</span>
+          <span class="bookmark-label">
+            <strong>Window Bookmarklet</strong>
+            <small>Pops the game in a floating window on any page</small>
+          </span>
+        </a>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1331,7 +1411,7 @@ let animationObserver;
 // DOM refs (assigned in DOMContentLoaded)
 let accentColorPicker, root, searchInput, searchButton, searchResultsDiv;
 let gamePlayerOverlay, gameIframe, reloadGameButton;
-let fullScreenButton, exitGameButton, copyLinkButton;
+let fullScreenButton, exitGameButton, copyLinkButton, bookmarkButton, bookmarkMenu, bookmarkNormal, bookmarklet;
 let tabButtons, tabContents;
 let staticGamesContainer, customGamesContainer, customGamesTitle;
 let storeItemsContainer, resetEverythingButton, resetConfirmationMessage;
@@ -1584,22 +1664,76 @@ function reloadIframe() { if (currentLoadedGamePath) openGameInIframe(currentLoa
 function exitIframe() {
   stopMoneyGranting();
   gameIframe.src = '';
+  if (bookmarkMenu) bookmarkMenu.classList.remove('open');
   applyAnimation(gamePlayerOverlay, null, 'zoom-out-animation', 'flex', () => gamePlayerOverlay.classList.remove('active'));
   currentLoadedGamePath = '';
   const url = new URL(window.location.href);
   if (url.searchParams.has('game')) { url.searchParams.delete('game'); window.history.pushState({}, '', url.toString()); }
 }
 
-function copyGameLink() {
+function getGameLink() {
+  return `${window.location.origin}${window.location.pathname}?game=${encodeURIComponent(currentLoadedGamePath)}`;
+}
+
+function toggleBookmarkMenu() {
   if (!currentLoadedGamePath) { showMessageBox('No game is currently loaded.'); return; }
-  const link = `${window.location.origin}${window.location.pathname}?game=${encodeURIComponent(currentLoadedGamePath)}`;
-  const tmp = document.createElement('input');
-  tmp.value = link;
-  document.body.appendChild(tmp);
-  tmp.select();
-  document.execCommand('copy');
-  document.body.removeChild(tmp);
-  showMessageBox('Game link copied to clipboard!');
+
+  const isOpen = bookmarkMenu.classList.contains('open');
+  if (isOpen) {
+    bookmarkMenu.classList.remove('open');
+    return;
+  }
+
+  // Update the normal bookmark href
+  bookmarkNormal.href = getGameLink();
+  bookmarkNormal.setAttribute('title', document.title);
+
+  // Build bookmarklet: opens game in a floating draggable iframe window
+  const gameLink = getGameLink();
+  const bookmarkletCode = `javascript:(function(){
+    var e=document.getElementById('__bg_win__');
+    if(e){e.remove();return;}
+    var d=document.createElement('div');
+    d.id='__bg_win__';
+    Object.assign(d.style,{position:'fixed',top:'60px',right:'20px',width:'600px',height:'420px',
+      zIndex:'2147483647',background:'#1a1a2a',border:'2px solid #61dafb',borderRadius:'10px',
+      boxShadow:'0 8px 32px rgba(0,0,0,0.7)',display:'flex',flexDirection:'column',overflow:'hidden',
+      fontFamily:'sans-serif',resize:'both'});
+    var bar=document.createElement('div');
+    Object.assign(bar.style,{background:'#282c34',padding:'6px 10px',cursor:'move',display:'flex',
+      alignItems:'center',justifyContent:'space-between',userSelect:'none',flexShrink:'0'});
+    bar.innerHTML='<span style="color:#61dafb;font-size:13px;font-weight:bold;">🎮 Game Window</span>';
+    var cls=document.createElement('button');
+    Object.assign(cls.style,{background:'#f44336',color:'#fff',border:'none',borderRadius:'4px',
+      cursor:'pointer',padding:'2px 8px',fontSize:'14px',fontWeight:'bold'});
+    cls.textContent='✕';
+    cls.onclick=function(){d.remove();};
+    bar.appendChild(cls);
+    d.appendChild(bar);
+    var ifr=document.createElement('iframe');
+    Object.assign(ifr.style,{flex:'1',border:'none',width:'100%'});
+    ifr.src='${gameLink}';
+    ifr.allowFullscreen=true;
+    d.appendChild(ifr);
+    document.body.appendChild(d);
+    // Dragging
+    var ox=0,oy=0,mx=0,my=0;
+    bar.onmousedown=function(ev){
+      ev.preventDefault();
+      ox=d.offsetLeft;oy=d.offsetTop;mx=ev.clientX;my=ev.clientY;
+      document.onmousemove=function(e){
+        d.style.left=(ox+e.clientX-mx)+'px';
+        d.style.top=(oy+e.clientY-my)+'px';
+        d.style.right='auto';
+      };
+      document.onmouseup=function(){document.onmousemove=null;document.onmouseup=null;};
+    };
+  })();`;
+
+  bookmarklet.href = bookmarkletCode;
+  bookmarklet.setAttribute('title', `Game: ${currentLoadedGamePath}`);
+
+  bookmarkMenu.classList.add('open');
 }
 
 
@@ -2314,7 +2448,11 @@ document.addEventListener('DOMContentLoaded', () => {
   reloadGameButton        = document.getElementById('reloadGameButton');
   fullScreenButton        = document.getElementById('fullScreenButton');
   exitGameButton          = document.getElementById('exitGameButton');
-  copyLinkButton          = document.getElementById('copyLinkButton');
+  copyLinkButton          = null; // replaced by bookmark menu
+  bookmarkButton          = document.getElementById('bookmarkButton');
+  bookmarkMenu            = document.getElementById('bookmarkMenu');
+  bookmarkNormal          = document.getElementById('bookmarkNormal');
+  bookmarklet             = document.getElementById('bookmarklet');
   tabButtons              = document.querySelectorAll('.tab-button');
   tabContents             = document.querySelectorAll('.tab-content');
   staticGamesContainer    = document.getElementById('staticGamesContainer');
@@ -2391,7 +2529,16 @@ document.addEventListener('DOMContentLoaded', () => {
   reloadGameButton.addEventListener('click', reloadIframe);
   fullScreenButton.addEventListener('click', toggleFullScreen);
   exitGameButton.addEventListener('click', exitIframe);
-  copyLinkButton.addEventListener('click', copyGameLink);
+  bookmarkButton.addEventListener('click', e => { e.stopPropagation(); toggleBookmarkMenu(); });
+  // Prevent bookmark anchor clicks from navigating (they're drag-only)
+  bookmarkNormal.addEventListener('click', e => e.preventDefault());
+  bookmarklet.addEventListener('click', e => e.preventDefault());
+  // Close menu when clicking outside
+  document.addEventListener('click', e => {
+    if (bookmarkMenu && !bookmarkMenu.contains(e.target) && e.target !== bookmarkButton) {
+      bookmarkMenu.classList.remove('open');
+    }
+  });
   searchButton.addEventListener('click', performSearch);
   searchInput.addEventListener('keypress', e => { if (e.key === 'Enter') performSearch(); });
   resetEverythingButton.addEventListener('click', resetAllData);
