@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Google</title>
+  <title>Block-In Home</title>
   <link rel="icon" type="image/x-icon" href="https://www.gstatic.com/images/branding/searchlogo/ico/favicon.ico">
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -66,13 +66,12 @@
       font-family: 'Press Start 2P', cursive;
       color: var(--secondary-color);
       font-size: 1.8em;
-      margin-top: 40px;
+      margin-top: 20px;
       margin-bottom: 30px;
       text-align: center;
       text-shadow: 2px 2px #000;
     }
 
-    /* Tabs */
     #tabs-container {
       display: flex;
       justify-content: center;
@@ -93,7 +92,7 @@
       border: none;
       border-right: 1px solid rgba(255,255,255,0.1);
       font-family: 'Press Start 2P', cursive;
-      font-size: 1em;
+      font-size: 0.9em;
       cursor: pointer;
       transition: background-color 0.3s ease, color 0.3s ease;
       text-align: center;
@@ -107,7 +106,6 @@
       box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
     }
 
-    /* Tab Content */
     .tab-content {
       display: none;
       width: 100%;
@@ -121,259 +119,61 @@
 
     .tab-content.active { display: block; }
 
-    #games-tab {
-      padding-top: 20px;
-      background-color: transparent;
-      box-shadow: none;
-      position: relative;
-    }
-
-    /* Games */
-    .games-container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 30px;
-      width: 100%;
-    }
-
-    .game {
-      background-color: var(--card-bg);
-      border-radius: 12px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.4);
-      padding: 15px;
-      text-align: center;
-      width: 200px;
-      transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, border 0.3s ease;
-      overflow: hidden;
+    .action-container {
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      width: 100%;
+      padding: 25px;
+      background-color: var(--button-bg);
+      color: var(--bg-color);
+      font-family: 'Press Start 2P', cursive;
+      font-size: 1.2rem;
+      font-weight: bold;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 12px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
       border: 2px solid transparent;
     }
 
-    .game:hover {
-      transform: translateY(-8px) scale(1.02);
-      box-shadow: 0 12px 24px rgba(0,0,0,0.6);
-    }
-
-    .game.highlighted-game {
-      border: 4px solid var(--accent-color);
-      box-shadow: 0 0 25px var(--accent-color);
-      transform: scale(1.05);
-    }
-
-    .game.favorited {
-      border: 4px solid gold;
-      box-shadow: 0 0 20px gold;
-      position: relative;
-    }
-
-    .favorite-icon {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      color: gold;
-      font-size: 1.5em;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-      z-index: 1;
-    }
-
-    .game img {
-      width: 100%;
-      height: 150px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      border: 2px solid var(--primary-color);
-    }
-
-    .game dt {
-      font-family: 'Roboto', sans-serif;
-      font-size: 1.1em;
-      font-weight: 700;
-      color: var(--secondary-color);
-      margin-bottom: 10px;
-    }
-
-    .game h2 {
-      font-family: 'Roboto', sans-serif;
-      font-size: 0.9em;
-      color: #ccc;
-      margin-top: 5px;
-      margin-bottom: 15px;
-      text-shadow: none;
-    }
-
-    .play-now-button {
-      background-color: var(--button-bg);
-      color: var(--bg-color);
-      border: none;
-      border-radius: 8px;
-      padding: 10px 20px;
-      font-size: 1em;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background-color 0.3s ease, transform 0.2s ease;
-      width: 100%;
-      box-sizing: border-box;
-      display: block;
-      text-align: center;
-    }
-
-    .play-now-button:hover {
+    .action-btn:hover {
       background-color: var(--button-hover-bg);
-      transform: translateY(-2px);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.5);
     }
 
-    /* Search */
-    .search-widget-container {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      padding: 5px;
-      width: 250px;
-      box-sizing: border-box;
-      z-index: 10;
-      gap: 10px;
+    .action-btn.discord-btn {
+      background-color: #5865F2;
+      color: #ffffff;
     }
 
-    .header-search-group {
-      display: flex;
-      gap: 10px;
-      align-items: center;
+    .action-btn.discord-btn:hover {
+      background-color: #4752C4;
+      box-shadow: 0 10px 20px rgba(88, 101, 242, 0.4);
+    }
+
+    .store-grid {
+      display: grid;
       width: 100%;
-    }
-
-    .header-search-group input[type="text"] {
-      flex-grow: 1;
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: 2px solid var(--primary-color);
-      background-color: #282c34;
-      color: var(--text-color);
-      font-family: 'Roboto', sans-serif;
-      font-size: 0.9em;
-    }
-
-    .header-search-group button {
-      background-color: var(--button-bg);
-      color: var(--bg-color);
-      border: none;
-      border-radius: 8px;
-      padding: 8px 15px;
-      font-size: 0.9em;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background-color 0.3s ease, transform 0.2s ease;
-    }
-
-    .header-search-group button:hover {
-      background-color: var(--button-hover-bg);
-      transform: translateY(-2px);
-    }
-
-    #searchResults {
-      width: 100%;
-      max-height: 200px;
-      overflow-y: auto;
-      background-color: var(--card-bg);
-      border-radius: 8px;
-      border: 1px dashed var(--secondary-color);
-      padding: 10px;
-      margin-top: 10px;
-      color: var(--text-color);
-      text-align: left;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    }
-
-    #searchResults p {
-      margin: 5px 0;
-      padding: 5px;
-      cursor: pointer;
-      border-radius: 5px;
-      transition: background-color 0.2s ease;
-    }
-
-    #searchResults p:hover { background-color: rgba(255,255,255,0.1); }
-
-    /* Game Iframe Overlay */
-    .game-player-overlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background-color: rgba(0,0,0,0.9);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-      padding: 10px;
-      box-sizing: border-box;
-      opacity: 0;
-      visibility: hidden;
-    }
-
-    .game-iframe-container {
-      width: 95%;
-      height: calc(100% - 100px);
-      background-color: #000;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 0 20px rgba(0,0,0,0.7);
-      display: flex;
-      flex-direction: column;
-    }
-
-    .game-iframe {
-      width: 100%; height: 100%;
-      border: none;
-      display: block;
-    }
-
-    .game-controls-bar {
-      width: 95%;
-      height: 60px;
-      background-color: var(--card-bg);
-      border-radius: 12px;
-      margin-top: 10px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 20px;
-      padding: 0 20px;
+      justify-content: center;
+      box-sizing: border-box;
     }
-
-    .game-controls-bar button {
-      background-color: var(--button-bg);
-      color: var(--bg-color);
-      border: none;
-      border-radius: 8px;
-      padding: 10px 20px;
-      font-size: 0.9em;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background-color 0.3s ease, transform 0.2s ease;
-    }
-
-    .game-controls-bar button:hover {
-      background-color: var(--button-hover-bg);
-      transform: translateY(-2px);
-    }
-
-    /* Store */
-.store-grid {
-  display: grid !important;
-  width: 100% !important;
-  max-width: 1200px !important; /* Matches your .tab-content maximum size */
-  grid-template-columns: repeat(auto-fill, 200px) !important; /* Change 200px to your desired card width */
-  gap: 50px !important;
-  justify-content: center !important; /* Centers the cards horizontally within the tab */
-  box-sizing: border-box !important;
-}
 
     .store-item {
       background-color: #282c34;
@@ -385,16 +185,15 @@
       flex-direction: column;
       align-items: center;
       gap: 10px;
-      width: 200px;
     }
 
-.store-item img {
-  width: 200px; 
-  height: 112.5px;
-  object-fit: contain;
-  border-radius: 8px;
-  border: 2px solid var(--primary-color);
-}
+    .store-item img {
+      width: 100%;
+      height: 112px;
+      object-fit: contain;
+      border-radius: 8px;
+      border: 2px solid var(--primary-color);
+    }
 
     .store-item h4 { margin: 0; color: var(--secondary-color); font-size: 1.1em; }
     .store-item p { margin: 5px 0; font-size: 0.9em; color: var(--text-color); }
@@ -424,11 +223,10 @@
       font-family: 'Press Start 2P', cursive;
       font-size: 1.5em;
       color: gold;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       text-shadow: 2px 2px #000;
     }
 
-    /* Settings */
     .settings-section {
       background-color: #282c34;
       border-radius: 12px;
@@ -472,6 +270,7 @@
       font-weight: bold;
       cursor: pointer;
       transition: background-color 0.3s ease, transform 0.2s ease;
+      max-width: 200px;
     }
 
     .settings-section button:hover { background-color: var(--button-hover-bg); transform: translateY(-2px); }
@@ -481,42 +280,6 @@
 
     .confirmation-message { color: #f44336; font-weight: bold; margin-top: 10px; }
 
-    .management-list {
-      background-color: #3c4048;
-      border-radius: 8px;
-      padding: 10px;
-      max-height: 200px;
-      overflow-y: auto;
-      border: 1px solid var(--secondary-color);
-    }
-
-    .management-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 0;
-      border-bottom: 1px dashed rgba(255,255,255,0.1);
-      color: var(--text-color);
-    }
-
-    .management-item:last-child { border-bottom: none; }
-
-    .management-item button {
-      padding: 5px 10px;
-      font-size: 0.8em;
-      border-radius: 5px;
-      margin-left: 10px;
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .unhide-button { background-color: #4CAF50; color: white; }
-    .unhide-button:hover { background-color: #45a049; }
-    .unfavorite-button { background-color: #f44336; color: white; }
-    .unfavorite-button:hover { background-color: #d32f2f; }
-
-    /* Message Box */
     #messageBox {
       position: fixed;
       top: 50%; left: 50%;
@@ -549,22 +312,17 @@
 
     #messageBox button:hover { background-color: var(--button-hover-bg); }
 
-    /* Classic Theme */
     body.classic-theme h1, body.classic-theme p, body.classic-theme h2,
-    body.classic-theme .game dt, body.classic-theme .store-item h4,
-    body.classic-theme .store-item p, body.classic-theme .settings-section label,
-    body.classic-theme #searchResults p {
+    body.classic-theme .store-item h4, body.classic-theme .store-item p,
+    body.classic-theme .settings-section label {
       color: #ffffff !important;
       font-family: 'Verdana', sans-serif !important;
       text-shadow: none !important;
     }
 
-    body.classic-theme .game dt { font-size: 14px !important; margin-top: 10px !important; }
-
     body.classic-theme #tabs-container, body.classic-theme .tab-content,
-    body.classic-theme .game, body.classic-theme .store-item,
-    body.classic-theme .settings-section, body.classic-theme #messageBox,
-    body.classic-theme .management-list {
+    body.classic-theme .store-item, body.classic-theme .settings-section,
+    body.classic-theme #messageBox {
       background-color: transparent !important;
       box-shadow: none !important;
       border: none !important;
@@ -578,252 +336,16 @@
       border-radius: 4px !important;
     }
 
-    body.classic-theme .play-now-button, body.classic-theme .header-search-group button,
-    body.classic-theme .store-item button, body.classic-theme .settings-section button,
-    body.classic-theme #messageBox button, body.classic-theme .management-item button {
+    body.classic-theme .action-btn,
+    body.classic-theme .store-item button,
+    body.classic-theme .settings-section button,
+    body.classic-theme #messageBox button {
       background-color: #e0e0e0 !important;
       color: #333 !important;
       border: 1px solid #a0a0a0 !important;
       border-radius: 4px !important;
     }
 
-    body.classic-theme .header-search-group input[type="text"] {
-      background-color: #ffffff !important;
-      color: #000000 !important;
-      border: 1px solid #ccc !important;
-    }
-
-    body.classic-theme .game img { border: none !important; }
-    body.classic-theme #searchResults { background-color: #ffffff !important; color: #000000 !important; border: 1px solid #ccc !important; }
-
-    /* RGB Theme */
-    body.rgb-theme h1, body.rgb-theme p, body.rgb-theme h2,
-    body.rgb-theme .game dt, body.rgb-theme .store-item h4,
-    body.rgb-theme .store-item p, body.rgb-theme .settings-section label,
-    body.rgb-theme #searchResults p { color: #ffffff !important; }
-
-    /* 3D Canvas */
-    #background3DCanvas {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      z-index: -1;
-      display: none;
-      background-color: transparent;
-    }
-
-    /* More Tab */
-    .more-links-container {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      padding: 20px;
-      align-items: center;
-      width: 100%;
-    }
-
-    .more-link-item {
-      background-color: var(--card-bg);
-      border-radius: 12px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-      padding: 20px;
-      width: 80%;
-      max-width: 600px;
-      text-align: center;
-      transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-    }
-
-    .more-link-item:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0,0,0,0.5); }
-
-    .more-link-item h3 {
-      font-family: 'Press Start 2P', cursive;
-      color: var(--primary-color);
-      font-size: 1.2em;
-      margin-top: 0;
-      margin-bottom: 10px;
-    }
-
-    .more-link-item p { font-size: 0.95em; color: #ccc; margin-bottom: 15px; }
-
-    .more-link-item a {
-      display: inline-block;
-      background-color: var(--button-bg);
-      color: var(--bg-color);
-      border: none;
-      border-radius: 8px;
-      padding: 10px 20px;
-      font-size: 0.9em;
-      font-weight: bold;
-      text-decoration: none;
-      transition: background-color 0.3s ease, transform 0.2s ease;
-    }
-
-    .more-link-item a:hover { background-color: var(--button-hover-bg); transform: translateY(-2px); }
-
-    /* Suggest Tab */
-    #suggest-tab iframe {
-      width: 100%;
-      height: 600px;
-      border: 2px solid var(--primary-color);
-      border-radius: 12px;
-      background-color: #fff;
-    }
-
-    /* Command Prompt */
-    #commandPromptOverlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background-color: rgba(0,0,0,0.8);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 2000;
-      opacity: 0;
-      visibility: hidden;
-    }
-
-    #console {
-      background-color: #1a1a1a;
-      border: 2px solid var(--primary-color);
-      border-radius: 10px;
-      width: 90%;
-      max-width: 700px;
-      height: 70%;
-      max-height: 500px;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      box-shadow: 0 0 20px rgba(0,255,255,0.5);
-    }
-
-    #consoleOutput {
-      flex-grow: 1;
-      padding: 15px;
-      font-family: 'Consolas', 'Monaco', monospace;
-      font-size: 0.9em;
-      color: #00ff00;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      border-bottom: 1px solid var(--secondary-color);
-    }
-
-    #commandInput {
-      background-color: #000;
-      color: #00ff00;
-      font-family: 'Consolas', 'Monaco', monospace;
-      font-size: 1em;
-      border: none;
-      padding: 10px 15px;
-      width: 100%;
-      box-sizing: border-box;
-      outline: none;
-    }
-
-    /* Context Menu */
-    .context-menu {
-      position: fixed;
-      background-color: var(--card-bg);
-      border: 1px solid var(--primary-color);
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-      padding: 8px 0;
-      z-index: 1000;
-      display: none;
-      min-width: 150px;
-      opacity: 0;
-      visibility: hidden;
-    }
-
-    .context-menu-item {
-      padding: 10px 15px;
-      color: var(--text-color);
-      font-size: 0.95em;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-    }
-
-    .context-menu-item:hover { background-color: rgba(255,255,255,0.1); }
-
-    /* Animations */
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes zoomIn {
-      from { opacity: 0; transform: scale(0.9); }
-      to { opacity: 1; transform: scale(1); }
-    }
-
-    @keyframes fadeOutDown {
-      from { opacity: 1; transform: translateY(0); }
-      to { opacity: 0; transform: translateY(20px); }
-    }
-
-    @keyframes zoomOut {
-      from { opacity: 1; transform: scale(1); }
-      to { opacity: 0; transform: scale(0.9); }
-    }
-
-    .animated-enter { animation-duration: 0.5s; animation-fill-mode: forwards; animation-timing-function: ease-out; opacity: 0; visibility: hidden; }
-    .animated-exit { animation-duration: 0.5s; animation-fill-mode: forwards; animation-timing-function: ease-in; opacity: 1; visibility: visible; }
-
-    .fade-in-up-animation { animation-name: fadeInUp; }
-    .fade-out-down-animation { animation-name: fadeOutDown; }
-    .zoom-in-animation { animation-name: zoomIn; }
-    .zoom-out-animation { animation-name: zoomOut; }
-
-    .game-player-overlay.animated-enter,
-    .game-player-overlay.animated-exit,
-    #messageBox.animated-enter,
-    #messageBox.animated-exit,
-    #commandPromptOverlay.animated-enter,
-    #commandPromptOverlay.animated-exit,
-    .context-menu.animated-enter,
-    .context-menu.animated-exit { visibility: visible; }
-
-    /* Scroll animations */
-    .animate-on-scroll {
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-    }
-
-    .animate-on-scroll.is-visible { opacity: 1; transform: translateY(0); }
-
-    /* Responsive */
-    @media (min-width: 769px) {
-      .search-widget-container { width: 300px; left: auto; transform: none; right: 10px; top: 10px; }
-    }
-
-    @media (max-width: 768px) {
-      header { flex-direction: column; align-items: center; gap: 15px; padding-right: 20px; }
-      .search-widget-container { position: static; margin-top: 10px; width: 100%; align-items: center; padding: 0; }
-      .header-search-group { justify-content: center; width: 100%; }
-      .header-search-group input[type="text"] { width: calc(100% - 100px); max-width: 250px; }
-      h1 { font-size: 2em; }
-      h2 { font-size: 1.5em; }
-      .game { width: 180px; }
-      .game-iframe-container { height: calc(100% - 120px); width: 98%; }
-      .game-controls-bar { width: 98%; height: 80px; flex-wrap: wrap; gap: 10px; padding: 10px; }
-      .game-controls-bar button { font-size: 0.8em; padding: 8px 15px; }
-      .more-link-item { width: 95%; padding: 15px; }
-      #suggest-tab iframe { height: 400px; }
-    }
-
-    @media (max-width: 480px) {
-      h1 { font-size: 1.8em; }
-      h2 { font-size: 1.3em; }
-      .game { width: 100%; max-width: 250px; }
-    }
-
-    /* =====================================================
-       WEB 2.0 GLOSS THEME — Windows 7 / Vista inspired
-       ===================================================== */
-
-    /* CSS vars injected by JS: --gloss-r, --gloss-g, --gloss-b (0-255 ints) */
     body.web20-gloss-theme {
       background: var(--gloss-bg, #dde8f5) !important;
       color: #1a1a2e !important;
@@ -850,16 +372,11 @@
       font-family: 'Segoe UI', Tahoma, sans-serif !important;
     }
 
-    /* Aero Glass panel mixin — used across cards, tabs, etc. */
     body.web20-gloss-theme #tabs-container,
     body.web20-gloss-theme .tab-content,
-    body.web20-gloss-theme .game,
     body.web20-gloss-theme .store-item,
     body.web20-gloss-theme .settings-section,
-    body.web20-gloss-theme #messageBox,
-    body.web20-gloss-theme .management-list,
-    body.web20-gloss-theme .more-link-item,
-    body.web20-gloss-theme .game-controls-bar {
+    body.web20-gloss-theme #messageBox {
       background: linear-gradient(
         180deg,
         rgba(255,255,255,0.72) 0%,
@@ -875,7 +392,6 @@
       backdrop-filter: blur(4px) !important;
     }
 
-    /* Tab bar — pill strip */
     body.web20-gloss-theme #tabs-container {
       border-radius: 28px !important;
       overflow: hidden !important;
@@ -914,14 +430,10 @@
         0 2px 6px rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.5) !important;
     }
 
-    /* Gloss buttons */
-    body.web20-gloss-theme .play-now-button,
-    body.web20-gloss-theme .header-search-group button,
+    body.web20-gloss-theme .action-btn,
     body.web20-gloss-theme .store-item button,
     body.web20-gloss-theme .settings-section button,
-    body.web20-gloss-theme #messageBox button,
-    body.web20-gloss-theme .game-controls-bar button,
-    body.web20-gloss-theme .more-link-item a {
+    body.web20-gloss-theme #messageBox button {
       background: linear-gradient(
         180deg,
         rgba(255,255,255,0.90) 0%,
@@ -940,13 +452,10 @@
       transition: all 0.15s ease !important;
     }
 
-    body.web20-gloss-theme .play-now-button:hover,
-    body.web20-gloss-theme .header-search-group button:hover,
+    body.web20-gloss-theme .action-btn:hover,
     body.web20-gloss-theme .store-item button:hover:not(:disabled),
     body.web20-gloss-theme .settings-section button:hover,
-    body.web20-gloss-theme #messageBox button:hover,
-    body.web20-gloss-theme .game-controls-bar button:hover,
-    body.web20-gloss-theme .more-link-item a:hover {
+    body.web20-gloss-theme #messageBox button:hover {
       background: linear-gradient(
         180deg,
         rgba(255,255,255,1) 0%,
@@ -965,8 +474,6 @@
       border-color: rgba(180,180,180,0.4) !important;
     }
 
-    /* Inputs */
-    body.web20-gloss-theme .header-search-group input[type="text"],
     body.web20-gloss-theme .settings-section select,
     body.web20-gloss-theme .settings-section input[type="color"] {
       background: rgba(255,255,255,0.85) !important;
@@ -976,53 +483,15 @@
       color: #1a1a2e !important;
     }
 
-    /* Search results */
-    body.web20-gloss-theme #searchResults {
-      background: rgba(255,255,255,0.88) !important;
-      border: 1px solid rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.4) !important;
-      color: #1a1a2e !important;
-    }
-    body.web20-gloss-theme #searchResults p { color: #1a1a2e !important; }
-    body.web20-gloss-theme #searchResults p:hover {
-      background-color: rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.15) !important;
-    }
-
-    /* Game cards */
-    body.web20-gloss-theme .game dt { color: rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),1) !important; }
-    body.web20-gloss-theme .game h2 { color: #444 !important; }
-    body.web20-gloss-theme .game img {
-      border: 1px solid rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.5) !important;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
-    }
-
-    /* Store items */
     body.web20-gloss-theme .store-item h4 { color: rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),1) !important; }
     body.web20-gloss-theme .store-item p { color: #333 !important; }
     body.web20-gloss-theme .store-item img {
       border: 1px solid rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.4) !important;
     }
 
-    /* Settings labels */
     body.web20-gloss-theme .settings-section label { color: rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.9) !important; }
-
-    /* Management list */
-    body.web20-gloss-theme .management-item { color: #1a1a2e !important; }
-
-    /* Money */
     body.web20-gloss-theme .money-display { color: #b8860b !important; }
 
-    /* Context menu */
-    body.web20-gloss-theme .context-menu {
-      background: rgba(255,255,255,0.92) !important;
-      border: 1px solid rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.5) !important;
-      box-shadow: 0 4px 16px rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.2) !important;
-    }
-    body.web20-gloss-theme .context-menu-item { color: #1a1a2e !important; }
-    body.web20-gloss-theme .context-menu-item:hover {
-      background-color: rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.18) !important;
-    }
-
-    /* Header / page background — the Aero "glass" outer window */
     body.web20-gloss-theme::before {
       content: '';
       position: fixed;
@@ -1040,7 +509,6 @@
         );
     }
 
-    /* Title-bar stripe at the very top — like Win7 window chrome */
     body.web20-gloss-theme header::before {
       content: '';
       display: block;
@@ -1056,66 +524,43 @@
       box-shadow: 0 2px 8px rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.4);
     }
 
-    /* Bookmark Menu */
-    .bookmark-menu {
-      position: absolute;
-      bottom: calc(100% + 10px);
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: var(--card-bg);
-      border: 1px solid var(--primary-color);
-      border-radius: 10px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-      padding: 10px;
-      min-width: 260px;
-      z-index: 2000;
+    @keyframes zoomIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes zoomOut {
+      from { opacity: 1; transform: scale(1); }
+      to { opacity: 0; transform: scale(0.9); }
+    }
+
+    .animated-enter { animation-duration: 0.5s; animation-fill-mode: forwards; animation-timing-function: ease-out; opacity: 0; visibility: hidden; }
+    .animated-exit { animation-duration: 0.5s; animation-fill-mode: forwards; animation-timing-function: ease-in; opacity: 1; visibility: visible; }
+    .zoom-in-animation { animation-name: zoomIn; }
+    .zoom-out-animation { animation-name: zoomOut; }
+
+    #messageBox.animated-enter, #messageBox.animated-exit { visibility: visible; }
+
+    /* RGB Theme override specs */
+    body.rgb-theme h1, body.rgb-theme p, body.rgb-theme h2,
+    body.rgb-theme .store-item h4, body.rgb-theme .store-item p,
+    body.rgb-theme .settings-section label { color: #ffffff !important; }
+
+    #background3DCanvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: -1;
       display: none;
-      flex-direction: column;
-      gap: 8px;
+      background-color: transparent;
     }
 
-    .bookmark-menu.open { display: flex; }
-
-    .bookmark-menu-title {
-      font-size: 0.75em;
-      color: var(--secondary-color);
-      text-align: center;
-      padding-bottom: 6px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      font-family: 'Press Start 2P', cursive;
+    @media (max-width: 768px) {
+      h1 { font-size: 2em; }
+      h2 { font-size: 1.4em; }
+      .tab-button { font-size: 0.75em; padding: 12px 10px; }
+      .action-btn { font-size: 0.95rem; padding: 18px; }
     }
-
-    .bookmark-option {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      border-radius: 8px;
-      background-color: rgba(255,255,255,0.07);
-      text-decoration: none;
-      color: var(--text-color);
-      cursor: grab;
-      transition: background-color 0.2s ease;
-      border: 1px dashed rgba(255,255,255,0.15);
-      user-select: none;
-    }
-
-    .bookmark-option:hover { background-color: rgba(255,255,255,0.15); }
-    .bookmark-option:active { cursor: grabbing; }
-
-    .bookmark-icon { font-size: 1.5em; flex-shrink: 0; }
-
-    .bookmark-label { display: flex; flex-direction: column; gap: 2px; }
-    .bookmark-label strong { font-size: 0.9em; color: var(--secondary-color); }
-    .bookmark-label small { font-size: 0.75em; color: #aaa; }
-
-    /* drag hint animation */
-    @keyframes drag-pulse {
-      0%, 100% { border-color: rgba(255,255,255,0.15); }
-      50% { border-color: var(--accent-color); }
-    }
-    .bookmark-option { animation: drag-pulse 2.5s ease-in-out infinite; }
-    .bookmark-option:hover { animation: none; }
   </style>
 </head>
 <body>
@@ -1124,97 +569,58 @@
 
 <header>
   <div class="header-content">
-    <h1>BlockIn Games</h1>
+    <h1>Block-In Home</h1>
     <p id="homeSubtitleText"></p>
   </div>
 </header>
 
 <nav id="tabs-container">
-  <button class="tab-button active" data-tab="games-tab">All Games</button>
-  <button class="tab-button" data-tab="store-tab">Theme Shop</button>
-  <button class="tab-button" data-tab="suggest-tab">Suggest Games</button>
+  <button class="tab-button active" data-tab="sections-tab">Sections of the site</button>
+  <button class="tab-button" data-tab="store-tab">Themes</button>
   <button class="tab-button" data-tab="settings-tab">Settings</button>
-  <button class="tab-button" data-tab="more-tab">The Nothing Button</button>
 </nav>
-<p>Visitor count</p>
-<iframe style="border:1px #FFFFFF none" src="./html/count/index.html" title="iFrame" width="300px" height="80px" scrolling="no" frameborder="no" allow="fullscreen"></iframe>
-<div id="tab-content">
 
-  <!-- Games Tab -->
-  <div id="games-tab" class="tab-content active">
-    <div class="search-widget-container">
-      <div class="header-search-group">
-        <input type="text" id="searchInput" placeholder="Search games...">
-        <button id="searchButton">Search</button>
-      </div>
-      <div id="searchResults"></div>
+<div id="tab-content" style="width: 100%; max-width: 900px;">
+
+  <!-- Sections Tab -->
+  <div id="sections-tab" class="tab-content active">
+    <h2>Explore Site</h2>
+    <div class="action-container">
+      <a href="./playing/index.html" target="_blank" class="action-btn">
+        <span>🎮</span> Games
+      </a>
+      <a href="./stream/index.html" target="_blank" class="action-btn">
+        <span>📺</span> Stream
+      </a>
+      <a href="https://discord.gg/tAvCFWFUJs" target="_blank" class="action-btn discord-btn">
+        <span>💬</span> Join Our Discord
+      </a>
     </div>
-
-    <h2 class="animate-on-scroll">Games</h2>
-    <div id="staticGamesContainer" class="games-container"></div>
-
-    <h2 id="customGamesTitle" style="display:none;" class="animate-on-scroll">Custom games added from terminal</h2>
-    <div id="customGamesContainer" class="games-container" style="display:none;"></div>
   </div>
 
-  <!-- Store Tab -->
+  <!-- Themes Tab -->
   <div id="store-tab" class="tab-content">
-    <h2 class="animate-on-scroll">Theme Shop 🛍️</h2>
-    <div class="money-display animate-on-scroll">Money: <span id="currentMoney">0</span> 💰</div>
+    <h2>Theme Shop 🛍️</h2>
+    <p>Gain money by playing games.</p>
+    <div class="money-display">Money: <span id="currentMoney">0</span> 💰</div>
     <div id="storeItemsContainer" class="store-grid"></div>
   </div>
 
-  <!-- Suggest Tab -->
-  <div id="suggest-tab" class="tab-content">
-    <h2 class="animate-on-scroll">Suggest</h2>
-    <p class="animate-on-scroll">Hmmm...suggest something.</p>
-    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSffflitG4a27clWulopftjmuGF6o1Pbl_6HkPWOzf4B-oczXw/viewform?usp=dialog" frameborder="0" class="animate-on-scroll">Loading…</iframe>
-  </div>
-
- 
-
   <!-- Settings Tab -->
   <div id="settings-tab" class="tab-content">
-    <h2 class="animate-on-scroll">Settings ⚙️</h2>
+    <h2>Settings ⚙️</h2>
 
-    <div class="settings-section animate-on-scroll">
+    <div class="settings-section">
       <label for="accentColorPicker">Choose Accent Color:</label>
       <input type="color" id="accentColorPicker" value="#61dafb">
     </div>
 
-    <div class="settings-section animate-on-scroll">
+    <div class="settings-section">
       <label for="enable3DAnimation">3D Cubes in Background:</label>
       <input type="checkbox" id="enable3DAnimation">
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════════
-         GAME LOAD METHOD — only change in this file
-         ═══════════════════════════════════════════════════════════ -->
-    <div class="settings-section animate-on-scroll">
-      <label for="grabMethodSelect">Game Load Method:</label>
-      <select id="grabMethodSelect">
-        <option value="iframe">Normal</option>
-        <option value="blob-local">Blob local</option>
-        <option value="blob-jsdelivr">Blob jsDelivr</option>
-      </select>
-      <p style="font-size:0.85em;color:#aaa;margin:4px 0 0;">
-        <strong>Normal:</strong> loads the game URL directly in the iframe. best for webpage<br>
-        <strong>Blob local:</strong> gets the game from this site. best for the full site localised. some games and made by games may not support this.<br>
-        <strong>Blob jsDelivr:</strong> gets the game from jsdelivr. best for svgs. some games and made by games may not support this.
-      </p>
-    </div>
-
-    <div class="settings-section animate-on-scroll">
-      <label>Manage Hidden Games:</label>
-      <div id="hiddenGamesList" class="management-list"></div>
-    </div>
-
-    <div class="settings-section animate-on-scroll">
-      <label>Manage Favorite Games:</label>
-      <div id="favoriteGamesList" class="management-list"></div>
-    </div>
-
-    <div class="settings-section animate-on-scroll">
+    <div class="settings-section">
       <label>Reset All Data:</label>
       <button id="resetEverythingButton" class="reset-button">Reset Everything</button>
       <p id="resetConfirmationMessage" class="confirmation-message"></p>
@@ -1223,74 +629,28 @@
 
 </div>
 
-<!-- Game Player Overlay -->
-<div id="gamePlayerOverlay" class="game-player-overlay">
-  <div class="game-iframe-container">
-    <iframe id="gameIframe" class="game-iframe" allowfullscreen></iframe>
-  </div>
-  <div class="game-controls-bar">
-    <button id="reloadGameButton">Reload Game</button>
-    <button id="fullScreenButton">Enter Full Screen (No wait or ads!)</button>
-    <button id="exitGameButton">Exit Game</button>
-    <div style="position:relative;">
-      <button id="bookmarkButton">Bookmark Game</button>
-      <div id="bookmarkMenu" class="bookmark-menu">
-        <div class="bookmark-menu-title">Drag to Bookmark Bar</div>
-        <a id="bookmarkNormal" class="bookmark-option" href="#" draggable="true">
-          <span class="bookmark-icon">🔗</span>
-          <span class="bookmark-label">
-            <strong>Normal Bookmark</strong>
-            <small>Opens the game in this site</small>
-          </span>
-        </a>
-        <a id="bookmarklet" class="bookmark-option" href="#" draggable="true">
-          <span class="bookmark-icon">🪟</span>
-          <span class="bookmark-label">
-            <strong>Window Bookmarklet</strong>
-            <small>Pops the game in a floating window on any page</small>
-          </span>
-        </a>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Message Box -->
+<!-- Message Box Overlay -->
 <div id="messageBox">
   <p id="messageBoxText"></p>
-  <button id="messageBoxCloseButton">Mmmmkay..got it.</button>
+  <button id="messageBoxCloseButton">Got it!</button>
 </div>
-
-<!-- Right-Click Context Menu -->
-<div id="gameContextMenu" class="context-menu">
-  <div class="context-mentitleu-item" id="contextMenuHide">Hide Game</div>
-  <div class="context-menu-item" id="contextMenuToggleFavorite">Favorite / Unfavorite</div>
-</div>
-
-<!-- Command Prompt -->
-<div id="commandPromptOverlay">
-  <div id="console">
-    <div id="consoleOutput"></div>
-    <input type="text" id="commandInput" placeholder="Type 'HELP' to see all of the commands..." autofocus>
-  </div>
-</div>
-
-<!-- Hidden file input for import -->
-<input type="file" id="fileInput" style="display:none;" accept=".json,.html">
-
 
 <script>
+// State handles
+let money = parseInt(localStorage.getItem('epixgamesMoney') || localStorage.getItem('userCash') || '0');
+let ownedAccessories = JSON.parse(localStorage.getItem('epixgamesOwnedAccessories') || '{}');
+let appliedAccessory = localStorage.getItem('epixgamesAppliedAccessory') || 'default-theme';
+let resetConfirmCount = 0;
+let resetConfirmTimeout = null;
+let rgbIntervalId = null;
+let currentHue = 0;
+let bannerTextIndex = 0;
 
-// ============================================================
-//  EASY EDIT SECTION — Change these to customize your site
-// ============================================================
+let scene, camera, renderer, animationObjects = [];
+let isAnimationEnabled = JSON.parse(localStorage.getItem('epixgames3DAnimationEnabled') || 'false');
+let animationFrameId = null;
 
-// Game server base URL — automatically uses the domain this page is hosted on
-
-
-// Banner messages shown in rotation under the title
 const BANNER_TEXTS = [
-  "Using index.svg? Go to Settings and change game method.",
   "Wowww...basic. Let's change it in the Theme Shop or just change the color in Settings.",
   "Unlock the terminal. By typing 'cmd'. Somehow.",
   "Made by a Fedora user, probably works on ChromeOS and Windows.",
@@ -1300,136 +660,32 @@ const BANNER_TEXTS = [
   "A lot of the site hosts for this site are updated from a Fire 7."
 ];
 
-// Links shown in the "More" tab
-// Each entry: { title, description, url }
-
-
-// Store items — backgrounds, text colors, full themes
-// Types: 'background', 'text-color', 'full-theme', 'dynamic-theme'
+// Theme shop catalog with prepended './playing/' subdirectories for valid referencing
 const STORE_ITEMS = [
-  { id: 'bg-neon',        name: 'Neon Grid',                      type: 'background',     value: 'url(https://static.vecteezy.com/system/resources/previews/020/562/054/non_2x/background-of-neon-grid-for-retro-futuristic-design-vector.jpg) no-repeat center center / cover', cost: 20, img: './wpthumb/neon.png' },
-  { id: 'bg-gumball',     name: 'Amazing World of Gumball Theme', type: 'background',     value: 'url(https://images6.alphacoders.com/950/950030.jpg) no-repeat center center / cover', cost: 20, img: './wpthumb/gumball.png' },
-  { id: 'bg-minecraft',   name: 'Minecraft Theme',                type: 'background',     value: 'url(https://wallpapers.com/images/featured/minecraft-s2kxfahyg30sob8q.jpg) no-repeat center center / cover', cost: 20, img: './wpthumb/mc.png' },
-  { id: 'bg-amongus',     name: 'Among Us Theme',                 type: 'background',     value: 'url(https://i.redd.it/jo89zfzqi9t51.png) no-repeat center center / cover', cost: 20, img: './wpthumb/amogus.png' },
-  { id: 'default-theme',  name: 'Default Theme',                  type: 'full-theme',     value: { '--home-background': '#282c34', '--home-text-color': '#ffffff' }, cost: 0, default: true, img: './wpthumb/default.png' },
-  { id: 'rgb-theme',      name: 'RGB Theme',                      type: 'dynamic-theme',  value: {}, cost: 70, img: './wpthumb/rgb.png' },
-  { id: 'classic-theme',  name: 'Early EPIXGAMES HTML Theme',        type: 'full-theme',     value: { '--home-background': '#4287f5', '--home-text-color': '#ffffff', '--bg-color': '#4287f5', '--primary-color': '#007bff', '--secondary-color': '#007bff', '--card-bg': 'transparent', '--button-bg': '#007bff', '--button-hover-bg': '#0056b3' }, cost: 40, img: './wpthumb/early.png' },
-  { id: 'jr-theme',  name: 'Just Red',        type: 'full-theme',     value: { '--home-background': '#940707', '--home-text-color': '#ffffff', '--bg-color': '#940707', '--primary-color': '#007bff', '--secondary-color': '#f06060', '--card-bg': 'transparent', '--button-bg': '#f50a0a', '--button-hover-bg': '#f07171' }, cost: 40, img: './wpthumb/jr.png' },
-  { id: 'web20-gloss-theme', name: 'Web 2.0 Gloss (dynamic colors)', type: 'dynamic-theme', value: {}, cost: 60, img: './wpthumb/gloss.png' },
-  { id: 'bg-crosold',     name: 'ChromeOS (old)',                 type: 'background',     value: 'url(./wp/chromeold.webp) no-repeat center center / cover', cost: 10, img: './wpthumb/chromeos.png' },
-  { id: 'bg-crosoldhp',     name: 'HP ChromeOS (old)',                 type: 'background',     value: 'url(./wp/chromeoldhp.jpg) no-repeat center center / cover', cost: 10, img: './wpthumb/oldhp.png' },
-  { id: 'bg-crosnewhp',     name: 'HP ChromeOS (new)',                 type: 'background',     value: 'url(./wp/chromenewhp.jpg) no-repeat center center / cover', cost: 10, img: './wpthumb/newhp.png' },
-  { id: 'bg-android4',     name: 'Android 4 (FOR A LIMITED TIME, FOR THE RELEASE OF DD4, THIS IS FREE!)',                 type: 'background',     value: 'url(./wp/dd4.jpg) no-repeat center center / cover', cost: 0, img: './wpthumb/dd4.png' },
-  { id: 'bg-bm',     name: 'BirdMath Beta 1 (ANIMATED)',                 type: 'background',     value: 'url(./wp/bmb1.webp) no-repeat center center / cover', cost: 40, img: './wpthumb/bmb1.png' },
+  { id: 'bg-neon',        name: 'Neon Grid',                      type: 'background',     value: 'url(https://static.vecteezy.com/system/resources/previews/020/562/054/non_2x/background-of-neon-grid-for-retro-futuristic-design-vector.jpg) no-repeat center center / cover', cost: 20, img: './playing/wpthumb/neon.png' },
+  { id: 'bg-gumball',     name: 'Gumball Theme',                  type: 'background',     value: 'url(https://images6.alphacoders.com/950/950030.jpg) no-repeat center center / cover', cost: 20, img: './playing/wpthumb/gumball.png' },
+  { id: 'bg-minecraft',   name: 'Minecraft Theme',                type: 'background',     value: 'url(https://wallpapers.com/images/featured/minecraft-s2kxfahyg30sob8q.jpg) no-repeat center center / cover', cost: 20, img: './playing/wpthumb/mc.png' },
+  { id: 'bg-amongus',     name: 'Among Us Theme',                 type: 'background',     value: 'url(https://i.redd.it/jo89zfzqi9t51.png) no-repeat center center / cover', cost: 20, img: './playing/wpthumb/amogus.png' },
+  { id: 'default-theme',  name: 'Default Theme',                  type: 'full-theme',     value: { '--home-background': '#282c34', '--home-text-color': '#ffffff' }, cost: 0, default: true, img: './playing/wpthumb/default.png' },
+  { id: 'rgb-theme',      name: 'RGB Theme',                      type: 'dynamic-theme',  value: {}, cost: 70, img: './playing/wpthumb/rgb.png' },
+  { id: 'classic-theme',  name: 'EPIXGAMES Classic',              type: 'full-theme',     value: { '--home-background': '#4287f5', '--home-text-color': '#ffffff', '--bg-color': '#4287f5', '--primary-color': '#007bff', '--secondary-color': '#007bff', '--card-bg': 'transparent', '--button-bg': '#007bff', '--button-hover-bg': '#0056b3' }, cost: 40, img: './playing/wpthumb/early.png' },
+  { id: 'jr-theme',       name: 'Just Red',                       type: 'full-theme',     value: { '--home-background': '#940707', '--home-text-color': '#ffffff', '--bg-color': '#940707', '--primary-color': '#007bff', '--secondary-color': '#f06060', '--card-bg': 'transparent', '--button-bg': '#f50a0a', '--button-hover-bg': '#f07171' }, cost: 40, img: './playing/wpthumb/jr.png' },
+  { id: 'web20-gloss-theme', name: 'Web 2.0 Gloss',               type: 'dynamic-theme', value: {}, cost: 60, img: './playing/wpthumb/gloss.png' },
+  { id: 'bg-crosold',     name: 'ChromeOS (old)',                 type: 'background',     value: 'url(./playing/wp/chromeold.webp) no-repeat center center / cover', cost: 10, img: './playing/wpthumb/chromeos.png' },
+  { id: 'bg-crosoldhp',   name: 'HP ChromeOS (old)',              type: 'background',     value: 'url(./playing/wp/chromeoldhp.jpg) no-repeat center center / cover', cost: 10, img: './playing/wpthumb/oldhp.png' },
+  { id: 'bg-crosnewhp',   name: 'HP ChromeOS (new)',              type: 'background',     value: 'url(./playing/wp/chromenewhp.jpg) no-repeat center center / cover', cost: 10, img: './playing/wpthumb/newhp.png' },
+  { id: 'bg-android4',    name: 'Android 4 (LIMITED FREE OFFER)', type: 'background',     value: 'url(./playing/wp/dd4.jpg) no-repeat center center / cover', cost: 0, img: './playing/wpthumb/dd4.png' },
+  { id: 'bg-bm',          name: 'BirdMath Beta 1 (ANIMATED)',     type: 'background',     value: 'url(./playing/wp/bmb1.webp) no-repeat center center / cover', cost: 40, img: './playing/wpthumb/bmb1.png' }
 ];
 
-// Game list — add or remove games here
-// Each entry: { id, name, img, path, h2 (optional subtitle) }
-const STATIC_GAMES = [
-  { id: 'game-brick', name: 'Brick', h2: 'Theres a ton of locked tablets. Guess youll toss bricks!', img: './img/brick.png', path: './html/brick/index.html?x=1' },
-  { id: 'game-bp', name: 'Bad Piggies', h2: 'Build contraptions to get to the end. Tip: Use cheats and use Field of Dreams to build almost anything', img: './img/bp.jpg', path: './html/bp/index.html' },
-  { id: 'game-ctr', name: 'Cut The Rope', h2: 'Cut some ropes and feed candy to Om Nom!', img: './img/ctr.jpg', path: './html/ctr/index.html' },
-  { id: 'game-sm', name: 'Slice Master', h2: 'Become the master of slicing.', img: './img/sm.jpg', path: './html/sm/index.html' },
-  { id: 'game-smb', name: 'Super Mario Bros', h2: 'Rescue Peach from Bowser and defeat other monsters on the way.', img: './img/smb.jpg', path: './html/smb/index.html' },
-  { id: 'game-fnf', name: 'FNF', h2: 'Can you keep up with the rhythm?', img: './img/fnf.jpg', path: './html/fnf/index.html' },
-  { id: 'game-fb', name: 'Flappy Bird', h2: 'Flap! Flap! Flap thru pipes!', img: './img/fb.webp', path: './html/fb/index.html' },
-  { id: 'game-bb', name: 'Block Blast', h2: 'Place blocks and match to edges.', img: './img/bb2.png', path: './html/bb/index.html' },
-  { id: 'game-chat', name: '.Chat!', h2: 'Chat with many other users.', img: './img/chat.png', path: './html/chat/index.html' },
-  { id: 'game-duck', name: 'DuckMath', h2: 'Are the games not good enough? Here is a new site, but suggestions are recommended', img: './img/duck.avif', path: './html/duck/index.html' },
-  { id: 'game-au', name: 'Among Us', h2: 'The best web replica. Who is the imposter?! ', img: './img/au.jpeg', path: './html/au/index.html' },
-  { id: 'game-dd4', name: 'Droistroy 4', h2: 'Wreck Android 4. But not with malware!', img: './img/dd4.png', path: './html/dd4/index.html?x=1' },
-  { id: 'game-dd4', name: 'Incredibox Sprunk!', h2: 'This used to be popular. Not a fan of it but my brother likes it so why not. This has a feature to not have the hat.', img: './img/spr.jpeg', path: './html/spr/index.html?x=1' },
-  { id: 'game-dd4', name: '!theVault', h2: 'Unlock the code in the Discord. Includes betas and upcoming games/', img: './img/tv.png', path: './html/tv/index.html?x=1' },
-];
-
-
-
-
-// Command prompt help text
-const CMD_HELP = `Available Commands:
-  EXIT              Close the command prompt.
-  HELP              Show this help message.
-  MONEY_ADD #       Add money. E.g.: MONEY_ADD 100
-  MONEY_REMOVE #    Remove money. E.g.: MONEY_REMOVE 50
-  MONEY_SET #       Set money to amount. E.g.: MONEY_SET 1000
-  IFRAME_OPEN <url> Open a URL in the game iframe.
-  SEQUENCE_ADD      Start recording a command sequence.
-  SEQUENCE_DO <name>Execute a saved sequence.
-  GAME_ADD          Add a custom game.
-  GAME_SHOW_CUSTOM  Toggle custom games visibility.
-  THEME_CREATE      Create a custom theme.
-  THEME_ADD         Import a theme from a JSON file.
-  THEME_EXPORT      Export all custom themes to a file.
-  HTML_MODIFY       Apply a CSS change to any element.
-  HTML_MODIFY_OPEN  View saved CSS changes.
-  HTML_MODIFY_EXPORT Export current page HTML.
-  SETTINGS_EXPORT   Export all settings to a file.
-  SETTINGS_IMPORT   Import settings from a file.
-  CUSTOM_SETTINGS   Create a simple settings file.`;
-
-// ============================================================
-//  END OF EASY EDIT SECTION
-// ============================================================
-
-
-// --- State ---
-
-let money = parseInt(localStorage.getItem('epixgamesMoney') || '0');
-let ownedAccessories = JSON.parse(localStorage.getItem('epixgamesOwnedAccessories') || '{}');
-let appliedAccessory = localStorage.getItem('epixgamesAppliedAccessory') || 'default-theme';
-let totalPlaytimeSeconds = parseInt(localStorage.getItem('epixgamesTotalPlaytimeSeconds') || '0');
-let sessionStartTime = 0;
-let moneyInterval = null;
-let resetConfirmCount = 0;
-let resetConfirmTimeout = null;
-let rgbIntervalId = null;
-let currentHue = 0;
-let bannerTextIndex = 0;
-let currentLoadedGamePath = '';
-// ── NEW: persisted game load method ──────────────────────────
-let grabMethod = localStorage.getItem('epixgamesGrabMethod') || 'iframe';
-
-let scene, camera, renderer, animationObjects = [];
-let isAnimationEnabled = JSON.parse(localStorage.getItem('epixgames3DAnimationEnabled') || 'false');
-let animationFrameId = null;
-
-let isCommandPromptOpen = false;
-let keyState = {};
-let sequences = JSON.parse(localStorage.getItem('epixgamesCommandSequences') || '{}');
-window.customGames = JSON.parse(localStorage.getItem('epixgamesCustomGames') || '[]');
-window.customThemes = JSON.parse(localStorage.getItem('epixgamesCustomThemes') || '[]');
-let htmlModifications = JSON.parse(localStorage.getItem('epixgamesHtmlModifications') || '[]');
-
-let commandPromptState = { mode: 'normal', subMode: '', data: {} };
-
-window.allGamesData = new Map();
-let hiddenGames = new Set(JSON.parse(localStorage.getItem('epixgamesHiddenGames') || '[]'));
-let favoriteGames = new Set(JSON.parse(localStorage.getItem('epixgamesFavoriteGames') || '[]'));
-let currentRightClickedGameElement = null;
-let animationObserver;
-
-// DOM refs (assigned in DOMContentLoaded)
-let accentColorPicker, root, searchInput, searchButton, searchResultsDiv;
-let gamePlayerOverlay, gameIframe, reloadGameButton;
-let fullScreenButton, exitGameButton, copyLinkButton, bookmarkButton, bookmarkMenu, bookmarkNormal, bookmarklet;
-let tabButtons, tabContents;
-let staticGamesContainer, customGamesContainer, customGamesTitle;
-let storeItemsContainer, resetEverythingButton, resetConfirmationMessage;
-let messageBox, messageBoxText, messageBoxCloseButton;
-let enable3DAnimationCheckbox, background3DCanvas, homeSubtitleTextElement;
-let commandPromptOverlay, consoleOutput, commandInput, fileInput;
-let currentMoneySpan, moreLinksContainer;
-let gameContextMenu, contextMenuHideButton, contextMenuToggleFavoriteButton;
-let hiddenGamesList, favoriteGamesList;
-
-
-// --- Utilities ---
+let accentColorPicker, root, tabButtons, tabContents, storeItemsContainer;
+let resetEverythingButton, resetConfirmationMessage, messageBox, messageBoxText, messageBoxCloseButton;
+let enable3DAnimationCheckbox, background3DCanvas, homeSubtitleTextElement, currentMoneySpan;
 
 function showMessageBox(message) {
   messageBoxText.innerHTML = message;
   applyAnimation(messageBox, 'zoom-in-animation', null, 'block');
 }
-
 
 const hexToRgb = (hex) => {
   const n = parseInt(hex.slice(1), 16);
@@ -1469,7 +725,6 @@ function updateAccentColors(color) {
   if (appliedAccessory === 'web20-gloss-theme') applyGlossAccent(color);
 }
 
-// --- RGB Theme ---
 function startRgbEffect() {
   stopRgbEffect();
   currentHue = 0;
@@ -1496,20 +751,17 @@ function stopRgbEffect() {
   }
 }
 
-// --- Web 2.0 Gloss accent ---
 function applyGlossAccent(hex) {
   const [r, g, b] = hexToRgb(hex);
   root.style.setProperty('--gloss-r', r);
   root.style.setProperty('--gloss-g', g);
   root.style.setProperty('--gloss-b', b);
-  // Derive a soft pastel background from the accent
   const bgR = Math.round(r * 0.18 + 200);
   const bgG = Math.round(g * 0.18 + 210);
   const bgB = Math.round(b * 0.22 + 215);
   root.style.setProperty('--gloss-bg', `rgb(${bgR},${bgG},${bgB})`);
 }
 
-// --- Three.js ---
 function init3DAnimation() {
   if (scene && camera && renderer) return;
   scene = new THREE.Scene();
@@ -1562,9 +814,8 @@ function toggle3DAnimation(enable) {
   }
 }
 
-// --- Animation helpers ---
 function applyAnimation(el, enterClass, exitClass, displayStyle = 'block', onComplete) {
-  el.classList.remove('fade-in-up-animation', 'fade-out-down-animation', 'zoom-in-animation', 'zoom-out-animation', 'animated-enter', 'animated-exit');
+  el.classList.remove('zoom-in-animation', 'zoom-out-animation', 'animated-enter', 'animated-exit');
   el.style.animation = '';
   el.style.opacity = '';
 
@@ -1590,254 +841,33 @@ function applyAnimation(el, enterClass, exitClass, displayStyle = 'block', onCom
   }
 }
 
-// --- Tabs ---
 function showTab(tabId) {
   const prev = document.querySelector('.tab-content.active');
   const next = document.getElementById(tabId);
   if (next.classList.contains('active')) return;
 
-  if (prev) prev.querySelectorAll('.animate-on-scroll').forEach(el => { animationObserver.unobserve(el); el.classList.remove('is-visible'); });
-
   tabContents.forEach(c => c.classList.remove('active'));
   tabButtons.forEach(b => b.classList.remove('active'));
   next.classList.add('active');
   document.querySelector(`.tab-button[data-tab="${tabId}"]`).classList.add('active');
-  next.querySelectorAll('.animate-on-scroll').forEach(el => animationObserver.observe(el));
-
-  const sw = document.querySelector('.search-widget-container');
-  if (sw) sw.style.display = tabId === 'games-tab' ? 'flex' : 'none';
-
-  if (tabId === 'settings-tab') {
-    renderHiddenGamesSettings();
-    renderFavoriteGamesSettings();
-  }
 
   if (tabId === 'store-tab') {
     renderStore();
   }
 }
 
-// --- Game Player ---
-// ── MODIFIED: supports three load methods ────────────────────
-async function openGameInIframe(path) {
-  currentLoadedGamePath = path;
-
-  if (grabMethod === 'blob-local') {
-    // Fetch the game file from its local path and serve it as a blob URL.
-    // This lets SVG files (and anything blocked by plain iframe src) load correctly.
-    try {
-      const resp = await fetch(path);
-      if (!resp.ok) throw new Error(`Fetch failed: ${resp.status}`);
-      const text = await resp.text();
-      const blob = new Blob([text], { type: 'text/html' });
-      gameIframe.src = URL.createObjectURL(blob);
-    } catch (err) {
-      showMessageBox('Blob (local) load failed: ' + err.message + '<br>Falling back to normal load.');
-      gameIframe.src = path;
-    }
-  } else if (grabMethod === 'blob-jsdelivr') {
-    // Strip leading ./ or / then build a jsDelivr CDN URL pointing at
-    // https://github.com/fidgetsetc/blockingames
-    const stripped = path.replace(/^\.\//, '').replace(/^\//, '');
-    const jsdUrl = `https://cdn.jsdelivr.net/gh/fidgetsetc/blockingames@main/${stripped}`;
-    try {
-      const resp = await fetch(jsdUrl);
-      if (!resp.ok) throw new Error(`jsDelivr fetch failed: ${resp.status}`);
-      const text = await resp.text();
-      const blob = new Blob([text], { type: 'text/html' });
-      gameIframe.src = URL.createObjectURL(blob);
-    } catch (err) {
-      showMessageBox('Blob (jsDelivr) load failed: ' + err.message + '<br>Falling back to normal load.');
-      gameIframe.src = path;
-    }
-  } else {
-    // Normal: just point the iframe at the path directly
-    gameIframe.src = path;
-  }
-
-  applyAnimation(gamePlayerOverlay, 'zoom-in-animation', null, 'flex');
-  startMoneyGranting();
+function updateMoneyDisplay() {
+  if (currentMoneySpan) currentMoneySpan.textContent = money;
 }
 
-function reloadIframe() { if (currentLoadedGamePath) openGameInIframe(currentLoadedGamePath); }
-
-function exitIframe() {
-  stopMoneyGranting();
-  gameIframe.src = '';
-  if (bookmarkMenu) bookmarkMenu.classList.remove('open');
-  applyAnimation(gamePlayerOverlay, null, 'zoom-out-animation', 'flex', () => gamePlayerOverlay.classList.remove('active'));
-  currentLoadedGamePath = '';
-  const url = new URL(window.location.href);
-  if (url.searchParams.has('game')) { url.searchParams.delete('game'); window.history.pushState({}, '', url.toString()); }
-}
-
-function getGameLink() {
-  return `${window.location.origin}${window.location.pathname}?game=${encodeURIComponent(currentLoadedGamePath)}`;
-}
-
-function toggleBookmarkMenu() {
-  if (!currentLoadedGamePath) { showMessageBox('No game is currently loaded.'); return; }
-
-  const isOpen = bookmarkMenu.classList.contains('open');
-  if (isOpen) {
-    bookmarkMenu.classList.remove('open');
-    return;
-  }
-
-  // Update the normal bookmark href
-  bookmarkNormal.href = getGameLink();
-  bookmarkNormal.setAttribute('title', document.title);
-
-  // Build bookmarklet: opens game in a floating draggable iframe window
-  const gameLink = getGameLink();
-  const bookmarkletCode = `javascript:(function(){
-    var e=document.getElementById('__bg_win__');
-    if(e){e.remove();return;}
-    var d=document.createElement('div');
-    d.id='__bg_win__';
-    Object.assign(d.style,{position:'fixed',top:'60px',right:'20px',width:'600px',height:'420px',
-      zIndex:'2147483647',background:'#1a1a2a',border:'2px solid #61dafb',borderRadius:'10px',
-      boxShadow:'0 8px 32px rgba(0,0,0,0.7)',display:'flex',flexDirection:'column',overflow:'hidden',
-      fontFamily:'sans-serif',resize:'both'});
-    var bar=document.createElement('div');
-    Object.assign(bar.style,{background:'#282c34',padding:'6px 10px',cursor:'move',display:'flex',
-      alignItems:'center',justifyContent:'space-between',userSelect:'none',flexShrink:'0'});
-    bar.innerHTML='<span style="color:#61dafb;font-size:13px;font-weight:bold;">🎮 Game Window</span>';
-    var cls=document.createElement('button');
-    Object.assign(cls.style,{background:'#f44336',color:'#fff',border:'none',borderRadius:'4px',
-      cursor:'pointer',padding:'2px 8px',fontSize:'14px',fontWeight:'bold'});
-    cls.textContent='✕';
-    cls.onclick=function(){d.remove();};
-    bar.appendChild(cls);
-    d.appendChild(bar);
-    var ifr=document.createElement('iframe');
-    Object.assign(ifr.style,{flex:'1',border:'none',width:'100%'});
-    ifr.src='${gameLink}';
-    ifr.allowFullscreen=true;
-    d.appendChild(ifr);
-    document.body.appendChild(d);
-    // Dragging
-    var ox=0,oy=0,mx=0,my=0;
-    bar.onmousedown=function(ev){
-      ev.preventDefault();
-      ox=d.offsetLeft;oy=d.offsetTop;mx=ev.clientX;my=ev.clientY;
-      document.onmousemove=function(e){
-        d.style.left=(ox+e.clientX-mx)+'px';
-        d.style.top=(oy+e.clientY-my)+'px';
-        d.style.right='auto';
-      };
-      document.onmouseup=function(){document.onmousemove=null;document.onmouseup=null;};
-    };
-  })();`;
-
-  bookmarklet.href = bookmarkletCode;
-  bookmarklet.setAttribute('title', `Game: ${currentLoadedGamePath}`);
-
-  bookmarkMenu.classList.add('open');
-}
-
-
-function toggleFullScreen() {
-  if (!document.fullscreenElement) {
-    (gameIframe.requestFullscreen || gameIframe.webkitRequestFullscreen || gameIframe.mozRequestFullScreen).call(gameIframe);
-  } else {
-    (document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen).call(document);
-  }
-}
-
-function highlightAndScrollGame(title) {
-  document.querySelectorAll('.highlighted-game').forEach(el => el.classList.remove('highlighted-game'));
-  const data = window.allGamesData.get(title);
-  if (data && data.id) {
-    const el = document.getElementById(data.id);
-    if (el) {
-      el.classList.add('highlighted-game');
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      if (!document.getElementById('games-tab').classList.contains('active')) showTab('games-tab');
-    }
-  }
-}
-
-// --- Search ---
-function performSearch() {
-  const q = searchInput.value.trim().toLowerCase();
-  searchResultsDiv.innerHTML = '';
-  if (!q) { searchResultsDiv.textContent = 'Please enter a search term.'; return; }
-  if (q === 'cmd') { toggleCommandPrompt(); searchInput.value = ''; return; }
-  const matches = Array.from(window.allGamesData.keys()).filter(t => t.toLowerCase().includes(q));
-  if (matches.length > 0) {
-    const hdr = document.createElement('p');
-    hdr.innerHTML = '<strong>Matches:</strong>';
-    searchResultsDiv.appendChild(hdr);
-    matches.forEach(title => {
-      const p = document.createElement('p');
-      p.textContent = title;
-      p.onclick = () => highlightAndScrollGame(title);
-      searchResultsDiv.appendChild(p);
-    });
-  } else {
-    searchResultsDiv.textContent = 'No matches found.';
-  }
-}
-
-// --- Money ---
-function updateMoneyDisplay() { if (currentMoneySpan) currentMoneySpan.textContent = money; }
-
-function updatePlaytimeAndMoney() {
-  if (!gamePlayerOverlay.classList.contains('active') && !document.getElementById('gamePlayerOverlay').style.display) return;
-  const now = Date.now();
-  const elapsed = Math.floor((now - sessionStartTime) / 1000);
-  if (elapsed < 1) return;
-  const oldMinutes = Math.floor(totalPlaytimeSeconds / 60);
-  totalPlaytimeSeconds += elapsed;
-  localStorage.setItem('epixgamesTotalPlaytimeSeconds', totalPlaytimeSeconds);
-  const newMinutes = Math.floor(totalPlaytimeSeconds / 60);
-  if (newMinutes > oldMinutes) {
-    money += (newMinutes - oldMinutes) * 5;
-    localStorage.setItem('epixgamesMoney', money);
-    updateMoneyDisplay();
-  }
-  sessionStartTime = now;
-}
-
-function startMoneyGranting() {
-  if (moneyInterval) clearInterval(moneyInterval);
-  sessionStartTime = Date.now();
-  moneyInterval = setInterval(updatePlaytimeAndMoney, 1000);
-}
-
-function stopMoneyGranting() {
-  if (moneyInterval) {
-    clearInterval(moneyInterval);
-    moneyInterval = null;
-    if (sessionStartTime > 0) {
-      const rem = Math.floor((Date.now() - sessionStartTime) / 1000);
-      if (rem > 0) {
-        const oldMin = Math.floor(totalPlaytimeSeconds / 60);
-        totalPlaytimeSeconds += rem;
-        localStorage.setItem('epixgamesTotalPlaytimeSeconds', totalPlaytimeSeconds);
-        const newMin = Math.floor(totalPlaytimeSeconds / 60);
-        if (newMin > oldMin) {
-          money += (newMin - oldMin) * 5;
-          localStorage.setItem('epixgamesMoney', money);
-          updateMoneyDisplay();
-        }
-      }
-      sessionStartTime = 0;
-    }
-  }
-}
-
-// --- Store ---
 function renderStore() {
   storeItemsContainer.innerHTML = '';
-  const all = [...STORE_ITEMS, ...window.customThemes];
-  all.forEach(item => {
+  STORE_ITEMS.forEach(item => {
     const div = document.createElement('div');
-    div.className = 'store-item animate-on-scroll';
+    div.className = 'store-item';
 
     const img = document.createElement('img');
-    img.src = item.img || 'https://placehold.co/100x100/3c4048/FFFFFF?text=Item';
+    img.src = item.img;
     img.alt = item.name;
     div.appendChild(img);
 
@@ -1863,7 +893,6 @@ function renderStore() {
     div.appendChild(status);
     div.appendChild(btn);
     storeItemsContainer.appendChild(div);
-    animationObserver.observe(div);
   });
 }
 
@@ -1872,15 +901,14 @@ function buyAccessory(id, cost) {
   money -= cost;
   ownedAccessories[id] = true;
   localStorage.setItem('epixgamesMoney', money);
-  localStorage.setItem('epixgamesOwnedAccessories', JSON.stringify(ownedAccessories));
+  localStorage.setItem('userCash', money);
   updateMoneyDisplay();
   renderStore();
   applyAccessory(id);
 }
 
 function applyAccessory(id) {
-  const all = [...STORE_ITEMS, ...window.customThemes];
-  const item = all.find(i => i.id === id);
+  const item = STORE_ITEMS.find(i => i.id === id);
   if (!item) return;
 
   stopRgbEffect();
@@ -1890,7 +918,6 @@ function applyAccessory(id) {
   toggle3DAnimation(userPrefers3D && id !== 'classic-theme');
   if (enable3DAnimationCheckbox) enable3DAnimationCheckbox.checked = userPrefers3D;
 
-  // Reset CSS vars to defaults
   root.style.setProperty('--home-background', '#282c34');
   root.style.setProperty('--home-text-color', '#ffffff');
   root.style.setProperty('--text-color', '#ffffff');
@@ -1928,22 +955,6 @@ function applyAccessory(id) {
   toggleAccentColorPickerState();
 }
 
-// --- Settings ---
-function resetAllData() {
-  resetConfirmCount++;
-  clearTimeout(resetConfirmTimeout);
-  if (resetConfirmCount >= 5) {
-    showMessageBox('All data reset! Reloading...');
-    localStorage.clear();
-    hiddenGames.clear(); favoriteGames.clear();
-    sequences = {}; window.customGames = []; window.customThemes = []; htmlModifications = [];
-    setTimeout(() => window.location.reload(), 1000);
-  } else {
-    resetConfirmationMessage.textContent = `Are you sure? Click ${5 - resetConfirmCount} more times to confirm!`;
-    resetConfirmTimeout = setTimeout(() => { resetConfirmCount = 0; resetConfirmationMessage.textContent = ''; }, 3000);
-  }
-}
-
 function toggleAccentColorPickerState() {
   const disabled = appliedAccessory === 'classic-theme';
   accentColorPicker.disabled = disabled;
@@ -1951,7 +962,6 @@ function toggleAccentColorPickerState() {
   accentColorPicker.style.cursor = disabled ? 'not-allowed' : 'pointer';
 }
 
-// --- Banner ---
 function cycleBannerText(startIndex = -1) {
   if (!homeSubtitleTextElement) return;
   if (startIndex !== -1) bannerTextIndex = startIndex;
@@ -1960,504 +970,24 @@ function cycleBannerText(startIndex = -1) {
   setTimeout(() => { homeSubtitleTextElement.textContent = BANNER_TEXTS[bannerTextIndex]; homeSubtitleTextElement.style.opacity = 1; }, 500);
 }
 
-// --- Context Menu ---
-function showContextMenu(e, gameEl) {
-  e.preventDefault();
-  currentRightClickedGameElement = gameEl;
-  contextMenuHideButton.textContent = hiddenGames.has(gameEl.id) ? 'Unhide Game' : 'Hide Game';
-  contextMenuToggleFavoriteButton.textContent = favoriteGames.has(gameEl.id) ? 'Unfavorite' : 'Favorite';
-  applyAnimation(gameContextMenu, 'zoom-in-animation', null, 'block');
-  let x = e.clientX + 10, y = e.clientY + 10;
-  if (x + gameContextMenu.offsetWidth > window.innerWidth) x = window.innerWidth - gameContextMenu.offsetWidth - 10;
-  if (y + gameContextMenu.offsetHeight > window.innerHeight) y = window.innerHeight - gameContextMenu.offsetHeight - 10;
-  gameContextMenu.style.left = `${x}px`;
-  gameContextMenu.style.top = `${y}px`;
-}
-
-function hideContextMenu() {
-  if (gameContextMenu) applyAnimation(gameContextMenu, null, 'zoom-out-animation', 'block');
-  currentRightClickedGameElement = null;
-}
-
-// --- Hide / Favorite ---
-function hideGame(id) {
-  if (favoriteGames.has(id)) { favoriteGames.delete(id); localStorage.setItem('epixgamesFavoriteGames', JSON.stringify([...favoriteGames])); }
-  hiddenGames.add(id);
-  localStorage.setItem('epixgamesHiddenGames', JSON.stringify([...hiddenGames]));
-  showMessageBox('Game hidden!');
-  const el = document.getElementById(id);
-  if (el) applyAnimation(el, null, 'fade-out-down-animation', 'flex', () => { renderAllGames(); renderHiddenGamesSettings(); renderFavoriteGamesSettings(); });
-  else { renderAllGames(); renderHiddenGamesSettings(); renderFavoriteGamesSettings(); }
-}
-
-function unhideGame(id) {
-  hiddenGames.delete(id);
-  localStorage.setItem('epixgamesHiddenGames', JSON.stringify([...hiddenGames]));
-  showMessageBox('Game unhidden!');
-  renderAllGames();
-  renderHiddenGamesSettings();
-}
-
-function toggleFavorite(id) {
-  if (favoriteGames.has(id)) {
-    favoriteGames.delete(id);
-    showMessageBox('Removed from favorites.');
+function resetAllData() {
+  resetConfirmCount++;
+  clearTimeout(resetConfirmTimeout);
+  if (resetConfirmCount >= 5) {
+    showMessageBox('All data reset! Reloading...');
+    localStorage.clear();
+    setTimeout(() => window.location.reload(), 1000);
   } else {
-    if (hiddenGames.has(id)) { hiddenGames.delete(id); localStorage.setItem('epixgamesHiddenGames', JSON.stringify([...hiddenGames])); }
-    favoriteGames.add(id);
-    showMessageBox('Added to favorites! ⭐');
-  }
-  localStorage.setItem('epixgamesFavoriteGames', JSON.stringify([...favoriteGames]));
-  renderAllGames();
-  renderFavoriteGamesSettings();
-  renderHiddenGamesSettings();
-}
-
-// --- Settings lists ---
-function renderHiddenGamesSettings() {
-  hiddenGamesList.innerHTML = '';
-  if (hiddenGames.size === 0) { hiddenGamesList.textContent = 'No hidden games.'; return; }
-  hiddenGames.forEach(id => {
-    const g = [...STATIC_GAMES, ...window.customGames].find(x => x.id === id);
-    if (!g) return;
-    const row = document.createElement('div');
-    row.className = 'management-item';
-    row.textContent = g.name;
-    const btn = document.createElement('button');
-    btn.className = 'unhide-button';
-    btn.textContent = 'Unhide';
-    btn.onclick = () => unhideGame(id);
-    row.appendChild(btn);
-    hiddenGamesList.appendChild(row);
-  });
-}
-
-function renderFavoriteGamesSettings() {
-  favoriteGamesList.innerHTML = '';
-  if (favoriteGames.size === 0) { favoriteGamesList.textContent = 'No favorite games.'; return; }
-  favoriteGames.forEach(id => {
-    const g = [...STATIC_GAMES, ...window.customGames].find(x => x.id === id);
-    if (!g) return;
-    const row = document.createElement('div');
-    row.className = 'management-item';
-    row.textContent = g.name;
-    const btn = document.createElement('button');
-    btn.className = 'unfavorite-button';
-    btn.textContent = 'Unfavorite';
-    btn.onclick = () => toggleFavorite(id);
-    row.appendChild(btn);
-    favoriteGamesList.appendChild(row);
-  });
-}
-
-// --- Render games ---
-function renderGames(games, container) {
-  container.querySelectorAll('.game').forEach(el => { animationObserver.unobserve(el); el.classList.remove('is-visible'); });
-  container.innerHTML = '';
-  games.forEach(game => {
-    const div = document.createElement('div');
-    div.className = 'game animate-on-scroll';
-    div.id = game.id;
-    if (favoriteGames.has(game.id)) {
-      div.classList.add('favorited');
-      const star = document.createElement('span');
-      star.className = 'favorite-icon';
-      star.textContent = '⭐';
-      div.appendChild(star);
-    }
-    const img = document.createElement('img');
-    img.src = game.img;
-    img.alt = game.name;
-    div.appendChild(img);
-
-    const dl = document.createElement('dl');
-    const dt = document.createElement('dt');
-    dt.textContent = game.name;
-    dl.appendChild(dt);
-    if (game.h2) {
-      const sub = document.createElement('h2');
-      sub.textContent = game.h2;
-      dl.appendChild(sub);
-    }
-    const btn = document.createElement('button');
-    btn.className = 'play-now-button';
-    btn.textContent = 'Play Now';
-    btn.onclick = () => openGameInIframe(game.path);
-    dl.appendChild(btn);
-    div.appendChild(dl);
-    container.appendChild(div);
-
-    if (!window.allGamesData.has(game.name)) window.allGamesData.set(game.name, { id: game.id, path: game.path });
-    div.addEventListener('contextmenu', e => showContextMenu(e, div));
-    animationObserver.observe(div);
-  });
-}
-
-function renderAllGames() {
-  let all = [...STATIC_GAMES, ...window.customGames];
-  all = all.filter(g => !hiddenGames.has(g.id));
-  all.sort((a, b) => {
-    const aF = favoriteGames.has(a.id), bF = favoriteGames.has(b.id);
-    if (aF && !bF) return -1;
-    if (!aF && bF) return 1;
-    return a.name.localeCompare(b.name);
-  });
-
-  const statics = all.filter(g => STATIC_GAMES.some(s => s.id === g.id));
-  const customs = all.filter(g => window.customGames.some(c => c.id === g.id));
-  renderGames(statics, staticGamesContainer);
-  if (customs.length > 0) {
-    customGamesTitle.style.display = 'block';
-    customGamesContainer.style.display = 'flex';
-    renderGames(customs, customGamesContainer);
-    animationObserver.observe(customGamesTitle);
-  } else {
-    customGamesTitle.style.display = 'none';
-    customGamesContainer.style.display = 'none';
+    resetConfirmationMessage.textContent = `Are you sure? Click ${5 - resetConfirmCount} more times to confirm!`;
+    resetConfirmTimeout = setTimeout(() => { resetConfirmCount = 0; resetConfirmationMessage.textContent = ''; }, 3000);
   }
 }
 
-
-
-// --- HTML Modifications ---
-function applyHtmlModifications() {
-  htmlModifications.forEach(mod => {
-    try { document.querySelectorAll(mod.selector).forEach(el => el.style.setProperty(mod.property, mod.value)); }
-    catch (e) { console.error('HTML mod error:', e); }
-  });
-}
-
-// --- Intersection Observer ---
-function setupIntersectionObserver() {
-  animationObserver = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) e.target.classList.add('is-visible');
-      else e.target.classList.remove('is-visible');
-    });
-  }, { root: null, rootMargin: '0px', threshold: 0.1 });
-}
-
-// --- Command Prompt ---
-function toggleCommandPrompt() {
-  isCommandPromptOpen = !isCommandPromptOpen;
-  if (isCommandPromptOpen) {
-    applyAnimation(commandPromptOverlay, 'zoom-in-animation', null, 'flex');
-    commandInput.focus();
-    appendToConsole('BlockIn CMDs');
-    appendToConsole("Type 'HELP' for commands.");
-  } else {
-    applyAnimation(commandPromptOverlay, null, 'zoom-out-animation', 'flex', () => {
-      commandInput.value = '';
-      consoleOutput.innerHTML = '';
-      document.activeElement.blur();
-      commandPromptState = { mode: 'normal', subMode: '', data: {} };
-    });
-  }
-}
-
-function appendToConsole(text) {
-  const p = document.createElement('p');
-  p.textContent = text;
-  consoleOutput.appendChild(p);
-  consoleOutput.scrollTop = consoleOutput.scrollHeight;
-}
-
-function isValidHexColor(c) { return /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(c); }
-
-function handleCommand(line) {
-  const orig = line;
-  appendToConsole(`> ${line}`);
-  const parts = line.trim().toUpperCase().split(/\s+/);
-  const cmd = parts[0];
-  const args = parts.slice(1);
-
-  // Multi-step modes
-  if (commandPromptState.mode === 'recording_commands') {
-    if (cmd === 'END_SEQUENCE') {
-      sequences[commandPromptState.data.name] = commandPromptState.data.commands;
-      localStorage.setItem('epixgamesCommandSequences', JSON.stringify(sequences));
-      appendToConsole(`Sequence '${commandPromptState.data.name}' saved with ${commandPromptState.data.commands.length} commands.`);
-      commandPromptState = { mode: 'normal', subMode: '', data: {} };
-    } else {
-      commandPromptState.data.commands.push(orig);
-      appendToConsole(`  Added: ${orig}`);
-    }
-    return;
-  }
-
-  if (commandPromptState.mode === 'awaiting_sequence_name') {
-    if (!line.trim()) { appendToConsole('No name provided. Cancelled.'); commandPromptState = { mode: 'normal', subMode: '', data: {} }; return; }
-    const name = line.trim();
-    if (sequences[name]) { appendToConsole(`Sequence '${name}' already exists.`); commandPromptState = { mode: 'normal', subMode: '', data: {} }; return; }
-    commandPromptState = { mode: 'recording_commands', data: { name, commands: [] } };
-    appendToConsole(`Recording sequence '${name}'. Type 'END_SEQUENCE' to finish.`);
-    return;
-  }
-
-  if (commandPromptState.mode === 'awaiting_game_input') {
-    const sub = commandPromptState.subMode;
-    if (sub === 'title') { commandPromptState.data.title = orig; commandPromptState.subMode = 'image'; appendToConsole('Enter image URL:'); }
-    else if (sub === 'image') { commandPromptState.data.img = orig; commandPromptState.subMode = 'path'; appendToConsole('Enter game path (e.g. /play/game.html):'); }
-    else if (sub === 'path') {
-      commandPromptState.data.path = orig;
-      const g = { id: `game-custom-${Date.now()}`, name: commandPromptState.data.title, img: commandPromptState.data.img, path: commandPromptState.data.path };
-      window.customGames.push(g);
-      localStorage.setItem('epixgamesCustomGames', JSON.stringify(window.customGames));
-      appendToConsole(`Game '${g.name}' added!`);
-      renderAllGames();
-      commandPromptState = { mode: 'normal', subMode: '', data: {} };
-    }
-    return;
-  }
-
-  if (commandPromptState.mode === 'awaiting_theme_input') {
-    const sub = commandPromptState.subMode;
-    const colorFields = ['primary', 'secondary', 'bg', 'text', 'cardBg', 'buttonBg'];
-    const prompts = {
-      name: 'Enter primary color (#hex):', primary: 'Enter secondary color (#hex):', secondary: 'Enter background color (#hex):',
-      bg: 'Enter text color (#hex):', text: 'Enter card background color (#hex):', cardBg: 'Enter button background color (#hex):'
-    };
-    if (sub === 'name') { commandPromptState.data.name = orig; commandPromptState.subMode = 'primary'; appendToConsole(prompts.name); }
-    else if (colorFields.includes(sub)) {
-      if (!isValidHexColor(orig)) { appendToConsole('Invalid hex color. Use #RRGGBB.'); return; }
-      commandPromptState.data[sub] = orig;
-      const next = { primary: 'secondary', secondary: 'bg', bg: 'text', text: 'cardBg', cardBg: 'buttonBg', buttonBg: null }[sub];
-      if (next) { commandPromptState.subMode = next; appendToConsole(prompts[sub]); }
-      else {
-        const d = commandPromptState.data;
-        const theme = {
-          id: `custom-theme-${Date.now()}`, name: d.name, type: 'full-theme', cost: 0, default: false,
-          img: 'https://placehold.co/100x100/3c4048/FFFFFF?text=Custom',
-          value: { '--home-background': d.bg, '--home-text-color': d.text, '--bg-color': d.bg, '--primary-color': d.primary, '--secondary-color': d.secondary, '--card-bg': d.cardBg, '--button-bg': d.buttonBg, '--button-hover-bg': darkenColor(d.buttonBg, 0.2) }
-        };
-        window.customThemes.push(theme);
-        localStorage.setItem('epixgamesCustomThemes', JSON.stringify(window.customThemes));
-        appendToConsole(`Theme '${theme.name}' created!`);
-        renderStore();
-        commandPromptState = { mode: 'normal', subMode: '', data: {} };
-      }
-    }
-    return;
-  }
-
-  if (commandPromptState.mode === 'awaiting_html_modify_input') {
-    const sub = commandPromptState.subMode;
-    if (sub === 'selector') { commandPromptState.data.selector = orig; commandPromptState.subMode = 'property'; appendToConsole('Enter CSS property:'); }
-    else if (sub === 'property') { commandPromptState.data.property = orig; commandPromptState.subMode = 'value'; appendToConsole('Enter CSS value:'); }
-    else if (sub === 'value') {
-      htmlModifications.push({ selector: commandPromptState.data.selector, property: commandPromptState.data.property, value: orig });
-      localStorage.setItem('epixgamesHtmlModifications', JSON.stringify(htmlModifications));
-      applyHtmlModifications();
-      appendToConsole('Modification applied and saved!');
-      commandPromptState = { mode: 'normal', subMode: '', data: {} };
-    }
-    return;
-  }
-
-  if (commandPromptState.mode === 'awaiting_custom_settings_input') {
-    const sub = commandPromptState.subMode;
-    if (sub === 'money') {
-      const n = parseInt(orig);
-      if (isNaN(n) || n < 0) { appendToConsole('Invalid number.'); return; }
-      commandPromptState.data.money = n; commandPromptState.subMode = 'animation3D';
-      appendToConsole('Enable 3D animation? (true/false):');
-    } else if (sub === 'animation3D') {
-      if (orig.toLowerCase() !== 'true' && orig.toLowerCase() !== 'false') { appendToConsole("Enter 'true' or 'false'."); return; }
-      const settings = { epixgamesMoney: commandPromptState.data.money, epixgames3DAnimationEnabled: orig.toLowerCase() === 'true' };
-      const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'epixgames_custom_settings.json';
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      appendToConsole('Settings file created! Import with SETTINGS_IMPORT.');
-      commandPromptState = { mode: 'normal', subMode: '', data: {} };
-    }
-    return;
-  }
-
-  // Normal commands
-  switch (cmd) {
-    case 'EXIT':
-      appendToConsole('Closing...');
-      setTimeout(toggleCommandPrompt, 300);
-      break;
-    case 'HELP':
-      appendToConsole(CMD_HELP);
-      break;
-    case 'MONEY_ADD': {
-      const n = parseInt(args[0]);
-      if (isNaN(n)) { appendToConsole('Invalid amount.'); break; }
-      money += n; localStorage.setItem('epixgamesMoney', money); updateMoneyDisplay();
-      appendToConsole(`Added ${n}. Balance: ${money}💰`);
-      break;
-    }
-    case 'MONEY_REMOVE': {
-      const n = parseInt(args[0]);
-      if (isNaN(n)) { appendToConsole('Invalid amount.'); break; }
-      money = Math.max(0, money - n); localStorage.setItem('epixgamesMoney', money); updateMoneyDisplay();
-      appendToConsole(`Removed ${n}. Balance: ${money}💰`);
-      break;
-    }
-    case 'MONEY_SET': {
-      const n = parseInt(args[0]);
-      if (isNaN(n)) { appendToConsole('Invalid amount.'); break; }
-      money = Math.max(0, n); localStorage.setItem('epixgamesMoney', money); updateMoneyDisplay();
-      appendToConsole(`Money set to ${money}💰`);
-      break;
-    }
-    case 'IFRAME_OPEN': {
-      const url = args.join(' ');
-      try { new URL(url); openGameInIframe(url); appendToConsole(`Opening ${url}`); }
-      catch { appendToConsole('Invalid URL.'); }
-      break;
-    }
-    case 'SEQUENCE_ADD':
-      if (args.length > 0) {
-        if (sequences[args[0]]) { appendToConsole(`Sequence '${args[0]}' already exists.`); break; }
-        commandPromptState = { mode: 'recording_commands', data: { name: args[0], commands: [] } };
-        appendToConsole(`Recording '${args[0]}'. Type END_SEQUENCE to finish.`);
-      } else {
-        commandPromptState = { mode: 'awaiting_sequence_name', subMode: '', data: {} };
-        appendToConsole('Enter sequence name:');
-      }
-      break;
-    case 'SEQUENCE_DO':
-      if (args[0] && sequences[args[0]]) {
-        appendToConsole(`Running '${args[0]}'...`);
-        sequences[args[0]].forEach(c => handleCommand(c));
-      } else {
-        appendToConsole(`Sequence '${args[0]}' not found.`);
-      }
-      break;
-    case 'GAME_ADD':
-      commandPromptState = { mode: 'awaiting_game_input', subMode: 'title', data: {} };
-      appendToConsole('Enter game title:');
-      break;
-    case 'GAME_SHOW_CUSTOM':
-      customGamesContainer.style.display = customGamesContainer.style.display !== 'none' ? 'none' : 'flex';
-      customGamesTitle.style.display = customGamesTitle.style.display !== 'none' ? 'none' : 'block';
-      appendToConsole('Custom games visibility toggled.');
-      break;
-    case 'THEME_CREATE':
-      commandPromptState = { mode: 'awaiting_theme_input', subMode: 'name', data: {} };
-      appendToConsole('Enter theme name:');
-      break;
-    case 'THEME_ADD':
-      appendToConsole('Select a theme JSON file...');
-      fileInput.onchange = (e) => {
-        const file = e.target.files[0];
-        if (!file) { fileInput.value = ''; fileInput.onchange = null; return; }
-        const reader = new FileReader();
-        reader.onload = ev => {
-          try {
-            const t = JSON.parse(ev.target.result);
-            if (t.id && t.name && t.type && t.value) {
-              window.customThemes.push(t);
-              localStorage.setItem('epixgamesCustomThemes', JSON.stringify(window.customThemes));
-              renderStore();
-              appendToConsole(`Theme '${t.name}' imported!`);
-            } else { appendToConsole('Invalid theme file.'); }
-          } catch (err) { appendToConsole(`Error: ${err.message}`); }
-          finally { fileInput.value = ''; fileInput.onchange = null; }
-        };
-        reader.readAsText(file);
-      };
-      fileInput.click();
-      break;
-    case 'THEME_EXPORT':
-      if (!window.customThemes.length) { appendToConsole('No custom themes to export.'); break; }
-      {
-        const blob = new Blob([JSON.stringify(window.customThemes, null, 2)], { type: 'application/json' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'epixgames_custom_themes.json';
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        appendToConsole('Exported epixgames_custom_themes.json');
-      }
-      break;
-    case 'HTML_MODIFY':
-      commandPromptState = { mode: 'awaiting_html_modify_input', subMode: 'selector', data: {} };
-      appendToConsole('Enter CSS selector (e.g. body, h1, .game):');
-      break;
-    case 'HTML_MODIFY_OPEN':
-      if (!htmlModifications.length) { appendToConsole('No saved modifications.'); break; }
-      htmlModifications.forEach((m, i) => appendToConsole(`${i + 1}. "${m.selector}" — ${m.property}: ${m.value}`));
-      break;
-    case 'HTML_MODIFY_EXPORT': {
-      const blob = new Blob([document.documentElement.outerHTML], { type: 'text/html' });
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'epixgames_site.html';
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      appendToConsole('Exported epixgames_site.html');
-      break;
-    }
-    case 'SETTINGS_EXPORT': {
-      const s = {
-        epixgamesMoney: money, epixgamesOwnedAccessories: ownedAccessories,
-        epixgamesAppliedAccessory: appliedAccessory, epixgamesTotalPlaytimeSeconds: totalPlaytimeSeconds,
-        epixgames3DAnimationEnabled: isAnimationEnabled, epixgamesCommandSequences: sequences,
-        epixgamesCustomGames: window.customGames, epixgamesCustomThemes: window.customThemes,
-        epixgamesHtmlModifications: htmlModifications, epixgamesAccentColor: localStorage.getItem('epixgamesAccentColor'),
-        epixgamesHiddenGames: [...hiddenGames], epixgamesFavoriteGames: [...favoriteGames]
-      };
-      const blob = new Blob([JSON.stringify(s, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'epixgames_settings.json';
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      appendToConsole('Exported epixgames_settings.json');
-      break;
-    }
-    case 'SETTINGS_IMPORT':
-      appendToConsole('Select a settings JSON file...');
-      fileInput.onchange = (e) => {
-        const file = e.target.files[0];
-        if (!file) { fileInput.value = ''; fileInput.onchange = null; return; }
-        const reader = new FileReader();
-        reader.onload = ev => {
-          try {
-            const imported = JSON.parse(ev.target.result);
-            for (const key in imported) {
-              if (['epixgamesOwnedAccessories','epixgamesCommandSequences','epixgamesCustomGames','epixgamesCustomThemes','epixgamesHtmlModifications','epixgamesHiddenGames','epixgamesFavoriteGames'].includes(key)) {
-                localStorage.setItem(key, JSON.stringify(imported[key]));
-              } else { localStorage.setItem(key, imported[key]); }
-            }
-            appendToConsole('Settings imported! Reloading...');
-            setTimeout(() => window.location.reload(), 1000);
-          } catch (err) { appendToConsole(`Error: ${err.message}`); }
-          finally { fileInput.value = ''; fileInput.onchange = null; }
-        };
-        reader.readAsText(file);
-      };
-      fileInput.click();
-      break;
-    case 'CUSTOM_SETTINGS':
-      commandPromptState = { mode: 'awaiting_custom_settings_input', subMode: 'money', data: {} };
-      appendToConsole('Enter desired money amount:');
-      break;
-    default:
-      appendToConsole(`Unknown command: '${cmd}'. Type HELP for commands.`);
-  }
-}
-
-// --- Init ---
 document.addEventListener('DOMContentLoaded', () => {
-  // Assign DOM refs
   accentColorPicker       = document.getElementById('accentColorPicker');
   root                    = document.documentElement;
-  searchInput             = document.getElementById('searchInput');
-  searchButton            = document.getElementById('searchButton');
-  searchResultsDiv        = document.getElementById('searchResults');
-  gamePlayerOverlay       = document.getElementById('gamePlayerOverlay');
-  gameIframe              = document.getElementById('gameIframe');
-  reloadGameButton        = document.getElementById('reloadGameButton');
-  fullScreenButton        = document.getElementById('fullScreenButton');
-  exitGameButton          = document.getElementById('exitGameButton');
-  copyLinkButton          = null; // replaced by bookmark menu
-  bookmarkButton          = document.getElementById('bookmarkButton');
-  bookmarkMenu            = document.getElementById('bookmarkMenu');
-  bookmarkNormal          = document.getElementById('bookmarkNormal');
-  bookmarklet             = document.getElementById('bookmarklet');
   tabButtons              = document.querySelectorAll('.tab-button');
   tabContents             = document.querySelectorAll('.tab-content');
-  staticGamesContainer    = document.getElementById('staticGamesContainer');
-  customGamesContainer    = document.getElementById('customGamesContainer');
-  customGamesTitle        = document.getElementById('customGamesTitle');
   storeItemsContainer     = document.getElementById('storeItemsContainer');
   resetEverythingButton   = document.getElementById('resetEverythingButton');
   resetConfirmationMessage= document.getElementById('resetConfirmationMessage');
@@ -2467,39 +997,11 @@ document.addEventListener('DOMContentLoaded', () => {
   enable3DAnimationCheckbox = document.getElementById('enable3DAnimation');
   background3DCanvas      = document.getElementById('background3DCanvas');
   homeSubtitleTextElement = document.getElementById('homeSubtitleText');
-  commandPromptOverlay    = document.getElementById('commandPromptOverlay');
-  consoleOutput           = document.getElementById('consoleOutput');
-  commandInput            = document.getElementById('commandInput');
-  fileInput               = document.getElementById('fileInput');
   currentMoneySpan        = document.getElementById('currentMoney');
-  moreLinksContainer      = document.getElementById('moreLinksContainer');
-  gameContextMenu         = document.getElementById('gameContextMenu');
-  contextMenuHideButton   = document.getElementById('contextMenuHide');
-  contextMenuToggleFavoriteButton = document.getElementById('contextMenuToggleFavorite');
-  hiddenGamesList         = document.getElementById('hiddenGamesList');
-  favoriteGamesList       = document.getElementById('favoriteGamesList');
 
-  setupIntersectionObserver();
-
-  // URL params
-  const urlParams = new URLSearchParams(window.location.search);
-  let cleaned = false;
-  const addMoney = urlParams.get('add_money');
-  if (addMoney) { const n = parseInt(addMoney); if (!isNaN(n) && n > 0) { money += n; localStorage.setItem('epixgamesMoney', money); showMessageBox(`Added ${n} money!`); } cleaned = true; }
-  if (urlParams.has('add_infinitemoney')) { money = 999999999999; localStorage.setItem('epixgamesMoney', money); showMessageBox('Infinite money unlocked! 🤑'); cleaned = true; }
-  if (urlParams.has('add_allitems')) {
-    [...STORE_ITEMS, ...window.customThemes].forEach(i => { ownedAccessories[i.id] = true; });
-    localStorage.setItem('epixgamesOwnedAccessories', JSON.stringify(ownedAccessories));
-    showMessageBox('All items unlocked! ✨'); cleaned = true;
-  }
-  if (cleaned) {
-    const u = new URL(window.location.href);
-    ['add_money','add_infinitemoney','add_allitems'].forEach(p => u.searchParams.delete(p));
-    window.history.replaceState({}, document.title, u.toString());
-  }
-
-  // Init
-  renderAllGames();
+  tabButtons.forEach(b => b.addEventListener('click', e => showTab(e.target.dataset.tab)));
+  resetEverythingButton.addEventListener('click', resetAllData);
+  messageBoxCloseButton.addEventListener('click', () => applyAnimation(messageBox, null, 'zoom-out-animation', 'block'));
 
   const savedAccent = localStorage.getItem('epixgamesAccentColor');
   if (savedAccent) { accentColorPicker.value = savedAccent; updateAccentColors(savedAccent); }
@@ -2514,7 +1016,6 @@ document.addEventListener('DOMContentLoaded', () => {
     enable3DAnimationCheckbox.addEventListener('change', e => { localStorage.setItem('epixgames3DAnimationEnabled', JSON.stringify(e.target.checked)); applyAccessory(appliedAccessory); });
   }
 
-  // Event listeners
   accentColorPicker.addEventListener('input', e => {
     if (appliedAccessory === 'rgb-theme' || appliedAccessory === 'classic-theme') {
       stopRgbEffect();
@@ -2525,91 +1026,11 @@ document.addEventListener('DOMContentLoaded', () => {
     updateAccentColors(e.target.value);
   });
 
-  tabButtons.forEach(b => b.addEventListener('click', e => showTab(e.target.dataset.tab)));
-  reloadGameButton.addEventListener('click', reloadIframe);
-  fullScreenButton.addEventListener('click', toggleFullScreen);
-  exitGameButton.addEventListener('click', exitIframe);
-  bookmarkButton.addEventListener('click', e => { e.stopPropagation(); toggleBookmarkMenu(); });
-  // Prevent bookmark anchor clicks from navigating (they're drag-only)
-  bookmarkNormal.addEventListener('click', e => e.preventDefault());
-  bookmarklet.addEventListener('click', e => e.preventDefault());
-  // Close menu when clicking outside
-  document.addEventListener('click', e => {
-    if (bookmarkMenu && !bookmarkMenu.contains(e.target) && e.target !== bookmarkButton) {
-      bookmarkMenu.classList.remove('open');
-    }
-  });
-  searchButton.addEventListener('click', performSearch);
-  searchInput.addEventListener('keypress', e => { if (e.key === 'Enter') performSearch(); });
-  resetEverythingButton.addEventListener('click', resetAllData);
-  messageBoxCloseButton.addEventListener('click', () => applyAnimation(messageBox, null, 'zoom-out-animation', 'block'));
-  contextMenuHideButton.addEventListener('click', () => { if (currentRightClickedGameElement) { hideGame(currentRightClickedGameElement.id); hideContextMenu(); } });
-  contextMenuToggleFavoriteButton.addEventListener('click', () => { if (currentRightClickedGameElement) { toggleFavorite(currentRightClickedGameElement.id); hideContextMenu(); } });
-  document.addEventListener('click', e => { if (gameContextMenu && !gameContextMenu.contains(e.target)) hideContextMenu(); });
-
-  // Check URL for game to load
-  const gameToLoad = urlParams.get('game');
-  if (gameToLoad) {
-    openGameInIframe(decodeURIComponent(gameToLoad));
-    showTab('games-tab');
-  } else {
-    document.getElementById('games-tab').classList.add('active');
-    document.querySelector('.tab-button[data-tab="games-tab"]').classList.add('active');
-    document.getElementById('games-tab').querySelectorAll('.animate-on-scroll').forEach(el => animationObserver.observe(el));
-    const sw = document.querySelector('.search-widget-container');
-    if (sw) sw.style.display = 'flex';
-  }
-
-  renderStore();
-  
-  document.querySelectorAll('#settings-tab .settings-section').forEach(el => animationObserver.observe(el));
-  animationObserver.observe(document.querySelector('.money-display'));
-  document.querySelectorAll('#suggest-tab .animate-on-scroll').forEach(el => animationObserver.observe(el));
-
-  // ── NEW: wire up grab method selector ────────────────────────
-  const grabMethodSelect = document.getElementById('grabMethodSelect');
-  if (grabMethodSelect) {
-    grabMethodSelect.value = grabMethod;
-    grabMethodSelect.addEventListener('change', e => {
-      grabMethod = e.target.value;
-      localStorage.setItem('epixgamesGrabMethod', grabMethod);
-    });
-  }
-
-  toggleAccentColorPickerState();
   cycleBannerText(0);
   setInterval(cycleBannerText, 5000);
-
-  // Command prompt keyboard shortcuts
-  document.addEventListener('keydown', e => {
-    keyState[e.code] = true;
-    if ((keyState['ControlLeft'] && keyState['ControlRight']) || (keyState['ControlLeft'] && keyState['AltLeft'])) {
-      if (!isCommandPromptOpen) { toggleCommandPrompt(); e.preventDefault(); }
-    }
-    if (e.key === 'Escape' && isCommandPromptOpen) { toggleCommandPrompt(); e.preventDefault(); }
-  });
-document.addEventListener('keyup', e => {
-  keyState[e.code] = false;
-});
-
-commandInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter') {
-    const line = commandInput.value.trim();
-    commandInput.value = '';
-
-    if (line) {
-      handleCommand(line);
-    }
-  }
-});
-
-  applyHtmlModifications();
-
-
-
 });
 </script>
 
-<h4>2026 BlockIn - BlockIn is based off July 2025 EPIXGAMES/EPIX. Modified by me, Claude, and some help from ChatGPT. The original EPIXGAMES was built with help from Gemini.</h4>
+<h4 style="text-align: center; margin-top: 40px; font-size: 0.85em; color: #888;">2026 Block-In Home - BlockIn is based off July 2025 EPIXGAMES/EPIX.</h4>
 </body>
 </html>

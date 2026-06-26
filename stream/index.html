@@ -1,0 +1,972 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BlockIn Stream</title>
+  <link rel="icon" type="image/x-icon" href="https://www.gstatic.com/images/branding/searchlogo/ico/favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-color: #282c34;
+      --primary-color: #4287f5;
+      --secondary-color: #61dafb;
+      --text-color: #ffffff;
+      --card-bg: #3c4048;
+      --button-bg: var(--accent-color, #61dafb);
+      --button-hover-bg: var(--accent-hover-color, #21a1f1);
+      --accent-color: #61dafb;
+      --accent-hover-color: #21a1f1;
+      --home-background: var(--bg-color);
+      --home-text-color: var(--text-color);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      background: var(--home-background);
+      background-attachment: fixed;
+      color: var(--home-text-color);
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      transition: background-color 0.5s ease;
+    }
+
+    /* ── Nav ── */
+    #topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 28px;
+      background-color: rgba(0,0,0,0.45);
+      backdrop-filter: blur(8px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    #topbar-left { display: flex; align-items: center; gap: 24px; }
+    #site-title {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 1.1em;
+      color: var(--primary-color);
+      text-shadow: 2px 2px #000;
+      white-space: nowrap;
+    }
+    .nav-link {
+      font-size: 0.9em;
+      color: var(--text-color);
+      text-decoration: none;
+      opacity: 0.75;
+      transition: opacity 0.2s, color 0.2s;
+    }
+    .nav-link:hover, .nav-link.active { opacity: 1; color: var(--accent-color); }
+
+    #search-bar { position: relative; display: flex; align-items: center; gap: 8px; }
+    #search-bar input {
+      padding: 7px 14px;
+      border-radius: 20px;
+      border: 2px solid var(--primary-color);
+      background-color: rgba(0,0,0,0.4);
+      color: var(--text-color);
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.88em;
+      width: 200px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    #search-bar input:focus { border-color: var(--accent-color); }
+    #search-bar input::placeholder { color: rgba(255,255,255,0.4); }
+
+    /* ── Hero ── */
+    #hero {
+      position: relative;
+      width: 100%;
+      height: 480px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.78) 100%),
+        url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1400&q=80') center/cover no-repeat;
+      display: flex;
+      align-items: flex-end;
+      padding: 40px 48px;
+    }
+    #hero-info { max-width: 520px; }
+    #hero-badge {
+      display: inline-block;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.6em;
+      background: var(--accent-color);
+      color: #000;
+      padding: 4px 10px;
+      border-radius: 4px;
+      margin-bottom: 14px;
+    }
+    #hero-title {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 2em;
+      margin: 0 0 12px;
+      text-shadow: 2px 2px #000;
+      color: #fff;
+    }
+    #hero-desc {
+      font-size: 0.97em;
+      color: rgba(255,255,255,0.85);
+      margin: 0 0 20px;
+      line-height: 1.6;
+    }
+    .hero-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+
+    .btn-primary {
+      background-color: var(--accent-color);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 11px 26px;
+      font-size: 0.95em;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.15s;
+    }
+    .btn-primary:hover { background-color: var(--button-hover-bg); transform: translateY(-2px); }
+
+    .btn-secondary {
+      background-color: rgba(255,255,255,0.15);
+      color: #fff;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-radius: 8px;
+      padding: 11px 26px;
+      font-size: 0.95em;
+      font-weight: 700;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      transition: background-color 0.2s, transform 0.15s;
+    }
+    .btn-secondary:hover { background-color: rgba(255,255,255,0.25); transform: translateY(-2px); }
+
+    /* ── Filter Pills ── */
+    #content { padding: 32px 32px 60px; }
+    .filter-pills { display: flex; gap: 10px; margin-bottom: 28px; flex-wrap: wrap; }
+    .pill {
+      padding: 7px 20px;
+      border-radius: 20px;
+      border: 2px solid var(--primary-color);
+      background: transparent;
+      color: var(--text-color);
+      font-size: 0.88em;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+    }
+    .pill:hover, .pill.active {
+      background: var(--accent-color);
+      border-color: var(--accent-color);
+      color: #000;
+    }
+
+    /* ── Rows ── */
+    .row { margin-bottom: 44px; }
+    .row-title {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.9em;
+      color: var(--secondary-color);
+      margin: 0 0 18px;
+      text-shadow: 1px 1px #000;
+    }
+    .cards-scroll {
+      display: flex;
+      gap: 18px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent-color) transparent;
+    }
+    .cards-scroll::-webkit-scrollbar { height: 5px; }
+    .cards-scroll::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 4px; }
+
+    /* ── Media Card ── */
+    .media-card {
+      flex: 0 0 200px;
+      background-color: var(--card-bg);
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.25s, box-shadow 0.25s;
+      position: relative;
+      border: 2px solid transparent;
+    }
+    .media-card:hover {
+      transform: translateY(-6px) scale(1.03);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.55);
+      border-color: var(--accent-color);
+    }
+    .media-card img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      display: block;
+    }
+    .media-card-body { padding: 10px 12px 12px; }
+    .media-card-title {
+      font-weight: 700;
+      font-size: 0.92em;
+      color: var(--secondary-color);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .media-card-meta { font-size: 0.78em; color: rgba(255,255,255,0.5); }
+    .media-card-badge {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      background: var(--accent-color);
+      color: #000;
+      font-size: 0.65em;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+    .media-card-play {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: rgba(0,0,0,0.55);
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      font-size: 0.9em;
+      cursor: pointer;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    .media-card:hover .media-card-play { opacity: 1; background: var(--accent-color); }
+    .media-card-play:hover { background: var(--button-hover-bg) !important; }
+
+    /* ── Show Detail Panel ── */
+    #showPanel {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 400;
+      overflow-y: auto;
+      padding: 0 0 40px;
+    }
+    #showPanel.open { display: block; }
+
+    #showPanelHero {
+      width: 100%;
+      height: 300px;
+      background: center/cover no-repeat;
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      padding: 28px 36px;
+    }
+    #showPanelHero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.82));
+    }
+    #showPanelHeroContent { position: relative; z-index: 1; max-width: 600px; }
+    #showPanelTitle {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 1.5em;
+      color: #fff;
+      margin: 0 0 8px;
+      text-shadow: 2px 2px #000;
+    }
+    #showPanelMeta { font-size: 0.88em; color: rgba(255,255,255,0.7); margin-bottom: 14px; }
+    #showPanelDesc { font-size: 0.93em; color: rgba(255,255,255,0.85); line-height: 1.55; margin: 0; }
+
+    #showPanelClose {
+      position: fixed;
+      top: 18px;
+      right: 22px;
+      z-index: 410;
+      background: rgba(0,0,0,0.6);
+      border: 2px solid var(--accent-color);
+      color: var(--accent-color);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 1.1em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    #showPanelClose:hover { background: var(--accent-color); color: #000; }
+
+    #showPanelBody { padding: 24px 36px; }
+
+    /* Season tabs */
+    #seasonTabs { display: flex; gap: 10px; margin-bottom: 22px; flex-wrap: wrap; }
+    .season-tab {
+      padding: 6px 18px;
+      border-radius: 20px;
+      border: 2px solid var(--primary-color);
+      background: transparent;
+      color: var(--text-color);
+      font-size: 0.83em;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+    }
+    .season-tab:hover, .season-tab.active {
+      background: var(--accent-color);
+      border-color: var(--accent-color);
+      color: #000;
+    }
+
+    /* Episode list */
+    #episodeList { display: flex; flex-direction: column; gap: 12px; }
+    .episode-row {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      background: var(--card-bg);
+      border-radius: 10px;
+      padding: 12px 16px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .episode-row:hover { border-color: var(--accent-color); transform: translateX(4px); }
+    .episode-num {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.7em;
+      color: var(--accent-color);
+      min-width: 32px;
+      text-align: center;
+    }
+    .episode-thumb {
+      width: 100px;
+      height: 58px;
+      object-fit: cover;
+      border-radius: 6px;
+      flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .episode-info { flex: 1; min-width: 0; }
+    .episode-title { font-weight: 700; font-size: 0.95em; color: var(--secondary-color); margin-bottom: 4px; }
+    .episode-desc { font-size: 0.8em; color: rgba(255,255,255,0.55); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .episode-duration { font-size: 0.78em; color: rgba(255,255,255,0.4); white-space: nowrap; margin-top: 4px; }
+    .episode-play-btn {
+      background: var(--accent-color);
+      color: #000;
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      font-size: 1em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .episode-play-btn:hover { background: var(--button-hover-bg); transform: scale(1.1); }
+
+    /* ── Video Player Overlay ── */
+    #playerOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.95);
+      z-index: 500;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    #playerOverlay.open { display: flex; }
+    #playerContainer {
+      width: 95%;
+      max-width: 1100px;
+      aspect-ratio: 16/9;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(0,0,0,0.8);
+      position: relative;
+    }
+    #playerIframe { width: 100%; height: 100%; border: none; display: block; }
+    #videoPlaceholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #111;
+      color: rgba(255,255,255,0.6);
+      font-size: 1em;
+      gap: 12px;
+    }
+    #videoPlaceholder .big-icon { font-size: 3em; }
+    #playerControls { display: flex; gap: 14px; margin-top: 14px; flex-wrap: wrap; justify-content: center; }
+    .ctrl-btn {
+      background-color: var(--button-bg);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 22px;
+      font-size: 0.9em;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.15s;
+    }
+    .ctrl-btn:hover { background-color: var(--button-hover-bg); transform: translateY(-2px); }
+    #playerTitle {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.75em;
+      color: var(--secondary-color);
+      margin-top: 12px;
+      text-align: center;
+    }
+
+    /* ── Search Dropdown ── */
+    #searchDropdown {
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      background-color: var(--card-bg);
+      border: 1px solid var(--primary-color);
+      border-radius: 10px;
+      min-width: 260px;
+      max-height: 320px;
+      overflow-y: auto;
+      z-index: 200;
+      display: none;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+    }
+    #searchDropdown.open { display: block; }
+    .search-result-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: background 0.15s;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .search-result-item:last-child { border-bottom: none; }
+    .search-result-item:hover { background: rgba(255,255,255,0.09); }
+    .search-result-item img { width: 48px; height: 32px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
+    .search-result-name { font-size: 0.88em; color: var(--text-color); font-weight: 600; }
+    .search-result-cat { font-size: 0.74em; color: rgba(255,255,255,0.45); }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 0.78em;
+      color: rgba(255,255,255,0.35);
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+
+    /* ── Theme compatibility ── */
+    body.classic-theme #topbar,
+    body.classic-theme #playerOverlay { background: #4287f5 !important; }
+    body.classic-theme .media-card-title, body.classic-theme .nav-link { color: #fff !important; }
+    body.classic-theme .ctrl-btn, body.classic-theme .btn-primary { background-color: #007bff !important; color: #fff !important; }
+
+    body.web20-gloss-theme { background: var(--gloss-bg, #dde8f5) !important; color: #1a1a2e !important; }
+    body.web20-gloss-theme #topbar {
+      background: linear-gradient(180deg, rgba(255,255,255,0.72) 0%, rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.32) 100%) !important;
+      border-bottom: 1px solid rgba(255,255,255,0.85) !important;
+    }
+    body.web20-gloss-theme .media-card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.72) 0%, rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.18) 100%) !important;
+      border: 1px solid rgba(255,255,255,0.85) !important;
+    }
+    body.web20-gloss-theme .media-card-title { color: rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),1) !important; }
+    body.web20-gloss-theme .media-card-meta { color: #444 !important; }
+    body.web20-gloss-theme .btn-primary, body.web20-gloss-theme .ctrl-btn {
+      background: linear-gradient(180deg, rgba(255,255,255,0.90) 0%, rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.85) 100%) !important;
+      color: #fff !important; border: 1px solid rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.7) !important; border-radius: 20px !important;
+    }
+    body.web20-gloss-theme .row-title { color: rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),1) !important; }
+    body.web20-gloss-theme .nav-link { color: #1a1a2e !important; }
+    body.web20-gloss-theme #site-title { color: rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),1) !important; }
+    body.web20-gloss-theme::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background:
+        linear-gradient(160deg, rgba(255,255,255,0.55) 0%, rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.22) 40%, rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.38) 100%),
+        linear-gradient(180deg, #dde8f5 0%, #b8cfee 100%);
+    }
+    body.web20-gloss-theme .pill, body.web20-gloss-theme .season-tab {
+      background: rgba(255,255,255,0.45) !important;
+      border-color: rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.4) !important;
+      color: #1a1a2e !important;
+    }
+    body.web20-gloss-theme .pill.active, body.web20-gloss-theme .pill:hover,
+    body.web20-gloss-theme .season-tab.active, body.web20-gloss-theme .season-tab:hover {
+      background: rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.7) !important;
+      color: #fff !important;
+    }
+    body.web20-gloss-theme .episode-row {
+      background: linear-gradient(180deg, rgba(255,255,255,0.72) 0%, rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),0.1) 100%) !important;
+    }
+    body.web20-gloss-theme .episode-title { color: rgba(var(--gloss-r),var(--gloss-g),var(--gloss-b),1) !important; }
+    body.web20-gloss-theme .episode-desc, body.web20-gloss-theme .episode-duration { color: #555 !important; }
+
+    body.rgb-theme .nav-link, body.rgb-theme .row-title, body.rgb-theme .media-card-title { color: #ffffff !important; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      #hero { height: 300px; padding: 20px; }
+      #hero-title { font-size: 1.3em; }
+      #topbar { padding: 12px 16px; }
+      #site-title { font-size: 0.85em; }
+      .nav-link { display: none; }
+      #content { padding: 20px 14px 50px; }
+      .media-card { flex: 0 0 160px; }
+      #showPanelHero { height: 220px; padding: 16px 18px; }
+      #showPanelBody { padding: 16px 18px; }
+      .episode-thumb { display: none; }
+      #showPanelTitle { font-size: 1.1em; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav id="topbar">
+  <div id="topbar-left">
+    <span id="site-title">BlockIn Stream</span>
+  </div>
+  <div id="search-bar">
+    <input type="text" id="streamSearch" placeholder="Search...">
+    <div id="searchDropdown"></div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section id="hero">
+  <div id="hero-info">
+    <h1 id="hero-title">BlockIn Stream</h1>
+    <p id="hero-desc">Movies, shows, and videos — all in one place. No ads. No sign-in.</p>
+    <div class="hero-buttons">
+    </div>
+  </div>
+</section>
+
+<!-- Content -->
+<div id="content">
+  <div class="filter-pills">
+    <button class="pill active" data-cat="all">All</button>
+    <button class="pill" data-cat="movie">Movies</button>
+    <button class="pill" data-cat="show">Shows</button>
+    <button class="pill" data-cat="video">Videos</button>
+  </div>
+
+  <div class="row" id="row-movies">
+    <h2 class="row-title">🎬 Movies</h2>
+    <div class="cards-scroll" id="cards-movies"></div>
+  </div>
+
+  <div class="row" id="row-shows">
+    <h2 class="row-title">📺 Shows</h2>
+    <div class="cards-scroll" id="cards-shows"></div>
+  </div>
+
+  <div class="row" id="row-videos">
+    <h2 class="row-title">▶ Videos</h2>
+    <div class="cards-scroll" id="cards-videos"></div>
+  </div>
+</div>
+
+<!-- Show Detail Panel -->
+<div id="showPanel">
+  <button id="showPanelClose" onclick="closeShowPanel()">✕</button>
+  <div id="showPanelHero">
+    <div id="showPanelHeroContent">
+      <h2 id="showPanelTitle"></h2>
+      <p id="showPanelMeta"></p>
+      <p id="showPanelDesc"></p>
+    </div>
+  </div>
+  <div id="showPanelBody">
+    <div id="seasonTabs"></div>
+    <div id="episodeList"></div>
+  </div>
+</div>
+
+<!-- Video Player -->
+<div id="playerOverlay">
+  <div id="playerContainer">
+    <div id="videoPlaceholder">
+      <span class="big-icon">🎬</span>
+      <span>Select something to watch</span>
+    </div>
+    <iframe id="playerIframe" allowfullscreen style="display:none;"></iframe>
+  </div>
+  <div id="playerControls">
+    <button class="ctrl-btn" onclick="toggleFullscreen()">⛶ Full Screen</button>
+    <button class="ctrl-btn" onclick="closePlayer()">✕ Close</button>
+  </div>
+  <div id="playerTitle"></div>
+</div>
+
+<footer>
+  2026 BlockIn &mdash; Change settings and themes in the <a href="/index.html" style="color:var(--accent-color);text-decoration:none;">Home</a> page.
+</footer>
+
+<script>
+// ================================================================
+// CATALOGUE
+// cat: 'movie' | 'show' | 'video'
+// Movies & Videos: embed, year, duration, thumb
+// Shows: thumb, year, desc, seasons array
+//   seasons: [{ label, episodes: [{ title, desc, duration, thumb, embed }] }]
+// ================================================================
+const MOVIES = [
+  {
+    id: 'mov-1', cat: 'movie', title: 'Angry Birds Movie 1',
+    year: 2023, duration: '1h 22m',
+    thumb: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsg9VeWUg7ynvX6O07m6T4c1mguHeLwf5_ArhUYxyQSQ&s=10',
+    embed: './player/index.html?v=https://archive.org/download/the-angry-birds-movie-us-dvd-2016/The%20Angry%20Birds%20Movie%20%28US%20DVD%29%20%5B2016%5D.mp4'
+  },
+];
+
+const SHOWS = [
+  {
+    id: 'show-1', cat: 'show', title: 'None',
+    year: 1000, desc: 'Placeholder',
+    thumb: 'https://images.unsplash.com/photo-1519669556878-63bdad8a1a49?w=400&q=70',
+    seasons: [
+      {
+        label: 'Season 1',
+        episodes: [
+          { title: 'None', desc: 'Placeholder', duration: '0m', thumb: 'https://images.unsplash.com/photo-1519669556878-63bdad8a1a49?w=200&q=60', embed: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
+        ]
+      },
+    ]
+  },
+];
+
+const VIDEOS = [
+  {
+    id: 'vid-1', cat: 'video', title: 'None',
+    year: 1000, duration: '0:00',
+    thumb: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=400&q=70',
+    embed: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+  },
+];
+
+const ALL_ITEMS = [...MOVIES, ...SHOWS, ...VIDEOS];
+
+// ── Render ──
+function makeCard(item) {
+  const card = document.createElement('div');
+  card.className = 'media-card';
+  card.dataset.id = item.id;
+
+  const badgeLabel = item.cat === 'movie' ? 'MOVIE' : item.cat === 'show' ? 'SHOW' : 'VIDEO';
+  const metaLine = item.cat === 'show'
+    ? `${item.year} &bull; ${item.seasons.length} Season${item.seasons.length !== 1 ? 's' : ''}`
+    : `${item.year} &bull; ${item.duration}`;
+
+  card.innerHTML = `
+    <img src="${item.thumb}" alt="${item.title}" loading="lazy" onerror="this.src='https://placehold.co/400x120/3c4048/61dafb?text=BlockIn'">
+    <span class="media-card-badge">${badgeLabel}</span>
+    <button class="media-card-play" title="Play">▶</button>
+    <div class="media-card-body">
+      <div class="media-card-title">${item.title}</div>
+      <div class="media-card-meta">${metaLine}</div>
+    </div>
+  `;
+
+  if (item.cat === 'show') {
+    card.addEventListener('click', () => openShowPanel(item));
+    card.querySelector('.media-card-play').addEventListener('click', e => { e.stopPropagation(); openShowPanel(item); });
+  } else {
+    card.addEventListener('click', () => openPlayer(item.embed, item.title));
+    card.querySelector('.media-card-play').addEventListener('click', e => { e.stopPropagation(); openPlayer(item.embed, item.title); });
+  }
+  return card;
+}
+
+function renderAll(filterCat = 'all') {
+  const moviesEl  = document.getElementById('cards-movies');
+  const showsEl   = document.getElementById('cards-shows');
+  const videosEl  = document.getElementById('cards-videos');
+  moviesEl.innerHTML = '';
+  showsEl.innerHTML  = '';
+  videosEl.innerHTML = '';
+
+  const show = cat => filterCat === 'all' || filterCat === cat;
+
+  if (show('movie')) MOVIES.forEach(i => moviesEl.appendChild(makeCard(i)));
+  if (show('show'))  SHOWS.forEach(i  => showsEl.appendChild(makeCard(i)));
+  if (show('video')) VIDEOS.forEach(i => videosEl.appendChild(makeCard(i)));
+
+  document.getElementById('row-movies').style.display = (filterCat !== 'all' && filterCat !== 'movie') ? 'none' : '';
+  document.getElementById('row-shows').style.display  = (filterCat !== 'all' && filterCat !== 'show')  ? 'none' : '';
+  document.getElementById('row-videos').style.display = (filterCat !== 'all' && filterCat !== 'video') ? 'none' : '';
+}
+
+// ── Filter pills ──
+document.querySelectorAll('.pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    renderAll(pill.dataset.cat);
+  });
+});
+
+// ── Show Panel ──
+let currentShow = null;
+let currentSeasonIdx = 0;
+
+function openShowPanel(show) {
+  currentShow = show;
+  currentSeasonIdx = 0;
+  document.getElementById('showPanelHero').style.backgroundImage = `url('${show.thumb}')`;
+  document.getElementById('showPanelTitle').textContent = show.title;
+  document.getElementById('showPanelMeta').textContent = `${show.year} · ${show.seasons.length} Season${show.seasons.length !== 1 ? 's' : ''}`;
+  document.getElementById('showPanelDesc').textContent = show.desc || '';
+  renderSeasonTabs();
+  renderEpisodes(0);
+  document.getElementById('showPanel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeShowPanel() {
+  document.getElementById('showPanel').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function renderSeasonTabs() {
+  const tabs = document.getElementById('seasonTabs');
+  tabs.innerHTML = '';
+  currentShow.seasons.forEach((s, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'season-tab' + (i === 0 ? ' active' : '');
+    btn.textContent = s.label;
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.season-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      renderEpisodes(i);
+    });
+    tabs.appendChild(btn);
+  });
+}
+
+function renderEpisodes(seasonIdx) {
+  const list = document.getElementById('episodeList');
+  list.innerHTML = '';
+  const season = currentShow.seasons[seasonIdx];
+  season.episodes.forEach((ep, i) => {
+    const row = document.createElement('div');
+    row.className = 'episode-row';
+    row.innerHTML = `
+      <div class="episode-num">E${i + 1}</div>
+      <img class="episode-thumb" src="${ep.thumb}" alt="${ep.title}" onerror="this.style.display='none'">
+      <div class="episode-info">
+        <div class="episode-title">${ep.title}</div>
+        <div class="episode-desc">${ep.desc}</div>
+        <div class="episode-duration">${ep.duration}</div>
+      </div>
+      <button class="episode-play-btn" title="Play">▶</button>
+    `;
+    const play = () => openPlayer(ep.embed, `${currentShow.title} · ${season.label} · E${i + 1} – ${ep.title}`);
+    row.addEventListener('click', play);
+    row.querySelector('.episode-play-btn').addEventListener('click', e => { e.stopPropagation(); play(); });
+    list.appendChild(row);
+  });
+}
+
+// ── Player ──
+const overlay = document.getElementById('playerOverlay');
+const iframe  = document.getElementById('playerIframe');
+const ph      = document.getElementById('videoPlaceholder');
+const titleEl = document.getElementById('playerTitle');
+
+function openPlayer(embedUrl, title) {
+  iframe.src = embedUrl + (embedUrl.includes('?') ? '&' : '?') + 'autoplay=1';
+  iframe.style.display = 'block';
+  ph.style.display = 'none';
+  titleEl.textContent = title || '';
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePlayer() {
+  overlay.classList.remove('open');
+  iframe.src = '';
+  iframe.style.display = 'none';
+  ph.style.display = 'flex';
+  document.body.style.overflow = '';
+}
+
+function toggleFullscreen() {
+  const el = document.getElementById('playerContainer');
+  if (!document.fullscreenElement) el.requestFullscreen && el.requestFullscreen();
+  else document.exitFullscreen && document.exitFullscreen();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (overlay.classList.contains('open')) closePlayer();
+    else closeShowPanel();
+  }
+});
+
+// ── Search ──
+const searchInput = document.getElementById('streamSearch');
+const dropdown    = document.getElementById('searchDropdown');
+
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.trim().toLowerCase();
+  dropdown.innerHTML = '';
+  if (!q) { dropdown.classList.remove('open'); return; }
+  const results = ALL_ITEMS.filter(i => i.title.toLowerCase().includes(q) || i.cat.includes(q));
+  if (!results.length) {
+    dropdown.innerHTML = '<div class="search-result-item"><div class="search-result-name">No results</div></div>';
+  } else {
+    results.slice(0, 8).forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'search-result-item';
+      const meta = item.cat === 'show' ? `Show · ${item.seasons.length} season${item.seasons.length !== 1 ? 's' : ''}` : `${item.cat} · ${item.duration}`;
+      el.innerHTML = `
+        <img src="${item.thumb}" alt="">
+        <div>
+          <div class="search-result-name">${item.title}</div>
+          <div class="search-result-cat">${meta}</div>
+        </div>`;
+      el.addEventListener('click', () => {
+        dropdown.classList.remove('open');
+        searchInput.value = '';
+        if (item.cat === 'show') openShowPanel(item);
+        else openPlayer(item.embed, item.title);
+      });
+      dropdown.appendChild(el);
+    });
+  }
+  dropdown.classList.add('open');
+});
+
+document.addEventListener('click', e => {
+  if (!document.getElementById('search-bar').contains(e.target)) dropdown.classList.remove('open');
+});
+
+// ================================================================
+// THEME SYNC — same localStorage keys as games page
+// ================================================================
+const hexToRgb = hex => {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+};
+const darken = (hex, pct) =>
+  '#' + hexToRgb(hex).map(v => Math.max(0, v - Math.floor(v * pct)).toString(16).padStart(2,'0')).join('');
+
+function applyAccentColor(hex) {
+  const r = document.documentElement;
+  r.style.setProperty('--accent-color', hex);
+  r.style.setProperty('--button-bg', hex);
+  r.style.setProperty('--accent-hover-color', darken(hex, 0.25));
+  r.style.setProperty('--button-hover-bg', darken(hex, 0.25));
+  r.style.setProperty('--primary-color', darken(hex, 0.15));
+  r.style.setProperty('--secondary-color', hex);
+}
+
+function applyTheme(accessory) {
+  document.body.classList.remove('classic-theme', 'rgb-theme', 'web20-gloss-theme');
+  const root = document.documentElement;
+  ['--home-background','--home-text-color','--bg-color','--card-bg',
+   '--primary-color','--secondary-color','--button-bg','--button-hover-bg',
+   '--gloss-r','--gloss-g','--gloss-b','--gloss-bg'].forEach(v => root.style.removeProperty(v));
+
+  const THEMES = {
+    'default-theme':     { type: 'full-theme', value: { '--home-background': '#282c34', '--home-text-color': '#ffffff' } },
+    'rgb-theme':         { type: 'dynamic-theme' },
+    'classic-theme':     { type: 'full-theme', value: { '--home-background': '#4287f5', '--home-text-color': '#ffffff', '--bg-color': '#4287f5', '--primary-color': '#007bff', '--secondary-color': '#007bff', '--card-bg': 'transparent', '--button-bg': '#007bff', '--button-hover-bg': '#0056b3' } },
+    'jr-theme':          { type: 'full-theme', value: { '--home-background': '#940707', '--home-text-color': '#ffffff', '--bg-color': '#940707', '--primary-color': '#007bff', '--secondary-color': '#f06060', '--card-bg': 'transparent', '--button-bg': '#f50a0a', '--button-hover-bg': '#f07171' } },
+    'web20-gloss-theme': { type: 'dynamic-theme' },
+    'bg-neon':     { type: 'background', value: 'url(https://static.vecteezy.com/system/resources/previews/020/562/054/non_2x/background-of-neon-grid-for-retro-futuristic-design-vector.jpg) no-repeat center center / cover' },
+    'bg-gumball':  { type: 'background', value: 'url(https://images6.alphacoders.com/950/950030.jpg) no-repeat center center / cover' },
+    'bg-minecraft':{ type: 'background', value: 'url(https://wallpapers.com/images/featured/minecraft-s2kxfahyg30sob8q.jpg) no-repeat center center / cover' },
+    'bg-amongus':  { type: 'background', value: 'url(https://i.redd.it/jo89zfzqi9t51.png) no-repeat center center / cover' },
+    'bg-crosold':  { type: 'background', value: 'url(./wp/chromeold.webp) no-repeat center center / cover' },
+    'bg-crosoldhp':{ type: 'background', value: 'url(./wp/chromeoldhp.jpg) no-repeat center center / cover' },
+    'bg-crosnewhp':{ type: 'background', value: 'url(./wp/chromenewhp.jpg) no-repeat center center / cover' },
+    'bg-android4': { type: 'background', value: 'url(./wp/dd4.jpg) no-repeat center center / cover' },
+    'bg-bm':       { type: 'background', value: 'url(./wp/bmb1.webp) no-repeat center center / cover' },
+  };
+  const customThemes = JSON.parse(localStorage.getItem('epixgamesCustomThemes') || '[]');
+  customThemes.forEach(ct => { THEMES[ct.id] = ct; });
+
+  const theme = THEMES[accessory];
+  if (!theme) return;
+
+  if (theme.type === 'full-theme') {
+    Object.entries(theme.value).forEach(([k,v]) => root.style.setProperty(k, v));
+  } else if (theme.type === 'background') {
+    root.style.setProperty('--home-background', theme.value);
+  } else if (theme.type === 'dynamic-theme') {
+    if (accessory === 'classic-theme') document.body.classList.add('classic-theme');
+    else if (accessory === 'rgb-theme') { document.body.classList.add('rgb-theme'); startRGB(); }
+    else if (accessory === 'web20-gloss-theme') {
+      document.body.classList.add('web20-gloss-theme');
+      const accent = localStorage.getItem('epixgamesAccentColor') || '#61dafb';
+      const [r,g,b] = hexToRgb(accent);
+      root.style.setProperty('--gloss-r', r);
+      root.style.setProperty('--gloss-g', g);
+      root.style.setProperty('--gloss-b', b);
+      root.style.setProperty('--gloss-bg', `rgba(${r},${g},${b},0.08)`);
+    }
+  }
+}
+
+let rgbHue = 0, rgbTimer = null;
+function startRGB() {
+  if (rgbTimer) return;
+  (function tick() {
+    rgbHue = (rgbHue + 1) % 360;
+    const h = `hsl(${rgbHue},100%,50%)`;
+    const root = document.documentElement;
+    root.style.setProperty('--home-background', `hsl(${rgbHue},60%,15%)`);
+    root.style.setProperty('--accent-color', h);
+    root.style.setProperty('--button-bg', h);
+    root.style.setProperty('--secondary-color', h);
+    root.style.setProperty('--home-text-color', '#fff');
+    rgbTimer = requestAnimationFrame(tick);
+  })();
+}
+
+function initThemes() {
+  const accent    = localStorage.getItem('epixgamesAccentColor');
+  const accessory = localStorage.getItem('epixgamesAppliedAccessory') || 'default-theme';
+  if (accent) applyAccentColor(accent);
+  applyTheme(accessory);
+}
+
+initThemes();
+renderAll();
+
+window.addEventListener('storage', e => {
+  if (['epixgamesAccentColor','epixgamesAppliedAccessory','epixgamesOwnedAccessories','epixgamesCustomThemes'].includes(e.key)) {
+    if (rgbTimer) { cancelAnimationFrame(rgbTimer); rgbTimer = null; }
+    initThemes();
+  }
+});
+</script>
+</body>
+</html>

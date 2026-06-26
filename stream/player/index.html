@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full Viewport Video Player</title>
+    <style>
+        /* This ensures the body and video fill the entire screen */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* No scrollbars, thanks! */
+            background-color: black;
+        }
+
+        #myVideo {
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover; /* This makes it fill the screen like a pro */
+        }
+    </style>
+</head>
+<body>
+
+    <video id="myVideo" controls>
+        Your browser is currently stage-frightened and refuses to play this video.
+    </video>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const videoSource = urlParams.get('v');
+        const videoElement = document.getElementById('myVideo');
+
+        if (videoSource) {
+            videoElement.src = videoSource;
+        } else {
+            // A little humor: if you leave the screen empty, it's basically a "minimalist art" installation
+            console.log("No video source provided. I guess we're just staring into the void today.");
+        }
+    </script>
+
+</body>
+</html>
