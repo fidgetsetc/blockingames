@@ -14,5 +14,5 @@ const STORE_ITEMS = [
   { id: 'bg-crosnewhp',   name: 'BL | HP ChromeOS (new)',              type: 'background',     value: 'url(https://cdn.jsdelivr.net/gh/fidgetsetc/blockingames@main/playing/wp/chromenewhp.jpg) no-repeat center center / cover', cost: 10, img: './playing/wpthumb/newhp.png' },
   { id: 'bg-android4',    name: 'BL | Android 4 (LIMITED FREE OFFER)', type: 'background',     value: 'url(https://cdn.jsdelivr.net/gh/fidgetsetc/blockingames@main/playing/wp/dd4.jpg) no-repeat center center / cover', cost: 0, img: './playing/wpthumb/dd4.png' },
   { id: 'bg-bm',          name: 'ABL | BirdMath Beta 1 (ANIMATED)',     type: 'background',     value: 'url(https://cdn.jsdelivr.net/gh/fidgetsetc/blockingames@main/playing/wp/bmb1.webp) no-repeat center center / cover', cost: 40, img: './playing/wpthumb/bmb1.png' },
-  { id: 'bg-ab1',          name: 'BL | Angry Birds Classic',     type: 'background',     value: 'url(https://i.ibb.co/Qv0bnqdf/Gemini-Generated-Image-swexkdswexkdswex.png) no-repeat center center / cover', cost: 20, img: './playing/wpthumb/bmb1.png' }
+  { id: 'bg-ab1',          name: 'BL | Angry Birds Classic',     type: 'background',     value: 'url(https://i.ibb.co/Qv0bnqdf/Gemini-Generated-Image-swexkdswexkdswex.png) no-repeat center center / cover', cost: 20, img: './playing/wpthumb/ab1.png' }
 ];
