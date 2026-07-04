@@ -1,0 +1,5 @@
+playing/wp/
+playing/redeployables/
+.git/
+node_modules/
+deploy.sh
