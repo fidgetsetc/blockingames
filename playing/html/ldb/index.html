@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linux DVD Bounce</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'JetBrains+Mono', monospace;
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+        #game-box {
+            width: 600px;
+            height: 400px;
+            position: relative;
+            background-color: #1e293b;
+            border: 4px solid #334155;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+        #logo {
+            width: 100px;
+            height: 100px;
+            position: absolute;
+            user-select: none;
+            filter: drop-shadow(0 0 8px rgba(0,0,0,0.5));
+        }
+        .stat-card {
+            background: #1e293b;
+            border-bottom: 3px solid #3b82f6;
+        }
+        .corner-hit-flash {
+            animation: flash 0.5s ease-out;
+        }
+        @keyframes flash {
+            0% { background-color: #3b82f6; }
+            100% { background-color: #1e293b; }
+        }
+        input[type=range] {
+            accent-color: #3b82f6;
+        }
+        .container-max {
+            max-width: 800px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div class="container-max w-full">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-2">
+                Linux Bounce Tracker
+            </h1>
+            <p class="text-slate-400">The ultimate corner-hit waiting simulator</p>
+        </header>
+
+        <!-- Stats Board -->
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <div id="hits-card" class="stat-card p-4 rounded-lg text-center transition-colors">
+                <span class="block text-xs uppercase tracking-widest text-slate-400 mb-1 font-bold">Total Hits</span>
+                <span id="hit-count" class="text-3xl font-bold text-white tracking-tighter">0</span>
+            </div>
+            <div id="corners-card" class="stat-card p-4 rounded-lg text-center transition-colors border-emerald-500">
+                <span class="block text-xs uppercase tracking-widest text-slate-400 mb-1 font-bold">Corner Hits</span>
+                <span id="corner-count" class="text-3xl font-bold text-emerald-400 tracking-tighter">0</span>
+            </div>
+        </div>
+
+        <!-- Animation Area -->
+        <div class="flex justify-center mb-8">
+            <div id="game-box">
+                <img id="logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Fedora_icon_%282021%29.svg/500px-Fedora_icon_%282021%29.svg.png" alt="Linux Logo">
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="bg-slate-800/50 p-6 rounded-xl border border-slate-700 backdrop-blur-sm">
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium mb-3 text-slate-300">Select Distro</label>
+                    <select id="distro-select" class="w-full bg-slate-900 border border-slate-600 text-white rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Fedora_icon_%282021%29.svg/500px-Fedora_icon_%282021%29.svg.png">Fedora</option>
+                        <option value="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/UbuntuCoF.svg/500px-UbuntuCoF.svg.png">Ubuntu</option>
+                        <option value="https://www.shareicon.net/data/512x512/2015/09/16/101872_debian_512x512.png">Debian (Circle)</option>
+                        <option value="https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Openlogo-debianV2.svg/500px-Openlogo-debianV2.svg.png">Debian (Logo)</option>
+                        <option value="https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Arch_Linux_%22Crystal%22_icon.svg/500px-Arch_Linux_%22Crystal%22_icon.svg.png">Arch Linux</option>
+                    </select>
+                </div>
+
+                <div>
+                    <div class="flex justify-between mb-3">
+                        <label class="text-sm font-medium text-slate-300">Simulation Speed</label>
+                        <span id="speed-val" class="text-sm text-blue-400 font-bold">3.0x</span>
+                    </div>
+                    <input id="speed-slider" type="range" min="0.5" max="80" step="0.1" value="3" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+                </div>
+            </div>
+            
+            <div class="mt-6 flex gap-4">
+                <button id="reset-btn" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded transition-all active:scale-95">
+                    Reset Stats
+                </button>
+                <button id="pause-btn" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded transition-all active:scale-95">
+                    Pause
+                </button>
+            </div>
+        </div>
+        
+        <footer class="mt-8 text-center text-slate-500 text-xs">
+            Optimized for 600x400 Resolution • Pure CSS/JS Simulation
+        </footer>
+    </div>
+
+    <script>
+        const box = document.getElementById('game-box');
+        const logo = document.getElementById('logo');
+        const hitDisplay = document.getElementById('hit-count');
+        const cornerDisplay = document.getElementById('corner-count');
+        const speedSlider = document.getElementById('speed-slider');
+        const speedVal = document.getElementById('speed-val');
+        const distroSelect = document.getElementById('distro-select');
+        const resetBtn = document.getElementById('reset-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const cornersCard = document.getElementById('corners-card');
+
+        // Dimensions
+        const boxWidth = 600;
+        const boxHeight = 400;
+        const logoSize = 100;
+
+        // State
+        let x = Math.random() * (boxWidth - logoSize);
+        let y = Math.random() * (boxHeight - logoSize);
+        let dx = 1;
+        let dy = 1;
+        let speed = 3;
+        let hits = 0;
+        let cornerHits = 0;
+        let isPaused = false;
+
+        function update() {
+            if (isPaused) {
+                requestAnimationFrame(update);
+                return;
+            }
+
+            // Move
+            x += dx * speed;
+            y += dy * speed;
+
+            let hitX = false;
+            let hitY = false;
+
+            // Collision X
+            if (x + logoSize >= boxWidth) {
+                x = boxWidth - logoSize;
+                dx = -1;
+                hitX = true;
+            } else if (x <= 0) {
+                x = 0;
+                dx = 1;
+                hitX = true;
+            }
+
+            // Collision Y
+            if (y + logoSize >= boxHeight) {
+                y = boxHeight - logoSize;
+                dy = -1;
+                hitY = true;
+            } else if (y <= 0) {
+                y = 0;
+                dy = 1;
+                hitY = true;
+            }
+
+            // Handle stats
+            if (hitX && hitY) {
+                hits++;
+                cornerHits++;
+                hitDisplay.textContent = hits;
+                cornerDisplay.textContent = cornerHits;
+                triggerCornerEffect();
+            } else if (hitX || hitY) {
+                hits++;
+                hitDisplay.textContent = hits;
+            }
+
+            // Apply style
+            logo.style.left = x + 'px';
+            logo.style.top = y + 'px';
+
+            requestAnimationFrame(update);
+        }
+
+        function triggerCornerEffect() {
+            cornersCard.classList.add('corner-hit-flash');
+            setTimeout(() => {
+                cornersCard.classList.remove('corner-hit-flash');
+            }, 500);
+        }
+
+        // Listeners
+        speedSlider.addEventListener('input', (e) => {
+            speed = parseFloat(e.target.value);
+            speedVal.textContent = speed.toFixed(1) + 'x';
+        });
+
+        distroSelect.addEventListener('change', (e) => {
+            logo.src = e.target.value;
+        });
+
+        resetBtn.addEventListener('click', () => {
+            hits = 0;
+            cornerHits = 0;
+            hitDisplay.textContent = '0';
+            cornerDisplay.textContent = '0';
+            // Randomize position on reset
+            x = Math.random() * (boxWidth - logoSize);
+            y = Math.random() * (boxHeight - logoSize);
+        });
+
+        pauseBtn.addEventListener('click', () => {
+            isPaused = !isPaused;
+            pauseBtn.textContent = isPaused ? 'Resume' : 'Pause';
+            pauseBtn.classList.toggle('bg-blue-600');
+            pauseBtn.classList.toggle('bg-emerald-600');
+        });
+
+        // Start
+        requestAnimationFrame(update);
+    </script>
+</body>
+</html>

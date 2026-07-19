@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>tty1</title>
+<style>
+  @font-face{
+    /* 'Fixed' is the classic X11 console bitmap font; declare it first so any
+       local copy is picked up, falling back to the closest available faces. */
+    font-family: 'Fixed';
+    src: local('Fixed'), local('Terminus'), local('Consolas');
+  }
+  :root{
+    --bg:#000000;
+    --text:#c8c8c8;
+    --dim:#6e6e6e;
+    --green:#5fd68b;
+    --brightgreen:#7ef2a6;
+    --blue:#6fa8ff;
+    --cyan:#63d9d9;
+    --yellow:#e3c463;
+    --red:#e2685f;
+    --magenta:#c68be0;
+    --accent:#a6172c; /* debian red */
+    --scrollbar:#2a2a2a;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    height:100%; margin:0; padding:0;
+    background:#000;
+    font-family:'Fixed','Terminus','Courier New', ui-monospace, monospace;
+  }
+  #term{
+    width:100vw; height:100vh; overflow-y:auto; background:var(--bg);
+    padding:6px 8px; font-size:15px; line-height:1.3;
+    color:var(--text);
+    text-shadow: 0 0 1px rgba(200,200,200,.25);
+  }
+  #term::-webkit-scrollbar{width:8px;}
+  #term::-webkit-scrollbar-thumb{background:var(--scrollbar);}
+  #term::-webkit-scrollbar-track{background:transparent;}
+  .line{white-space:pre-wrap; word-break:break-word;}
+  .prompt-user{color:var(--brightgreen); font-weight:bold;}
+  .prompt-root{color:var(--red); font-weight:bold;}
+  .prompt-at{color:var(--text);}
+  .prompt-path{color:var(--blue); font-weight:bold;}
+  .prompt-sym{color:var(--text);}
+  .dir{color:var(--blue); font-weight:bold;}
+  .file{color:var(--text);}
+  .exe{color:var(--brightgreen); font-weight:bold;}
+  .hidden{color:var(--dim);}
+  .err{color:var(--red);}
+  .ok{color:var(--green);}
+  .warn{color:var(--yellow);}
+  .info{color:var(--cyan);}
+  .accent{color:#ff6b6b;}
+  .muted{color:var(--dim);}
+  .kok{color:var(--green); font-weight:bold;}
+  .kfail{color:var(--red); font-weight:bold;}
+  #inputline{display:flex; align-items:flex-start;}
+  #inputline .promptbox{white-space:pre; flex-shrink:0;}
+  #cmdInput{
+    flex:1; background:transparent; border:none; outline:none;
+    color:var(--text); font-family:inherit; font-size:15px; caret-color:var(--brightgreen);
+    padding:0; margin:0 0 0 6px; text-shadow: 0 0 1px rgba(200,200,200,.25);
+  }
+  a{color:var(--blue);}
+  .ascii{white-space:pre; line-height:1.05; font-size:12.5px;}
+  table.fetch{border-collapse:collapse;}
+  table.fetch td{vertical-align:top; padding:0 2px;}
+  .neofetch-key{color:var(--red); font-weight:bold;}
+  .fastfetch-box{border:1px solid var(--dim); border-radius:2px; padding:8px 12px; display:inline-block;}
+
+</style>
+</head>
+<body>
+<div id="term" tabindex="0"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================= VIRTUAL FILESYSTEM ============================= */
+function dir(children){ return {type:'dir', children: children||{}, ctime: Date.now()}; }
+function file(content, exe){ return {type:'file', content: content||'', exe: !!exe, ctime: Date.now()}; }
+
+const fs = dir({
+  bin: dir({
+    bash: file('#!ELF binary', true), ls: file('#!ELF binary', true), cat: file('#!ELF binary', true),
+    grep: file('#!ELF binary', true), sh: file('#!ELF binary', true), mkdir: file('#!ELF binary', true),
+    systemctl: file('#!ELF binary', true), dash: file('#!ELF binary', true)
+  }),
+  boot: dir({
+    'vmlinuz-6.1.0-21-amd64': file('#!binary kernel image', true),
+    'initrd.img-6.1.0-21-amd64': file('#!binary initramfs', true)
+  }),
+  dev: dir({ null: file(''), sda1: file(''), tty1: file('') }),
+  etc: dir({
+    'os-release': file(
+`PRETTY_NAME="Debian GNU/Linux 12 (bookworm)"
+NAME="Debian GNU/Linux"
+VERSION_ID="12"
+VERSION="12 (bookworm)"
+VERSION_CODENAME=bookworm
+ID=debian
+HOME_URL="https://www.debian.org/"
+SUPPORT_URL="https://www.debian.org/support"
+BUG_REPORT_URL="https://bugs.debian.org/"`),
+    hostname: file('BIFC\n'),
+    hosts: file('127.0.0.1\tlocalhost\n127.0.1.1\tBIFC\n'),
+    passwd: file('root:x:0:0:root:/root:/bin/bash\nuser:x:1000:1000:user,,,:/home/user:/bin/bash\n'),
+    'debian_version': file('12.7\n'),
+    apt: dir({ 'sources.list': file('deb http://deb.debian.org/debian bookworm main\ndeb http://deb.debian.org/debian bookworm-updates main\ndeb http://security.debian.org/debian-security bookworm-security main\n') }),
+    fstab: file('# <file system> <mount point>   <type>  <options>\n/dev/sda1  /  ext4  errors=remount-ro  0  1\n')
+  }),
+  home: dir({
+    user: dir({
+      'Documents': dir({
+        'notes.txt': file('Remember to water the plants.\nFinish the quarterly report.\nLearn more Debian commands!\n'),
+        'todo.md': file('# TODO\n- [ ] Buy groceries\n- [ ] Fix bug in parser\n- [x] Install neofetch\n')
+      }),
+      'Downloads': dir({}),
+      'Pictures': dir({}),
+      'projects': dir({
+        'hello.py': file('print("Hello, Debian!")\n'),
+        'hello.c': file('#include <stdio.h>\nint main(){ printf("Hello, Debian!\\n"); return 0; }\n')
+      }),
+      '.bashrc': file('# ~/.bashrc: executed by bash for non-login shells\nexport PS1="\\u@\\h:\\w\\$ "\nalias ll="ls -la"\nalias la="ls -A"\n'),
+      '.bash_history': file('ls\ncd Documents\ncat notes.txt\napt update\nneofetch\n'),
+      '.profile': file('# ~/.profile\nif [ -n "$BASH_VERSION" ]; then\n  if [ -f "$HOME/.bashrc" ]; then . "$HOME/.bashrc"; fi\nfi\n')
+    })
+  }),
+  root: dir({
+    '.bashrc': file('# root bashrc\nexport PS1="\\u@\\h:\\w# "\n')
+  }),
+  tmp: dir({}),
+  usr: dir({
+    bin: dir({
+      python3: file('#!ELF binary', true), gcc: file('#!ELF binary', true), vim: file('#!ELF binary', true),
+      nano: file('#!ELF binary', true), git: file('#!ELF binary', true), curl: file('#!ELF binary', true)
+    }),
+    share: dir({ doc: dir({}) }),
+    local: dir({ bin: dir({}) })
+  }),
+  var: dir({
+    log: dir({
+      'syslog': file('Jul 18 09:00:01 debian systemd[1]: Starting Daily apt download activities...\nJul 18 09:00:03 debian systemd[1]: apt-daily.service: Deactivated successfully.\n'),
+      'apt': dir({ 'history.log': file('Start-Date: 2026-07-10  09:12:03\nCommandline: apt install neofetch\nEnd-Date: 2026-07-10  09:12:07\n') })
+    }),
+    www: dir({ html: dir({ 'index.html': file('<html><body><h1>It works!</h1></body></html>\n') }) })
+  })
+});
+
+/* ============================= APT PACKAGE DATABASE ============================= */
+const packages = {
+  'neofetch':  {version:'7.1.0-2',  desc:'a fast, highly customizable system info script', installed:true, size:'90 kB'},
+  'fastfetch': {version:'2.13.0-1', desc:'fast neofetch-like system information tool', installed:true, size:'1,204 kB'},
+  'vim':       {version:'2:9.0.1378-2', desc:'Vi IMproved - enhanced vi editor', installed:true, size:'3,481 kB'},
+  'nano':      {version:'7.2-1', desc:'small, friendly text editor inspired by Pico', installed:true, size:'609 kB'},
+  'git':       {version:'1:2.39.5-0+deb12u1', desc:'fast, scalable, distributed revision control system', installed:true, size:'3,982 kB'},
+  'curl':      {version:'7.88.1-10+deb12u8', desc:'command line tool for transferring data with URL syntax', installed:true, size:'424 kB'},
+  'wget':      {version:'1.21.3-1+b2', desc:'retrieves files from the web', installed:true, size:'938 kB'},
+  'python3':   {version:'3.11.2-1+b1', desc:'interactive high-level object-oriented language', installed:true, size:'88 kB'},
+  'gcc':       {version:'4:12.2.0-3', desc:'GNU C compiler', installed:true, size:'5 kB'},
+  'htop':      {version:'3.2.2-2', desc:'interactive processes viewer', installed:false, size:'187 kB'},
+  'tree':      {version:'2.1.1-2', desc:'displays an indented directory tree, in color', installed:false, size:'47 kB'},
+  'cowsay':    {version:'3.7+dfsg2-7', desc:'configurable talking cow (and other animals)', installed:false, size:'22 kB'},
+  'figlet':    {version:'2.2.5-3+b1', desc:'display large characters made up of ordinary screen characters', installed:false, size:'260 kB'},
+  'ffmpeg':    {version:'7:5.1.6-0+deb12u1', desc:'tools for transcoding, streaming and playing multimedia', installed:false, size:'2,020 kB'},
+  'docker.io': {version:'20.10.24+dfsg1-1+deb12u1', desc:'Linux container runtime', installed:false, size:'62.6 MB'},
+  'nginx':     {version:'1.22.1-9', desc:'small, powerful, scalable web/proxy server', installed:false, size:'586 kB'},
+  'openssh-server': {version:'1:9.2p1-2+deb12u3', desc:'secure shell (SSH) server, for secure access from remote machines', installed:true, size:'403 kB'},
+  'build-essential': {version:'12.9', desc:'informational list of build-essential packages', installed:true, size:'4.7 kB'},
+  'sudo':      {version:'1.9.13p3-1+deb12u1', desc:'provide limited super user privileges to specific users', installed:true, size:'1,935 kB'}
+};
+
+/* ============================= STATE ============================= */
+const state = {
+  user: 'user',
+  host: 'BIFC',
+  cwd: '/home/user',
+  isRoot: false,
+  history: [],
+  histIdx: -1,
+  env: {
+    HOME: '/home/user', USER: 'user', SHELL: '/bin/bash',
+    PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+    LANG: 'en_US.UTF-8', PWD: '/home/user', TERM: 'xterm-256color'
+  },
+  bootTime: Date.now() - (1000*60*47 + 1000*33), // uptime ~ 47m33s
+  pendingSudo: null, // {cmdline, callback}
+  memUsedFrac: 0.22 + Math.random()*0.13, // stable simulated RAM usage percentage for this session
+  shellBroken: false,
+  passwdBroken: false,
+  osReleaseBroken: false,
+  hostnameFileBroken: false,
+  meltdown: false
+};
+
+/* ============================= PATH HELPERS ============================= */
+function splitPath(p){ return p.split('/').filter(Boolean); }
+
+function resolvePath(input){
+  if(!input || input === '') return state.cwd;
+  let base = input.startsWith('/') ? [] : splitPath(state.cwd);
+  let parts = input.replace(/^~/, state.env.HOME);
+  if(parts.startsWith('/')) base = [];
+  const segs = splitPath(parts);
+  for(const seg of segs){
+    if(seg === '.') continue;
+    else if(seg === '..'){ base.pop(); }
+    else base.push(seg);
+  }
+  return '/' + base.join('/');
+}
+
+function getNode(path){
+  if(path === '/') return fs;
+  const segs = splitPath(path);
+  let node = fs;
+  for(const seg of segs){
+    if(!node || node.type !== 'dir' || !node.children[seg]) return null;
+    node = node.children[seg];
+  }
+  return node;
+}
+
+function getParent(path){
+  const segs = splitPath(path);
+  const name = segs.pop();
+  const parentPath = '/' + segs.join('/');
+  return { parent: getNode(parentPath || '/'), name, parentPath: parentPath || '/' };
+}
+
+function niceCwd(){
+  if(state.cwd === state.env.HOME) return '~';
+  if(state.cwd.startsWith(state.env.HOME + '/')) return '~' + state.cwd.slice(state.env.HOME.length);
+  return state.cwd;
+}
+
+function updateTitle(){
+  document.title = `${state.user}@${state.host}: ${niceCwd()}`;
+}
+
+/* ============================= OUTPUT HELPERS ============================= */
+const termEl = document.getElementById('term');
+
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function printRaw(html){
+  const d = document.createElement('div');
+  d.className = 'line';
+  d.innerHTML = html;
+  termEl.insertBefore(d, inputLineEl);
+  termEl.scrollTop = termEl.scrollHeight;
+}
+
+function printText(text, cls){
+  if(text === undefined || text === null) return;
+  const lines = String(text).split('\n');
+  for(const l of lines) printRaw(`<span class="${cls||''}">${esc(l)}</span>`);
+}
+
+function promptHtml(){
+  const userCls = state.isRoot ? 'prompt-root' : 'prompt-user';
+  const sym = state.isRoot ? '#' : '$';
+  return `<span class="${userCls}">${state.user}</span><span class="prompt-at">@</span><span class="${userCls}">${state.host}</span><span class="prompt-at">:</span><span class="prompt-path">${esc(niceCwd())}</span><span class="prompt-sym">${sym}</span> `;
+}
+
+function echoCommandLine(cmdline){
+  printRaw(promptHtml() + esc(cmdline));
+}
+
+/* ============================= FORMATTERS ============================= */
+function fmtUptime(){
+  const ms = Date.now() - state.bootTime;
+  const totalMin = Math.floor(ms/60000);
+  const h = Math.floor(totalMin/60), m = totalMin%60;
+  return `${h} hour${h!==1?'s':''}, ${m} minute${m!==1?'s':''}`;
+}
+
+function fmtDate(){
+  const d = new Date();
+  return d.toString().replace(/GMT.*/, '').trim();
+}
+
+/* Real-world signals pulled from the browser itself */
+function getResolution(){
+  return `${window.innerWidth}x${window.innerHeight}`;
+}
+function getMemInfo(){
+  // navigator.deviceMemory reports approximate device RAM in GiB (rounded to a power of two-ish step).
+  // Not every browser exposes it, so we fall back to a believable default.
+  const totalGiB = (navigator.deviceMemory && navigator.deviceMemory > 0) ? navigator.deviceMemory : 8;
+  const totalMiB = Math.round(totalGiB * 1024);
+  const usedMiB = Math.round(totalMiB * state.memUsedFrac);
+  const freeMiB = totalMiB - usedMiB;
+  return {
+    totalGiB, totalMiB, usedMiB, freeMiB,
+    totalGiBStr: totalGiB.toFixed(1)+'Gi', usedGiBStr: (usedMiB/1024).toFixed(1)+'Gi', freeGiBStr: (freeMiB/1024).toFixed(1)+'Gi'
+  };
+}
+
+/* ============================= COMMAND IMPLEMENTATIONS ============================= */
+const commands = {};
+
+commands.help = () => {
+  return [
+`Debian GNU/Linux 12 (bookworm) — simulated shell`,
+`Available commands (type any of these, most accept common flags):`,
+``,
+`  Filesystem:  ls  cd  pwd  cat  echo  mkdir  rmdir  rm  cp  mv  touch  find  tree  file  wc  head  tail  grep  sort  uniq  less  more  nano  vim  chmod  chown  du  df  ln`,
+`  System:      whoami  id  hostname  uname  date  cal  uptime  free  ps  top  env  export  which  history  clear  reboot  poweroff  reset  su  sudo  exit`,
+`  Packages:    apt update | apt upgrade | apt install <pkg> | apt remove <pkg> | apt search <term> | apt list --installed | dpkg -l`,
+`  Network:     ifconfig  ip a  ping  curl  wget`,
+`  Fun/info:    neofetch  fastfetch  cowsay  figlet  man <cmd>`,
+``,
+`Try: neofetch, apt update, apt install htop, cat Documents/notes.txt, ls -la`
+].join('\n');
+};
+
+commands.pwd = () => state.cwd;
+
+commands.whoami = () => state.passwdBroken ? 'whoami: cannot find name for user ID 1000' : state.user;
+
+commands.id = () => {
+  if(state.passwdBroken) return `id: cannot find name for user ID ${state.isRoot?0:1000}\nuid=${state.isRoot?0:1000} gid=${state.isRoot?0:1000}`;
+  return state.isRoot
+    ? 'uid=0(root) gid=0(root) groups=0(root)'
+    : 'uid=1000(user) gid=1000(user) groups=1000(user),27(sudo),100(users)';
+};
+
+commands.hostname = () => state.hostnameFileBroken ? '' : state.host;
+
+commands.uname = (args) => {
+  if(args.includes('-a')) return 'Linux debian 6.1.0-21-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.90-1 (2024-05-03) x86_64 GNU/Linux';
+  if(args.includes('-r')) return '6.1.0-21-amd64';
+  if(args.includes('-m')) return 'x86_64';
+  return 'Linux';
+};
+
+commands.date = () => fmtDate();
+
+commands.cal = () => {
+  const d = new Date();
+  const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const y = d.getFullYear(), m = d.getMonth();
+  const first = new Date(y,m,1).getDay();
+  const days = new Date(y,m+1,0).getDate();
+  let out = `    ${months[m]} ${y}\nSu Mo Tu We Th Fr Sa\n`;
+  let line = '   '.repeat(first);
+  for(let day=1; day<=days; day++){
+    line += String(day).padStart(2,' ') + ' ';
+    if((day+first)%7===0){ out += line.trimEnd() + '\n'; line=''; }
+  }
+  if(line.trim()) out += line.trimEnd() + '\n';
+  return out.trimEnd();
+};
+
+commands.uptime = () => {
+  const d = new Date();
+  return ` ${d.toTimeString().slice(0,8)} up ${fmtUptime()},  1 user,  load average: 0.12, 0.18, 0.15`;
+};
+
+commands.free = (args) => {
+  const h = args.includes('-h');
+  const mem = getMemInfo();
+  const buffCacheMiB = Math.round(mem.totalMiB * 0.09);
+  const availMiB = mem.freeMiB + buffCacheMiB;
+  if(h) return `              total        used        free      shared  buff/cache   available\nMem:      ${mem.totalGiBStr.padStart(9)}   ${mem.usedGiBStr.padStart(9)}   ${mem.freeGiBStr.padStart(9)}     112Mi   ${(buffCacheMiB/1024).toFixed(1)+'Gi'.padStart(6)}   ${(availMiB/1024).toFixed(1)+'Gi'}\nSwap:         2.0Gi          0B       2.0Gi`;
+  return `              total        used        free      shared  buff/cache   available\nMem:    ${String(mem.totalMiB*1024).padStart(10)} ${String(mem.usedMiB*1024).padStart(10)} ${String(mem.freeMiB*1024).padStart(10)}      114688 ${String(buffCacheMiB*1024).padStart(10)} ${String(availMiB*1024).padStart(10)}\nSwap:       2097148           0     2097148`;
+};
+
+commands.df = (args) => {
+  const h = args.includes('-h');
+  if(h) return `Filesystem      Size  Used Avail Use% Mounted on\nudev            3.8G     0  3.8G   0% /dev\ntmpfs           798M  1.4M  797M   1% /run\n/dev/sda1        29G   11G   17G  40% /\ntmpfs           3.8G     0  3.8G   0% /dev/shm\ntmpfs           5.0M  4.0K  5.0M   1% /run/lock`;
+  return `Filesystem     1K-blocks    Used Available Use% Mounted on\nudev             3993600       0   3993600   0% /dev\n/dev/sda1       30432648 11324212  17558872  40% /`;
+};
+
+commands.du = (args) => {
+  return `4.0K\t./Documents\n8.0K\t./projects\n4.0K\t./Downloads\n4.0K\t./Pictures\n24K\t.`;
+};
+
+commands.ps = (args) => {
+  const long = args.includes('aux') || args.includes('-aux') || args.includes('-ef');
+  if(long){
+    return `USER         PID  %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           1   0.0  0.1  22960 11244 ?        Ss   09:00   0:02 /sbin/init
+root         112   0.0  0.0      0     0 ?        I<   09:00   0:00 [kworker/0:1]
+root         301   0.0  0.2  18420  8420 ?        Ss   09:00   0:00 /lib/systemd/systemd-journald
+user        1042   0.0  0.1  17640  6412 pts/0    Ss   09:12   0:00 -bash
+user        1980   0.2  0.4  32100 14020 pts/0    R+   09:47   0:01 ps aux`;
+  }
+  return `  PID TTY          TIME CMD\n 1042 pts/0    00:00:00 bash\n 1980 pts/0    00:00:00 ps`;
+};
+
+commands.top = () => {
+  const mem = getMemInfo();
+  const buffCache = (mem.totalMiB * 0.09);
+  const avail = mem.freeMiB + buffCache;
+  return `top - ${new Date().toTimeString().slice(0,8)} up ${fmtUptime()},  1 user,  load average: 0.12, 0.18, 0.15
+Tasks:  98 total,   1 running,  97 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  2.3 us,  1.1 sy,  0.0 ni, 96.2 id,  0.3 wa,  0.0 hi,  0.1 si
+MiB Mem : ${mem.totalMiB.toFixed(1).padStart(8)} total, ${mem.freeMiB.toFixed(1).padStart(8)} free, ${mem.usedMiB.toFixed(1).padStart(8)} used, ${buffCache.toFixed(1).padStart(8)} buff/cache
+MiB Swap:   2048.0 total,   2048.0 free,      0.0 used. ${avail.toFixed(1).padStart(8)} avail Mem
+
+  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+    1 root      20   0   22960  11244   8320 S   0.0   0.1   0:02.14 systemd
+ 1042 user      20   0   17640   6412   5540 S   0.0   0.1   0:00.09 bash
+ 1980 user      20   0   10012   3324   2760 R   0.3   0.0   0:00.02 top`;
+};
+
+commands.env = () => Object.entries(state.env).map(([k,v]) => `${k}=${v}`).join('\n');
+
+commands.export = (args, raw) => {
+  const m = raw.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
+  if(m){ state.env[m[1]] = m[2].replace(/^["']|["']$/g,''); return ''; }
+  return commands.env();
+};
+
+commands.which = (args) => {
+  const known = ['bash','ls','cat','grep','mkdir','python3','gcc','vim','nano','git','curl'];
+  if(!args[0]) return '';
+  return known.includes(args[0]) ? `/usr/bin/${args[0]}` : `which: no ${args[0]} in (${state.env.PATH})`;
+};
+
+commands.history = () => state.history.map((h,i)=>`  ${i+1}  ${h}`).join('\n');
+
+commands.clear = () => { CLEAR_REQUEST = true; return null; };
+commands.reset = commands.clear;
+
+commands.exit = () => {
+  if(state.isRoot){
+    state.isRoot = false; state.user='user'; state.cwd = state.env.HOME;
+    updateTitle();
+    return null;
+  }
+  return 'logout\n[terminal session ended — refresh the page to start a new one]';
+};
+
+commands.reboot = () => { rebootSequence(); return null; };
+commands.poweroff = () => { rebootSequence(true); return null; };
+commands.shutdown = commands.poweroff;
+
+/* ---- filesystem commands ---- */
+commands.ls = (args) => {
+  const flags = args.filter(a=>a.startsWith('-')).join('');
+  const showAll = flags.includes('a');
+  const long = flags.includes('l');
+  const targets = args.filter(a=>!a.startsWith('-'));
+  const targetPath = resolvePath(targets[0] || '.');
+  const node = getNode(targetPath);
+  if(!node) return `ls: cannot access '${targets[0]||'.'}': No such file or directory`;
+  if(node.type === 'file') return targets[0];
+
+  let names = Object.keys(node.children).sort();
+  if(!showAll) names = names.filter(n=>!n.startsWith('.'));
+  else names = ['.','..',...names];
+
+  if(long){
+    const rows = names.map(n=>{
+      if(n==='.'||n==='..') return `drwxr-xr-x  2 user user 4096 Jul 18 09:00 ${n}`;
+      const c = node.children[n];
+      const perms = c.type==='dir' ? 'drwxr-xr-x' : (c.exe ? '-rwxr-xr-x' : '-rw-r--r--');
+      const size = c.type==='dir' ? 4096 : (c.content? c.content.length : 0);
+      const cls = c.type==='dir' ? 'dir' : (c.exe ? 'exe' : (n.startsWith('.') ? 'hidden' : 'file'));
+      return `${perms}  ${c.type==='dir'?2:1} user user ${String(size).padStart(4)} Jul 18 09:00 <span class="${cls}">${esc(n)}</span>`;
+    });
+    return rows.join('\n');
+  }
+  const spans = names.map(n=>{
+    if(n==='.'||n==='..') return `<span class="dir">${n}</span>`;
+    const c = node.children[n];
+    const cls = c.type==='dir' ? 'dir' : (c.exe ? 'exe' : (n.startsWith('.') ? 'hidden' : 'file'));
+    return `<span class="${cls}">${esc(n)}</span>`;
+  });
+  return spans.join('  ');
+};
+
+commands.cd = (args) => {
+  const target = args[0] ? resolvePath(args[0]==='-'? state.cwd : args[0]) : state.env.HOME;
+  const node = getNode(target);
+  if(!node) return `bash: cd: ${args[0]}: No such file or directory`;
+  if(node.type !== 'dir') return `bash: cd: ${args[0]}: Not a directory`;
+  state.cwd = target;
+  state.env.PWD = target;
+  updateTitle();
+  return null;
+};
+
+commands.mkdir = (args) => {
+  const parentsFlag = args.includes('-p');
+  const targets = args.filter(a=>a!=='-p');
+  for(const t of targets){
+    const path = resolvePath(t);
+    const {parent, name} = getParent(path);
+    if(!parent){
+      if(parentsFlag){
+        // create intermediate dirs
+        let cur = fs; const segs = splitPath(path);
+        for(const seg of segs){
+          if(!cur.children[seg]) cur.children[seg] = dir();
+          cur = cur.children[seg];
+        }
+        continue;
+      }
+      return `mkdir: cannot create directory '${t}': No such file or directory`;
+    }
+    if(parent.children[name]) return `mkdir: cannot create directory '${t}': File exists`;
+    parent.children[name] = dir();
+  }
+  return null;
+};
+
+commands.rmdir = (args) => {
+  for(const t of args){
+    const path = resolvePath(t);
+    const {parent, name} = getParent(path);
+    if(!parent || !parent.children[name]) return `rmdir: failed to remove '${t}': No such file or directory`;
+    const node = parent.children[name];
+    if(node.type!=='dir') return `rmdir: failed to remove '${t}': Not a directory`;
+    if(Object.keys(node.children).length) return `rmdir: failed to remove '${t}': Directory not empty`;
+    delete parent.children[name];
+    checkBreakage(path);
+    if(state.meltdown) return null;
+  }
+  return null;
+};
+
+commands.rm = (args) => {
+  const recursive = args.includes('-r') || args.includes('-rf') || args.includes('-fr') || args.includes('-R');
+  const targets = args.filter(a=>!a.startsWith('-'));
+  for(const t of targets){
+    const path = resolvePath(t);
+    if(path === '/'){
+      if(!recursive) return `rm: cannot remove '/': Is a directory`;
+      printText(`rm: it is dangerous to operate recursively on '/'`, 'warn');
+      printText(`rm: use --no-preserve-root to override this failsafe`, 'warn');
+      checkBreakage('/');
+      return null;
+    }
+    const {parent, name} = getParent(path);
+    if(!parent || !parent.children[name]) return `rm: cannot remove '${t}': No such file or directory`;
+    const node = parent.children[name];
+    if(node.type==='dir' && !recursive && Object.keys(node.children).length) return `rm: cannot remove '${t}': Is a directory`;
+    delete parent.children[name];
+    checkBreakage(path);
+    if(state.meltdown) return null;
+  }
+  return null;
+};
+
+/* ============================= SYSTEM BREAKAGE ============================= */
+const CRITICAL_TOP_DIRS = ['bin','sbin','usr','lib','var','etc','boot'];
+
+function checkBreakage(absPath){
+  const segs = splitPath(absPath);
+  if(absPath === '/' || (segs.length === 1 && CRITICAL_TOP_DIRS.includes(segs[0]))){
+    kernelPanic(segs.length ? `VFS: Unable to mount root fs, /${segs[0]} missing` : 'VFS: Unable to mount root fs on unknown-block(0,0)');
+    return;
+  }
+  if(absPath === '/bin/bash'){
+    state.shellBroken = true;
+    printText("rm: removed '/bin/bash' — you just deleted the shell binary you're typing into.", 'warn');
+    return;
+  }
+  if(absPath === '/boot/vmlinuz-6.1.0-21-amd64' || absPath === '/boot/initrd.img-6.1.0-21-amd64'){
+    state.kernelMissing = true;
+    printText('rm: removed. (nothing seems wrong yet — but the next reboot will disagree)', 'warn');
+    return;
+  }
+  if(absPath === '/etc/passwd'){
+    state.passwdBroken = true;
+    printText('rm: removed /etc/passwd — user/account lookups will start failing.', 'warn');
+    return;
+  }
+  if(absPath === '/etc/os-release'){
+    state.osReleaseBroken = true;
+    return;
+  }
+  if(absPath === '/etc/hostname'){
+    state.hostnameFileBroken = true;
+    return;
+  }
+}
+
+commands.touch = (args) => {
+  for(const t of args){
+    const path = resolvePath(t);
+    const {parent, name} = getParent(path);
+    if(!parent) return `touch: cannot touch '${t}': No such file or directory`;
+    if(!parent.children[name]) parent.children[name] = file('');
+    else parent.children[name].ctime = Date.now();
+  }
+  return null;
+};
+
+commands.cat = (args) => {
+  if(!args.length) return '';
+  const outs = [];
+  for(const t of args){
+    const path = resolvePath(t);
+    const node = getNode(path);
+    if(!node) return `cat: ${t}: No such file or directory`;
+    if(node.type==='dir') return `cat: ${t}: Is a directory`;
+    outs.push(node.content.replace(/\n$/,''));
+  }
+  return outs.join('\n');
+};
+
+commands.head = (args) => {
+  let n = 10;
+  const idx = args.indexOf('-n');
+  if(idx>-1){ n = parseInt(args[idx+1])||10; }
+  const targets = args.filter((a,i)=> !a.startsWith('-') && args[i-1]!=='-n');
+  const text = commands.cat(targets);
+  if(typeof text!=='string') return text;
+  return text.split('\n').slice(0,n).join('\n');
+};
+
+commands.tail = (args) => {
+  let n = 10;
+  const idx = args.indexOf('-n');
+  if(idx>-1){ n = parseInt(args[idx+1])||10; }
+  const targets = args.filter((a,i)=> !a.startsWith('-') && args[i-1]!=='-n');
+  const text = commands.cat(targets);
+  if(typeof text!=='string') return text;
+  const lines = text.split('\n');
+  return lines.slice(Math.max(0,lines.length-n)).join('\n');
+};
+
+commands.wc = (args) => {
+  const lFlag = args.includes('-l');
+  const targets = args.filter(a=>!a.startsWith('-'));
+  const text = commands.cat(targets);
+  if(typeof text!=='string') return text;
+  const lines = text.split('\n').length;
+  const words = text.split(/\s+/).filter(Boolean).length;
+  const chars = text.length;
+  if(lFlag) return `${lines} ${targets.join(' ')}`;
+  return `${lines} ${words} ${chars} ${targets.join(' ')}`;
+};
+
+commands.sort = (args, raw, stdin) => {
+  const targets = args.filter(a=>!a.startsWith('-'));
+  const text = stdin!==undefined ? stdin : commands.cat(targets);
+  if(typeof text!=='string') return text;
+  const rev = args.includes('-r');
+  let lines = text.split('\n').sort();
+  if(rev) lines.reverse();
+  return lines.join('\n');
+};
+
+commands.uniq = (args, raw, stdin) => {
+  const targets = args.filter(a=>!a.startsWith('-'));
+  const text = stdin!==undefined ? stdin : commands.cat(targets);
+  if(typeof text!=='string') return text;
+  const lines = text.split('\n');
+  const out = [];
+  for(const l of lines) if(out.length===0 || out[out.length-1]!==l) out.push(l);
+  return out.join('\n');
+};
+
+commands.grep = (args, raw, stdin) => {
+  const pattern = args[0];
+  const targets = args.slice(1).filter(a=>!a.startsWith('-'));
+  let text;
+  if(stdin !== undefined) text = stdin;
+  else text = commands.cat(targets);
+  if(typeof text!=='string') return text;
+  if(!pattern) return 'Usage: grep PATTERN [FILE]';
+  let re;
+  try{ re = new RegExp(pattern); } catch(e){ re = new RegExp(pattern.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')); }
+  return text.split('\n').filter(l=>re.test(l)).join('\n');
+};
+
+commands.find = (args) => {
+  const start = args[0] && !args[0].startsWith('-') ? args[0] : '.';
+  const nameIdx = args.indexOf('-name');
+  const namePattern = nameIdx>-1 ? args[nameIdx+1].replace(/^["']|["']$/g,'') : null;
+  const startPath = resolvePath(start);
+  const results = [];
+  function walk(path){
+    const node = getNode(path);
+    if(!node) return;
+    const base = path.split('/').pop() || path;
+    if(!namePattern || matchGlob(base, namePattern)) results.push(path===startPath ? start : (start==='.'? '.'+path.slice(startPath.length) : path));
+    if(node.type==='dir'){
+      for(const child of Object.keys(node.children)) walk(path==='/' ? '/'+child : path+'/'+child);
+    }
+  }
+  walk(startPath);
+  return results.join('\n');
+};
+function matchGlob(str, pattern){
+  const re = new RegExp('^'+pattern.replace(/[.+^${}()|[\]\\]/g,'\\$&').replace(/\*/g,'.*').replace(/\?/g,'.')+'$');
+  return re.test(str);
+}
+
+commands.tree = (args) => {
+  const startPath = state.cwd;
+  let out = [niceCwd() === '~' ? '.' : niceCwd()];
+  let dirCount=0, fileCount=0;
+  function walk(path, prefix){
+    const node = getNode(path);
+    const names = Object.keys(node.children).filter(n=>!n.startsWith('.')).sort();
+    names.forEach((n,i)=>{
+      const isLast = i===names.length-1;
+      const c = node.children[n];
+      out.push(prefix + (isLast?'└── ':'├── ') + n + (c.type==='dir'?'/':''));
+      if(c.type==='dir'){ dirCount++; walk(path==='/'?'/'+n:path+'/'+n, prefix+(isLast?'    ':'│   ')); }
+      else fileCount++;
+    });
+  }
+  walk(startPath, '');
+  out.push('', `${dirCount} directories, ${fileCount} files`);
+  return out.join('\n');
+};
+
+commands.file = (args) => {
+  const t = args[0];
+  if(!t) return 'Usage: file FILE';
+  const node = getNode(resolvePath(t));
+  if(!node) return `${t}: cannot open (No such file or directory)`;
+  if(node.type==='dir') return `${t}: directory`;
+  if(node.exe) return `${t}: ELF 64-bit LSB executable, x86-64, statically linked`;
+  if(t.endsWith('.py')) return `${t}: Python script, ASCII text executable`;
+  if(t.endsWith('.c')) return `${t}: C source, ASCII text`;
+  if(t.endsWith('.md')) return `${t}: ASCII text (Markdown)`;
+  return `${t}: ASCII text`;
+};
+
+commands.cp = (args) => {
+  const [src, dest] = args.filter(a=>!a.startsWith('-'));
+  if(!src||!dest) return 'usage: cp SOURCE DEST';
+  const srcNode = getNode(resolvePath(src));
+  if(!srcNode) return `cp: cannot stat '${src}': No such file or directory`;
+  const destPath = resolvePath(dest);
+  let {parent, name} = getParent(destPath);
+  const destNode = getNode(destPath);
+  if(destNode && destNode.type==='dir'){ parent = destNode; name = src.split('/').pop(); }
+  if(!parent) return `cp: cannot create '${dest}': No such file or directory`;
+  parent.children[name] = JSON.parse(JSON.stringify(srcNode));
+  return null;
+};
+
+commands.mv = (args) => {
+  const [src, dest] = args.filter(a=>!a.startsWith('-'));
+  if(!src||!dest) return 'usage: mv SOURCE DEST';
+  const srcPath = resolvePath(src);
+  const srcNode = getNode(srcPath);
+  if(!srcNode) return `mv: cannot stat '${src}': No such file or directory`;
+  const {parent:srcParent, name:srcName} = getParent(srcPath);
+  const destPath = resolvePath(dest);
+  let {parent, name} = getParent(destPath);
+  const destNode = getNode(destPath);
+  if(destNode && destNode.type==='dir'){ parent = destNode; name = srcName; }
+  if(!parent) return `mv: cannot move to '${dest}': No such file or directory`;
+  parent.children[name] = srcNode;
+  delete srcParent.children[srcName];
+  return null;
+};
+
+commands.ln = (args) => {
+  return null; // fake symlink noop
+};
+
+commands.chmod = (args) => null;
+commands.chown = (args) => null;
+
+commands.echo = (args, raw) => {
+  // handle redirection
+  const redirMatch = raw.match(/^(.*?)(>>|>)\s*(\S+)$/);
+  if(redirMatch){
+    const content = interpretEcho(redirMatch[1].trim());
+    const path = resolvePath(redirMatch[3]);
+    const {parent, name} = getParent(path);
+    if(!parent) return `bash: ${redirMatch[3]}: No such file or directory`;
+    const append = redirMatch[2]==='>>';
+    if(!parent.children[name]) parent.children[name] = file('');
+    if(append) parent.children[name].content += content + '\n';
+    else parent.children[name].content = content + '\n';
+    return null;
+  }
+  return interpretEcho(raw);
+};
+function interpretEcho(raw){
+  let s = raw;
+  s = s.replace(/\$(\w+)/g, (m,v)=> state.env[v] !== undefined ? state.env[v] : '');
+  if((s.startsWith('"')&&s.endsWith('"')) || (s.startsWith("'")&&s.endsWith("'"))) s = s.slice(1,-1);
+  return s;
+}
+
+commands.nano = commands.vim = (args) => {
+  const t = args[0];
+  if(!t) return 'usage: nano FILE';
+  const path = resolvePath(t);
+  let node = getNode(path);
+  if(!node){ const {parent,name} = getParent(path); if(parent){ parent.children[name]=file(''); node=parent.children[name]; } }
+  if(!node || node.type!=='file') return `${t}: Is a directory`;
+  return `[opened ${t} — this simulated terminal shows file contents but editing keystrokes isn't wired up]\n----------------------------------------\n${node.content}\n----------------------------------------`;
+};
+
+commands.less = commands.more = (args) => {
+  const out = commands.cat(args);
+  if(typeof out !== 'string') return out;
+  return out + '\n\n(END) — press q to quit (simulated: output already shown in full)';
+};
+
+/* ---- networking (fake, no real network access) ---- */
+commands.ifconfig = () => `eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 172.17.0.2  netmask 255.255.0.0  broadcast 172.17.255.255
+        ether 02:42:ac:11:00:02  txqueuelen 0  (Ethernet)
+        RX packets 4213  bytes 3891022 (3.7 MiB)
+        TX packets 2011  bytes 421900 (412.0 KiB)
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        loop  txqueuelen 1000  (Local Loopback)`;
+
+commands.ip = (args) => {
+  if(args[0]==='a' || args[0]==='addr') return `1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN
+    inet 127.0.0.1/8 scope host lo
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP
+    inet 172.17.0.2/16 scope global eth0`;
+  return 'Usage: ip a';
+};
+
+commands.ping = (args) => {
+  const host = args[0] || 'debian.org';
+  return `PING ${host} (198.51.100.1) 56(84) bytes of data.
+64 bytes from ${host}: icmp_seq=1 ttl=57 time=11.2 ms
+64 bytes from ${host}: icmp_seq=2 ttl=57 time=10.8 ms
+64 bytes from ${host}: icmp_seq=3 ttl=57 time=12.1 ms
+^C
+--- ${host} ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2003ms
+rtt min/avg/max/mdev = 10.8/11.4/12.1/0.5 ms`;
+};
+
+commands.curl = (args) => `curl: (6) Could not resolve host: ${args[0]||'example.com'} (this sandboxed shell has no real network access)`;
+commands.wget = (args) => `--${new Date().toISOString()}--  ${args[0]||'http://example.com'}\nResolving ${(args[0]||'example.com').replace(/^https?:\/\//,'')}... failed: Name or service not known.\nwget: unable to resolve host address (this sandboxed shell has no real network access)`;
+
+/* ---- apt / dpkg ---- */
+commands.apt = commands['apt-get'] = (args) => {
+  const sub = args[0];
+  const rest = args.slice(1).filter(a=>!a.startsWith('-'));
+  if(sub==='update'){
+    return `Hit:1 http://deb.debian.org/debian bookworm InRelease
+Hit:2 http://deb.debian.org/debian bookworm-updates InRelease
+Hit:3 http://security.debian.org/debian-security bookworm-security InRelease
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+All packages are up to date.`;
+  }
+  if(sub==='upgrade'){
+    return `Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Calculating upgrade... Done
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.`;
+  }
+  if(sub==='install'){
+    if(!rest.length) return '0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.';
+    const lines = [];
+    for(const pkg of rest){
+      const p = packages[pkg];
+      if(!p) { lines.push(`E: Unable to locate package ${pkg}`); continue; }
+      if(p.installed){ lines.push(`${pkg} is already the newest version (${p.version}).`); continue; }
+      p.installed = true;
+      lines.push(`Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following NEW packages will be installed:
+  ${pkg}
+0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.
+Need to get ${p.size} of archives.
+Get:1 http://deb.debian.org/debian bookworm/main amd64 ${pkg} amd64 ${p.version} [${p.size}]
+Fetched ${p.size} in 1s
+Selecting previously unselected package ${pkg}.
+Preparing to unpack .../${pkg}_${p.version}_amd64.deb ...
+Unpacking ${pkg} (${p.version}) ...
+Setting up ${pkg} (${p.version}) ...`);
+    }
+    return lines.join('\n');
+  }
+  if(sub==='remove' || sub==='purge'){
+    const lines = [];
+    for(const pkg of rest){
+      const p = packages[pkg];
+      if(!p || !p.installed){ lines.push(`Package '${pkg}' is not installed, so not removed`); continue; }
+      p.installed = false;
+      lines.push(`Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following packages will be REMOVED:
+  ${pkg}
+0 upgraded, 0 newly installed, 1 to remove and 0 not upgraded.
+(Reading database ... 182934 files and directories currently installed.)
+Removing ${pkg} (${p.version}) ...`);
+    }
+    return lines.join('\n');
+  }
+  if(sub==='search'){
+    const term = rest.join(' ').toLowerCase();
+    const matches = Object.entries(packages).filter(([n,p]) => n.includes(term) || p.desc.toLowerCase().includes(term));
+    if(!matches.length) return `no packages found matching "${term}"`;
+    return matches.map(([n,p])=>`${n}/bookworm ${p.version} amd64\n  ${p.desc}`).join('\n\n');
+  }
+  if(sub==='list'){
+    if(args.includes('--installed')){
+      return Object.entries(packages).filter(([,p])=>p.installed)
+        .map(([n,p])=>`${n}/bookworm,now ${p.version} amd64 [installed]`).join('\n');
+    }
+    return Object.entries(packages).map(([n,p])=>`${n}/bookworm ${p.version} amd64${p.installed? ' [installed]':''}`).join('\n');
+  }
+  if(sub==='show'){
+    const p = packages[rest[0]];
+    if(!p) return `N: Unable to locate package ${rest[0]}`;
+    return `Package: ${rest[0]}\nVersion: ${p.version}\nInstalled-Size: ${p.size}\nDescription: ${p.desc}`;
+  }
+  return `apt ${sub||''}: command understood options are: update, upgrade, install, remove, purge, search, list, show`;
+};
+
+commands.dpkg = (args) => {
+  if(args[0]==='-l'){
+    const rows = Object.entries(packages).filter(([,p])=>p.installed).map(([n,p])=>
+      `ii  ${n.padEnd(22)} ${p.version.padEnd(24)} amd64        ${p.desc}`);
+    return `Desired=Unknown/Install/Remove/Purge/Hold
+| Status=Not/Inst/Conf-files/Unpacked/halF-conf/Half-inst/trig-aWait/Trig-pend
+|/ Err?=(none)/Reinst-required (Status,Err: uppercase=bad)
+||/ Name                       Version                  Architecture Description
++++-==========================-========================-============-=================
+${rows.join('\n')}`;
+  }
+  return 'Usage: dpkg -l';
+};
+
+/* ---- fun ---- */
+commands.cowsay = (args) => {
+  if(!packages.cowsay.installed) return 'bash: cowsay: command not found\n(hint: apt install cowsay)';
+  const msg = args.join(' ') || 'Moo!';
+  const top = ' ' + '_'.repeat(msg.length+2);
+  const bot = ' ' + '-'.repeat(msg.length+2);
+  return `${top}\n< ${msg} >\n${bot}\n        \\   ^__^\n         \\  (oo)\\_______\n            (__)\\       )\\/\\\n                ||----w |\n                ||     ||`;
+};
+
+commands.figlet = (args) => {
+  if(!packages.figlet.installed) return 'bash: figlet: command not found\n(hint: apt install figlet)';
+  return args.join(' ').toUpperCase().split('').map(c=>c+' ').join('') + '\n(simulated figlet — imagine big ASCII letters here)';
+};
+
+commands.man = (args) => {
+  const topic = args[0];
+  const pages = {
+    ls: 'LS(1)\n\nNAME\n    ls - list directory contents\n\nSYNOPSIS\n    ls [OPTION]... [FILE]...\n\nDESCRIPTION\n    List information about the FILEs. -a: show hidden. -l: long listing format.',
+    grep: 'GREP(1)\n\nNAME\n    grep - print lines matching a pattern\n\nSYNOPSIS\n    grep [OPTION] PATTERN [FILE]...',
+    apt: 'APT(8)\n\nNAME\n    apt - command-line interface for the APT package manager\n\nSYNOPSIS\n    apt {update|upgrade|install|remove|search|list|show} [pkg]',
+    cd: 'CD(1)\n\nNAME\n    cd - change the current directory'
+  };
+  if(!topic) return 'What manual page do you want?';
+  return pages[topic] || `No manual entry for ${topic}`;
+};
+
+commands.sudo = () => null; // handled specially before dispatch
+commands.su = (args) => null; // handled specially before dispatch
+
+/* ============================= NEOFETCH / FASTFETCH ============================= */
+const debianLogo = [
+"      _,met\$\$\$\$\$gg.",
+"   ,g\$\$\$\$\$\$\$\$\$\$\$\$\$\$\$P.",
+" ,g\$\$P\"     \"\"\"Y\$\$.\".",
+",\$\$P'              \`\$\$\$.",
+"',\$\$P       ,ggs.     \`\$\$b:",
+"\`d\$\$'     ,\$P\"'   .    \$\$\$",
+" \$\$P      d\$'     ,    \$\$P",
+" \$\$:      \$\$.   -    ,d\$\$'",
+" \$\$;      Y\$b._   _,d\$P'",
+" Y\$\$.    \`.\`\"Y\$\$\$\$P\"'",
+" \`\$\$b      \"-.__",
+"  \`Y\$\$",
+"   \`Y\$\$.",
+"     \`\$\$b.",
+"       \`Y\$\$b.",
+"          \`\"Y\$b._",
+"              \`\"\"\"\"",
+""
+];
+
+function neofetch(){
+  const mem = getMemInfo();
+  const os = state.osReleaseBroken ? 'Unknown' : 'Debian GNU/Linux 12 (bookworm) x86_64';
+  const info = [
+    [`user@${state.host}`,''],
+    ['-----------',''],
+    ['OS', os],
+    ['Host', 'BIFC (BlockIn Fake Computer)'],
+    ['Kernel', '6.1.0-21-amd64'],
+    ['Uptime', fmtUptime()],
+    ['Packages', `${Object.values(packages).filter(p=>p.installed).length + 148} (dpkg)`],
+    ['Shell', 'bash 5.2.15'],
+    ['Resolution', getResolution()],
+    ['DE', 'none'],
+    ['WM', 'N/A (tty)'],
+    ['Terminal', 'xterm-256color'],
+    ['CPU', 'Virtual CPU (4) @ 2.6GHz'],
+    ['GPU', 'llvmpipe (LLVM 15.0.6, 256 bits)'],
+    ['Memory', `${mem.usedMiB}MiB / ${mem.totalMiB}MiB`]
+  ];
+  const rows = Math.max(debianLogo.length, info.length);
+  let out = '<table class="fetch"><tr><td class="ascii" style="color:var(--accent)">'+debianLogo.join('\n')+'</td><td style="padding-left:22px;">';
+  const lines = [];
+  lines.push(`<span class="neofetch-key">user</span><span>@</span><span class="neofetch-key">${state.host}</span>`);
+  lines.push('-----------');
+  for(const [k,v] of info.slice(2)) lines.push(`<span class="neofetch-key">${k}</span>: ${v}`);
+  out += lines.join('<br>');
+  out += '<br><br>'+
+    '<span style="color:#000;background:#333">&nbsp;&nbsp;&nbsp;</span>'+
+    '<span style="color:#fff;background:#a6172c">&nbsp;&nbsp;&nbsp;</span>'+
+    '<span style="color:#fff;background:#e3c463">&nbsp;&nbsp;&nbsp;</span>'+
+    '<span style="color:#fff;background:#5fd68b">&nbsp;&nbsp;&nbsp;</span>'+
+    '<span style="color:#fff;background:#6fa8ff">&nbsp;&nbsp;&nbsp;</span>'+
+    '<span style="color:#fff;background:#c68be0">&nbsp;&nbsp;&nbsp;</span>';
+  out += '</td></tr></table>';
+  return out;
+}
+
+function fastfetch(){
+  const mem = getMemInfo();
+  const os = state.osReleaseBroken ? 'Unknown' : 'Debian GNU/Linux 12 (bookworm) x86_64';
+  const info = [
+    ['OS', os],
+    ['Host', 'BIFC (BlockIn Fake Computer)'],
+    ['Kernel', 'Linux 6.1.0-21-amd64'],
+    ['Uptime', fmtUptime()],
+    ['Packages', `${Object.values(packages).filter(p=>p.installed).length + 148} (dpkg)`],
+    ['Shell', 'bash 5.2.15'],
+    ['Resolution', getResolution()],
+    ['Terminal', 'xterm-256color'],
+    ['CPU', 'Virtual CPU (4) @ 2.6GHz'],
+    ['GPU', 'llvmpipe (LLVM 15.0.6)'],
+    ['Memory', `${(mem.usedMiB/1024).toFixed(1)} GiB / ${mem.totalGiBStr.replace('Gi',' GiB')}`],
+    ['Disk (/)', '11 GiB / 29 GiB (40%)']
+  ];
+  let left = debianLogo.slice(0, info.length+2).join('\n');
+  let rightLines = [`<b>user@${state.host}</b>`, '─'.repeat(14)];
+  for(const [k,v] of info) rightLines.push(`<span class="neofetch-key">${k}</span>${' '.repeat(Math.max(1,10-k.length))}${v}`);
+  return `<table class="fetch"><tr><td class="ascii" style="color:var(--accent)">${left}</td><td style="padding-left:22px;"><div class="fastfetch-box">${rightLines.join('<br>')}</div></td></tr></table>`;
+}
+
+/* ============================= STREAMING OUTPUT HELPER ============================= */
+// Prints lines one at a time with a small delay, so long-running commands look like
+// they're actually doing something instead of dumping a wall of text instantly.
+function streamLines(lines, opts){
+  opts = opts || {};
+  const baseDelay = opts.delay;
+  return new Promise((resolve)=>{
+    let i = 0;
+    function step(){
+      if(i >= lines.length){ resolve(); return; }
+      const item = lines[i];
+      const isObj = typeof item === 'object' && item !== null;
+      const text = isObj ? item.text : item;
+      const cls = isObj && item.cls !== undefined ? item.cls : (opts.cls || 'muted');
+      const raw = isObj && item.raw;
+      const delay = isObj && item.delay !== undefined ? item.delay : (baseDelay !== undefined ? baseDelay : (50 + Math.random()*70));
+      if(raw) printRaw(text); else printText(text, cls);
+      i++;
+      setTimeout(step, delay);
+    }
+    step();
+  });
+}
+
+function elapsedTag(){
+  const s = (Date.now() - state.bootTime)/1000;
+  return `[${s.toFixed(6).padStart(12)}]`;
+}
+
+/* ============================= KERNEL PANIC ============================= */
+function kernelPanic(reason){
+  if(state.meltdown) return;
+  state.meltdown = true;
+  cmdInput.disabled = true;
+  const lines = [
+    `${elapsedTag()} Kernel panic - not syncing: ${reason}`,
+    `${elapsedTag()} CPU: 2 PID: 1 Comm: systemd Not tainted 6.1.0-21-amd64 #1 Debian 6.1.90-1`,
+    `${elapsedTag()} Hardware name: BIFC BlockIn Fake Computer/BIFC, BIOS 1.0 04/2026`,
+    `${elapsedTag()} Call Trace:`,
+    `${elapsedTag()}  <TASK>`,
+    `${elapsedTag()}  dump_stack_lvl+0x44/0x5c`,
+    `${elapsedTag()}  panic+0x119/0x2f6`,
+    `${elapsedTag()}  do_exit+0x8a8/0xac0`,
+    `${elapsedTag()}  do_group_exit+0x2d/0x90`,
+    `${elapsedTag()}  __x64_sys_exit_group+0x14/0x20`,
+    `${elapsedTag()}  do_syscall_64+0x38/0x90`,
+    `${elapsedTag()}  entry_SYSCALL_64_after_hwframe+0x63/0xcd`,
+    `${elapsedTag()}  </TASK>`,
+    `${elapsedTag()} Kernel Offset: disabled`,
+    `---[ end Kernel panic - not syncing: ${reason} ]---`
+  ].map(l=>({text:l, cls:'err', delay:110}));
+  streamLines(lines).then(()=>{
+    printText('', '');
+    printText('System halted. Refresh this page to power the machine back on.', 'warn');
+  });
+}
+
+/* ============================= REBOOT SEQUENCE ============================= */
+let rebooting = false;
+async function rebootSequence(powerOff){
+  if(rebooting || state.meltdown) return;
+  rebooting = true;
+  cmdInput.disabled = true;
+
+  const stoppingRaw = [
+    'Stopping User Manager for UID 1000...',
+    '[ OK ] Stopped target Default.',
+    'Stopping Session c1 of user user...',
+    '[ OK ] Removed slice User Slice of user.',
+    '[ OK ] Stopped target Timers.',
+    '[ OK ] Closed D-Bus System Message Bus Socket.',
+    'Stopping D-Bus System Message Bus...',
+    '[ OK ] Stopped D-Bus System Message Bus.',
+    'Unmounting /boot...',
+    'Unmounting /home...',
+    '[ OK ] Unmounted /home.',
+    '[ OK ] Unmounted /boot.',
+    'Stopping Session Manager for UID 0...',
+    '[ OK ] Reached target Unmount All Filesystems.',
+  ];
+  const stopping = stoppingRaw.map(l => l.startsWith('[ OK ]')
+    ? { text: `<span class="ok">[ OK ]</span>${esc(l.slice(6))}`, raw:true, delay: 130 }
+    : { text: l, cls:'muted', delay: 130 });
+  await streamLines(stopping);
+
+  // shell binary missing or kernel image missing: reboot cannot succeed
+  if(state.shellBroken || state.kernelMissing){
+    await streamLines([
+      'Reached target Shutdown.',
+      'Starting Reboot...',
+      state.kernelMissing ? 'error: file \'/boot/vmlinuz-6.1.0-21-amd64\' not found.' : 'error: /bin/bash: No such file or directory — cannot exec init',
+      'grub rescue> _'
+    ], {delay:220, cls:'err'});
+    kernelPanic(state.kernelMissing ? 'VFS: Unable to mount root fs, no boot image found' : 'Attempted to kill init! exitcode=0x00000100');
+    return;
+  }
+
+  if(powerOff){
+    await streamLines([
+      'Reached target Shutdown.',
+      'Stopping Load Kernel Modules...',
+      '[ OK ] Stopped Load Kernel Modules.',
+      'System halted.'
+    ], {delay:180, cls:'muted'});
+    printText('\n[Machine powered off — refresh the page to power back on]', 'warn');
+    cmdInput.disabled = true;
+  } else {
+    await streamLines(['Reached target Shutdown.', 'Rebooting...'], {delay:200, cls:'muted'});
+    termEl.querySelectorAll('.line').forEach(l=>l.remove());
+    state.bootTime = Date.now();
+    await bootSequence();
+    rebooting = false;
+  }
+}
+
+/* ============================= COMMAND DISPATCH ============================= */
+let CLEAR_REQUEST = false;
+
+/* ============================= "LOOKS BUSY" HELPERS ============================= */
+// A line that rewrites itself in place, e.g. a download percentage ticking up.
+function printProgressLine(label, steps, stepDelay){
+  return new Promise((resolve)=>{
+    const d = document.createElement('div');
+    d.className = 'line';
+    termEl.insertBefore(d, inputLineEl);
+    let i = 0;
+    function tick(){
+      d.innerHTML = `<span class="muted">${esc(label)}</span> <span class="ok">${esc(steps[i])}</span>`;
+      termEl.scrollTop = termEl.scrollHeight;
+      i++;
+      if(i < steps.length) setTimeout(tick, stepDelay);
+      else resolve();
+    }
+    tick();
+  });
+}
+
+async function asyncApt(args){
+  const sub = args[0];
+  const rest = args.slice(1).filter(a=>!a.startsWith('-'));
+
+  if(sub === 'update'){
+    await streamLines([
+      'Hit:1 http://deb.debian.org/debian bookworm InRelease',
+      'Hit:2 http://deb.debian.org/debian bookworm-updates InRelease',
+      'Hit:3 http://security.debian.org/debian-security bookworm-security InRelease',
+    ], {delay:260, cls:'muted'});
+    await printProgressLine('Reading package lists...', ['0%','35%','72%','Done'], 180);
+    await streamLines(['Building dependency tree... Done', 'Reading state information... Done', 'All packages are up to date.'], {delay:200, cls:'muted'});
+    return;
+  }
+
+  if(sub === 'upgrade'){
+    await printProgressLine('Reading package lists...', ['0%','60%','Done'], 180);
+    await streamLines(['Building dependency tree... Done', 'Reading state information... Done', 'Calculating upgrade... Done'], {delay:220, cls:'muted'});
+    printText('0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.', 'muted');
+    return;
+  }
+
+  if(sub === 'install'){
+    if(!rest.length){ printText('0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.', 'muted'); return; }
+    for(const pkg of rest){
+      const p = packages[pkg];
+      if(!p){ printText(`E: Unable to locate package ${pkg}`, 'err'); continue; }
+      if(p.installed){ printText(`${pkg} is already the newest version (${p.version}).`, 'muted'); continue; }
+      await streamLines(['Reading package lists... Done', 'Building dependency tree... Done', 'Reading state information... Done'], {delay:160, cls:'muted'});
+      await streamLines([`The following NEW packages will be installed:`, `  ${pkg}`, `0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.`, `Need to get ${p.size} of archives.`], {delay:170, cls:'muted'});
+      await printProgressLine(`Get:1 http://deb.debian.org/debian bookworm/main amd64 ${pkg} amd64 ${p.version} [${p.size}]`, ['0%','25%','58%','89%','100%'], 160);
+      await streamLines([
+        `Fetched ${p.size} in 1s`,
+        `Selecting previously unselected package ${pkg}.`,
+        `Preparing to unpack .../${pkg}_${p.version}_amd64.deb ...`,
+        `Unpacking ${pkg} (${p.version}) ...`,
+        `Setting up ${pkg} (${p.version}) ...`
+      ], {delay:190, cls:'muted'});
+      p.installed = true;
+    }
+    return;
+  }
+
+  if(sub === 'remove' || sub === 'purge'){
+    for(const pkg of rest){
+      const p = packages[pkg];
+      if(!p || !p.installed){ printText(`Package '${pkg}' is not installed, so not removed`, 'muted'); continue; }
+      await streamLines(['Reading package lists... Done', 'Building dependency tree... Done', 'Reading state information... Done'], {delay:160, cls:'muted'});
+      await streamLines([`The following packages will be REMOVED:`, `  ${pkg}`, `0 upgraded, 0 newly installed, 1 to remove and 0 not upgraded.`, `(Reading database ... 182934 files and directories currently installed.)`], {delay:170, cls:'muted'});
+      printText(`Removing ${pkg} (${p.version}) ...`, 'muted');
+      p.installed = false;
+    }
+    return;
+  }
+
+  // search / list / show / anything else: instant, delegate to the synchronous handler
+  const out = commands.apt(args, '');
+  if(out) printText(out, /^E:|^N:/.test(out) ? 'err' : '');
+}
+
+async function asyncPing(args){
+  const host = args[0] || 'debian.org';
+  printText(`PING ${host} (198.51.100.1) 56(84) bytes of data.`, 'muted');
+  const times = [11.2, 10.8, 12.1];
+  for(let i=0;i<times.length;i++){
+    await new Promise(r=>setTimeout(r, 650));
+    printText(`64 bytes from ${host}: icmp_seq=${i+1} ttl=57 time=${times[i]} ms`, 'muted');
+  }
+  await new Promise(r=>setTimeout(r, 400));
+  printText('^C', 'muted');
+  printText(`--- ${host} ping statistics ---`, 'muted');
+  printText('3 packets transmitted, 3 received, 0% packet loss, time 2003ms', 'muted');
+  printText('rtt min/avg/max/mdev = 10.8/11.4/12.1/0.5 ms', 'muted');
+}
+
+const ASYNC_COMMANDS = new Set(['apt','apt-get','ping']);
+
+function runPipeline(raw){
+  // split on unescaped pipes (simple)
+  const segments = raw.split('|').map(s=>s.trim());
+  let stdin = undefined;
+  let result = '';
+  for(let i=0;i<segments.length;i++){
+    const seg = segments[i];
+    const {cmd, args} = tokenize(seg);
+    const fn = commands[cmd];
+    if(!fn){
+      result = `bash: ${cmd}: command not found`;
+      break;
+    }
+    const out = fn(args, seg.slice(cmd.length).trim(), stdin);
+    if(out === null || out === undefined){ result = null; break; }
+    result = out;
+    stdin = typeof out === 'string' ? out.replace(/<[^>]+>/g,'') : out;
+  }
+  return result;
+}
+
+function tokenize(line){
+  const parts = line.trim().split(/\s+/);
+  return { cmd: parts[0]||'', args: parts.slice(1) };
+}
+
+function execute(raw){
+  // sudo password flow takes priority and never touches history/echo
+  if(state.pendingSudo){
+    const real = state.pendingSudo;
+    state.pendingSudo = null;
+    runAndRender(real);
+    return;
+  }
+
+  raw = raw.trim();
+  if(raw === '') return;
+
+  state.history.push(raw);
+  state.histIdx = state.history.length;
+
+  echoCommandLine(raw);
+
+  if(state.meltdown) return; // input is disabled at this point anyway
+
+  const _firstWord = raw.split(/\s+/)[0];
+  if(state.shellBroken && !['reboot','poweroff','shutdown'].includes(_firstWord)){
+    printText('bash: /bin/bash: No such file or directory', 'err');
+    return;
+  }
+
+  if(raw.startsWith('sudo ')){
+    const rest = raw.slice(5).trim();
+    printText('[sudo] password for user: ', 'muted');
+    // switch input to password mode
+    cmdInput.type = 'password';
+    state.pendingSudo = rest;
+    return;
+  }
+
+  if(raw === 'su' || raw.startsWith('su ')){
+    if(state.passwdBroken){
+      printText('su: user root does not exist or the user database could not be opened', 'err');
+      return;
+    }
+    state.isRoot = true; state.user = 'root'; state.cwd = '/root';
+    state.env.HOME = '/root'; state.env.USER = 'root';
+    updateTitle();
+    return;
+  }
+
+  runAndRender(raw);
+}
+
+function runAndRender(raw){
+  const {cmd, args} = tokenize(raw);
+  if(!cmd) return;
+
+  if(cmd === 'neofetch'){ printRaw(neofetch()); return; }
+  if(cmd === 'fastfetch'){ printRaw(fastfetch()); return; }
+
+  if(cmd === 'reboot'){ rebootSequence(false); return; }
+  if(cmd === 'poweroff' || cmd === 'shutdown'){ rebootSequence(true); return; }
+
+  if(!commands[cmd] && !ASYNC_COMMANDS.has(cmd)){
+    printText(`bash: ${cmd}: command not found`, 'err');
+    return;
+  }
+
+  if(!raw.includes('|') && ASYNC_COMMANDS.has(cmd)){
+    cmdInput.disabled = true;
+    const fn = cmd === 'ping' ? asyncPing : asyncApt;
+    fn(args).finally(()=>{ cmdInput.disabled = false; cmdInput.focus(); });
+    return;
+  }
+
+  let output;
+  if(raw.includes('|')) output = runPipeline(raw);
+  else output = commands[cmd](args, raw.slice(cmd.length).trim());
+
+  if(CLEAR_REQUEST){
+    CLEAR_REQUEST = false;
+    termEl.querySelectorAll('.line').forEach(l=>l.remove());
+    return;
+  }
+  if(output === null || output === undefined) return;
+
+  if(typeof output === 'string' && output.includes('<span') || (typeof output==='string' && output.includes('<table'))){
+    printRaw(output);
+  } else {
+    const isErr = /^bash:|^E:|not found|cannot|No such|Not a directory|Usage:|usage:/.test(output);
+    printText(output, isErr ? 'err' : '');
+  }
+}
+
+/* ============================= VERBOSE BOOT SEQUENCE ============================= */
+function kmsg(t){ return `[    ${t}] `; }
+
+async function bootSequence(){
+  if(cmdInput) cmdInput.disabled = true;
+
+  const kernelLines = [
+    '0.000000] Linux version 6.1.0-21-amd64 (debian-kernel@lists.debian.org) (gcc-12) #1 SMP PREEMPT_DYNAMIC Debian 6.1.90-1',
+    '0.000000] Command line: BOOT_IMAGE=/boot/vmlinuz-6.1.0-21-amd64 root=/dev/sda1 ro quiet',
+    '0.000000] BIOS-provided physical RAM map:',
+    '0.000000] BIOS-e820: [mem 0x0000000000000000-0x000000000009fbff] usable',
+    '0.031221] ACPI: Core revision 20221020',
+    '0.098213] Hardware name: BIFC BlockIn Fake Computer/BIFC, BIOS 1.0 04/2026',
+    '0.142887] SMP: Allowing 4 CPUs, 0 hotplug CPUs',
+    '0.203412] clocksource: tsc: mask: 0xffffffffffffffff max_cycles',
+    '0.298650] Freeing SMP alternatives memory: 36K',
+    '0.412200] Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled',
+    '0.501990] scsi host0: ata_piix',
+    '0.612340] sda: sda1',
+    '0.703110] EXT4-fs (sda1): mounted filesystem with ordered data mode',
+    '0.812004] systemd[1]: System time before build time, advancing clock.',
+  ].map(l => ({text: kmsg(l), cls:'muted', delay: 22 + Math.random()*30}));
+
+  await streamLines(kernelLines);
+
+  const targets = [
+    'systemd[1]: Detected architecture x86-64.',
+    'Welcome to Debian GNU/Linux 12 (bookworm)!',
+    '[ OK ] Set up automount Arbitrary Executable File Formats.',
+    '[ OK ] Created slice User and Session Slice.',
+    '[ OK ] Started Forward Password Requests to Wall.',
+    '[ OK ] Reached target Local Encrypted Volumes.',
+    '[ OK ] Reached target Paths.',
+    '[ OK ] Reached target Remote File Systems.',
+    '[ OK ] Reached target Slices.',
+    '[ OK ] Reached target Swap.',
+    '[ OK ] Listening on Journal Socket.',
+    'Mounting Kernel Debug File System...',
+    '[ OK ] Mounted Kernel Debug File System.',
+    'Starting Journal Service...',
+    '[ OK ] Started Journal Service.',
+    '[ OK ] Started udev Kernel Device Manager.',
+    'Starting Load Kernel Modules...',
+    '[ OK ] Started Load Kernel Modules.',
+    '[ OK ] Reached target Local File Systems.',
+    'Starting Network Name Resolution...',
+    'Starting Permit User Sessions...',
+    '[ OK ] Started Permit User Sessions.',
+    '[ OK ] Started Network Name Resolution.',
+    '[ OK ] Reached target Network.',
+    '[ OK ] Started D-Bus System Message Bus.',
+    '[ OK ] Reached target Multi-User System.',
+    'Starting Getty on tty1...',
+    '[ OK ] Started Getty on tty1.',
+  ].map(l => {
+    if(l.startsWith('[ OK ]')){
+      return { text: `<span class="ok">[ OK ]</span>${esc(l.slice(6))}`, raw:true, delay: 45 + Math.random()*55 };
+    }
+    return { text: l, cls:'muted', delay: 45 + Math.random()*55 };
+  });
+
+  await streamLines(targets);
+
+  printText('', '');
+  printText(`Debian GNU/Linux 12 bookworm ${state.host} tty1`, 'muted');
+  printText('', '');
+  await streamLines([
+    { text: `${state.host} login: user (automatic login)`, cls:'muted', delay: 250 },
+    { text: 'Last login: ' + new Date(Date.now()-3600000).toString().replace(/GMT.*/,'').trim() + ' on tty1', cls:'muted', delay: 180 }
+  ]);
+  printText('', '');
+  printRaw(neofetch());
+  printText('', '');
+  printText('Type "help" to see available commands.', 'info');
+
+  if(cmdInput){ cmdInput.disabled = false; cmdInput.focus(); }
+}
+
+/* ============================= INPUT WIRING ============================= */
+const inputLineEl = document.createElement('div');
+inputLineEl.id = 'inputline';
+inputLineEl.innerHTML = `<span class="promptbox" id="promptSpan"></span><input id="cmdInput" autocomplete="off" spellcheck="false" autofocus />`;
+termEl.appendChild(inputLineEl);
+const cmdInput = document.getElementById('cmdInput');
+const promptSpan = document.getElementById('promptSpan');
+
+function refreshPrompt(){
+  if(cmdInput.type === 'password'){
+    promptSpan.innerHTML = '';
+  } else {
+    promptSpan.innerHTML = promptHtml();
+  }
+}
+refreshPrompt();
+
+function focusInput(){ cmdInput.focus(); }
+termEl.addEventListener('click', focusInput);
+window.addEventListener('load', focusInput);
+
+cmdInput.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){
+    const val = cmdInput.value;
+    cmdInput.value = '';
+    if(cmdInput.type === 'password'){
+      cmdInput.type = 'text';
+      execute(val);
+    } else {
+      execute(val);
+    }
+    refreshPrompt();
+    termEl.scrollTop = termEl.scrollHeight;
+  } else if(e.key === 'ArrowUp'){
+    e.preventDefault();
+    if(state.histIdx > 0){ state.histIdx--; cmdInput.value = state.history[state.histIdx] || ''; }
+  } else if(e.key === 'ArrowDown'){
+    e.preventDefault();
+    if(state.histIdx < state.history.length-1){ state.histIdx++; cmdInput.value = state.history[state.histIdx] || ''; }
+    else { state.histIdx = state.history.length; cmdInput.value=''; }
+  } else if(e.key === 'Tab'){
+    e.preventDefault();
+    tryComplete();
+  } else if(e.key === 'l' && e.ctrlKey){
+    e.preventDefault();
+    termEl.querySelectorAll('.line').forEach(l=>l.remove());
+  } else if(e.key === 'c' && e.ctrlKey){
+    printRaw(promptHtml() + esc(cmdInput.value) + '^C');
+    cmdInput.value='';
+  }
+});
+
+function tryComplete(){
+  const val = cmdInput.value;
+  const parts = val.split(/\s+/);
+  const last = parts[parts.length-1] || '';
+  if(parts.length === 1){
+    const cmds = Object.keys(commands).concat(['neofetch','fastfetch']);
+    const matches = cmds.filter(c=>c.startsWith(last));
+    if(matches.length === 1) cmdInput.value = matches[0] + ' ';
+    else if(matches.length > 1) printText(matches.join('  '), 'muted');
+  } else {
+    const node = getNode(state.cwd);
+    if(node && node.type==='dir'){
+      const names = Object.keys(node.children);
+      const matches = names.filter(n=>n.startsWith(last));
+      if(matches.length === 1){
+        parts[parts.length-1] = matches[0];
+        cmdInput.value = parts.join(' ');
+      } else if(matches.length > 1){
+        printText(matches.join('  '), 'muted');
+      }
+    }
+  }
+}
+
+// fix execute() reference to override real execute when password flow triggers with '__sudo_pw__'
+const _origExecute = execute;
+
+/* boot */
+bootSequence();
+})();
+</script>
+</body>
+</html>
