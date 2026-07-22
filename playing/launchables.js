@@ -1,9 +1,9 @@
 // Apps
 const APPS = [
   { id: 'app-duck', name: 'DuckMath', h2: 'Are the games not good enough? Here is a new site, but suggestions are recommended', img: './img/duck.avif', path: './html/duck/index.html' },
-  { id: 'app-chat', name: 'Chat', h2: 'Chat with many other users.', img: './img/chat.png', path: './html/chat/index.html' }, 
   { id: 'app-deb', name: 'Debian Terminal', h2: 'A simulated Debian terminal! Familar to Debian, Ubuntu, Mint, Pi, and similar users.', img: './img/deb.png', path: './html/deb/index.html' }, 
-  { id: 'app-deb', name: 'Bouncing Distros', h2: 'Bouncing logos of Linux distros. We are not affiliated with any distros.', img: './img/ldb.png', path: './html/ldb/index.html' }, 
+  { id: 'app-bd', name: 'Bouncing Distros', h2: 'Bouncing logos of Linux distros. We are not affiliated with any distros.', img: './img/ldb.png', path: './html/ldb/index.html' },
+  { id: 'app-yio', name: 'Yell It Out', h2: 'Just go type things to channels, see if someone recieves it, sorta a pseudo chat!', img: './img/yio.png', path: './html/yio/index.html' }, 
 
 ];
 // Games
@@ -16,9 +16,13 @@ const STATIC_GAMES = [
   { id: 'game-fnf', name: 'FNF', h2: 'Can you keep up with the rhythm?', img: './img/fnf.jpg', path: './html/fnf/index.html' },
   { id: 'game-fb', name: 'Flappy Bird', h2: 'Flap! Flap! Flap thru pipes!', img: './img/fb.webp', path: './html/fb/index.html' },
   { id: 'game-bb', name: 'Block Blast', h2: 'Place blocks and match to edges.', img: './img/bb2.png', path: './html/bb/index.html' }, 
-  { id: 'game-au', name: 'Among Us', h2: 'The best web replica. Who is the imposter?! ', img: './img/au.jpeg', path: './html/au/index.html' },
+  { id: 'game-au', name: 'Among Us', h2: 'A decent web replica. Who is the imposter?! ', img: './img/au.jpeg', path: './html/au/index.html' },
   { id: 'game-dd4', name: 'Droistroy 4', h2: 'Wreck Android 4. But not with malware!', img: './img/dd4.png', path: './html/dd4/index.html?x=1' },
-  { id: 'game-dd4', name: 'Incredibox Sprunk!', h2: 'This used to be popular. Not a fan of it but my brother likes it so why not. This has a feature to not have the hat.', img: './img/spr.jpeg', path: './html/spr/index.html?x=1' },
+  { id: 'game-is', name: 'Incredibox Sprunk!', h2: 'This used to be popular. Not a fan of it but my brother likes it so why not. This has a feature to not have the hat.', img: './img/spr.jpeg', path: './html/spr/index.html?x=1' },
+  { id: 'game-mc18', name: 'Minecraf+ 1.8', h2: 'Craft, mine, and build, all in this game.', img: './img/mc.jpg', path: './html/mc18/index.html' },
+  { id: 'game-mc18', name: 'Minecraf+ 1.12', h2: 'Craft, mine, and build, all in this game.', img: './img/mc.jpg', path: './html/mc112/index.html' },
+  { id: 'game-yuao', name: 'POV: you use an OS many people hate: an endless runner', h2: 'Play as an Ubuntu user running from an Arch user who hates your distro... (THIS IS A BETA AND REALLY BUGGY.)', img: './img/yuao.png', path: './html/yuao/index.html' },
+  { id: 'game-abswf', name: 'Angry Birds SWF', h2: 'The eggs were stolen by pigs. The solution? Fling birds at pigs. A decently accurate remake!', path: './html/ab/index.html', img: './img/ab.jpg' }
 ];
 // Videos
 const VIDEOS = [
