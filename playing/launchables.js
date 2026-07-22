@@ -20,7 +20,7 @@ const STATIC_GAMES = [
   { id: 'game-dd4', name: 'Droistroy 4', h2: 'Wreck Android 4. But not with malware!', img: './img/dd4.png', path: './html/dd4/index.html?x=1' },
   { id: 'game-is', name: 'Incredibox Sprunk!', h2: 'This used to be popular. Not a fan of it but my brother likes it so why not. This has a feature to not have the hat.', img: './img/spr.jpeg', path: './html/spr/index.html?x=1' },
   { id: 'game-mc18', name: 'Minecraf+ 1.8', h2: 'Craft, mine, and build, all in this game.', img: './img/mc.jpg', path: './html/mc18/index.html' },
-  { id: 'game-mc18', name: 'Minecraf+ 1.12', h2: 'Craft, mine, and build, all in this game.', img: './img/mc.jpg', path: './html/mc112/index.html' },
+  { id: 'game-mc112', name: 'Minecraf+ 1.12', h2: 'Craft, mine, and build, all in this game.', img: './img/mc.jpg', path: './html/mc112/index.html' },
   { id: 'game-yuao', name: 'POV: you use an OS many people hate: an endless runner', h2: 'Play as an Ubuntu user running from an Arch user who hates your distro... (THIS IS A BETA AND REALLY BUGGY.)', img: './img/yuao.png', path: './html/yuao/index.html' },
   { id: 'game-abswf', name: 'Angry Birds SWF', h2: 'The eggs were stolen by pigs. The solution? Fling birds at pigs. A decently accurate remake!', path: './html/ab/index.html', img: './img/ab.jpg' }
 ];
