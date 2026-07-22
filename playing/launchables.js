@@ -3,7 +3,7 @@ const APPS = [
   { id: 'app-duck', name: 'DuckMath', h2: 'Are the games not good enough? Here is a new site, but suggestions are recommended', img: './img/duck.avif', path: './html/duck/index.html' },
   { id: 'app-deb', name: 'Debian Terminal', h2: 'A simulated Debian terminal! Familar to Debian, Ubuntu, Mint, Pi, and similar users.', img: './img/deb.png', path: './html/deb/index.html' }, 
   { id: 'app-bd', name: 'Bouncing Distros', h2: 'Bouncing logos of Linux distros. We are not affiliated with any distros.', img: './img/ldb.png', path: './html/ldb/index.html' },
-  { id: 'app-yio', name: 'Yell It Out', h2: 'Just go type things to channels, see if someone recieves it, sorta a pseudo chat!', img: './img/yio.png', path: './html/yio/index.html' }, 
+  { id: 'app-yio', name: 'Yell It Out', h2: 'Just go type things to channels, see if someone recieves it, sorta a pseudo chat!', img: './img/yio.png', path: './html/yio/index.html?x=1' }, 
 
 ];
 // Games
