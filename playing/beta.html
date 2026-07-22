@@ -617,8 +617,8 @@
     .more-link-item a:hover { background-color: var(--button-hover-bg); transform: translateY(-2px); }
 
     /* Suggest Tab */
-    #suggest-tab { max-width: 700px; margin: 0 auto; }
-    #suggest-tab iframe { width: 100%; height: 620px; border: 1px solid var(--line); border-radius: var(--radius); background-color: #fff; }
+    #suggest-tab { max-width: 900px; margin: 0 auto; }
+    #suggest-tab iframe { width: 900px; height: 500px; border: 1px solid var(--line); border-radius: var(--radius); background-color: #fff; }
 
     /* Command Prompt */
     #commandPromptOverlay {
@@ -1537,7 +1537,7 @@ function setLegacyMode(on, opts = {}) {
   if (legacyStyleEl) legacyStyleEl.disabled = !on;
   document.body.classList.toggle('legacy-mode', on);
   if (legacyModeToggle) legacyModeToggle.checked = on;
-  if (!opts.silent) showMessageBox(on ? 'Classic BlockIn look restored! 📼' : 'Welcome to the new look! ✨');
+  if (!opts.silent) showMessageBox(on ? 'Okay, reverting back. It will not be exact, but it is close.' : 'Oh, where we going? Back to the new one? Okay then.');
 }
 
 // --- Three.js ---
