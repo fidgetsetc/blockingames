@@ -26,5 +26,5 @@ const STATIC_GAMES = [
 ];
 // Videos
 const VIDEOS = [
-  { id: 'vid-ab1', name: 'Angry Birds Movie', h2: 'Flightless birds lead a mostly happy existence, except for Red (Clay Kaytis), who just can not get past the daily annoyances of life. His temperament leads him to anger management class, where he meets fellow misfits Chuck (Fergal Reilly) and Bomb.', img: 'https://archive.org/download/the-angry-birds-movie-2016-upload-copy/maxresdefault.jpg', src: 'https://archive.org/download/the-angry-birds-movie-2016-upload-copy/The%20Angry%20Birds%20Movie%20%282016%29%20%284K%20HDR%20BluRay%20x265%20%2B%20Subtitles%29.mp4' },
+  { id: 'vid-ab1', name: 'Angry Birds Movie', h2: 'Flightless birds lead a mostly happy existence, except for Red (Clay Kaytis), who just can not get past the daily annoyances of life. His temperament leads him to anger management class, where he meets fellow misfits Chuck (Fergal Reilly) and Bomb.', img: 'https://archive.org/download/the-angry-birds-movie-2016-upload-copy/maxresdefault.jpg', src: 'https://archive.org/download/the-angry-birds-movie-us-dvd-2016/The%20Angry%20Birds%20Movie%20%28US%20DVD%29%20%5B2016%5D.mp4' },
 ];

@@ -567,32 +567,77 @@
     }
     #messageBox button:hover { background-color: var(--button-hover-bg); }
 
-    /* Classic Theme (accent-only, from Store) */
+    /* Classic Theme (EPIXGAMES Classic — matches the "beta" flexbox-card look) */
+    body.classic-theme { background-color: #4287f5 !important; }
     body.classic-theme h1, body.classic-theme p, body.classic-theme h2,
     body.classic-theme .game dt, body.classic-theme .store-item h4,
     body.classic-theme .store-item p, body.classic-theme .settings-section label,
     body.classic-theme #searchResults p {
       color: #ffffff !important; font-family: 'Verdana', sans-serif !important; text-shadow: none !important;
     }
+    body.classic-theme h1 { font-size: 2em !important; font-weight: normal !important; }
     body.classic-theme .game dt { font-size: 14px !important; margin-top: 10px !important; }
     body.classic-theme #tabs-container, body.classic-theme .tab-content,
     body.classic-theme .game, body.classic-theme .store-item,
     body.classic-theme .settings-section, body.classic-theme #messageBox,
-    body.classic-theme .management-list {
+    body.classic-theme .management-list, body.classic-theme header {
       background: transparent !important; box-shadow: none !important; border: none !important;
     }
-    body.classic-theme .tab-button { background-color: transparent !important; }
+    body.classic-theme header::before { display: none !important; }
+    body.classic-theme .tab-button { background-color: transparent !important; color: #ffffff !important; font-family: 'Verdana', sans-serif !important; }
     body.classic-theme .tab-button.active {
-      background-color: #e0e0e0 !important; color: #333 !important; border: 1px solid #a0a0a0 !important; border-radius: 4px !important;
+      background-color: #007bff !important; color: #ffffff !important; border: none !important; border-radius: 5px !important;
     }
+    /* epixclassic.html only styles the "Try the beta" link as a button — every other
+       button/input (Play, Buy, Reset, etc.) is left as the browser's native submit button */
     body.classic-theme .play-now-button, body.classic-theme .header-search-group button,
     body.classic-theme .store-item button, body.classic-theme .settings-section button,
     body.classic-theme #messageBox button, body.classic-theme .management-item button {
-      background-color: #e0e0e0 !important; color: #333 !important; border: 1px solid #a0a0a0 !important; border-radius: 4px !important;
+      all: revert !important; cursor: pointer !important; font: revert !important; margin-top: 8px !important;
     }
-    body.classic-theme .header-search-group input[type="text"] { background-color: #ffffff !important; color: #000000 !important; border: 1px solid #ccc !important; }
+    body.classic-theme .store-item button:disabled, body.classic-theme .settings-section button:disabled { cursor: not-allowed !important; }
+    body.classic-theme .header-search-group input[type="text"] { background-color: #ffffff !important; color: #000000 !important; border: 1px solid #ccc !important; font-family: 'Verdana', sans-serif !important; }
     body.classic-theme .game img { border: none !important; }
     body.classic-theme #searchResults { background-color: #ffffff !important; color: #000000 !important; border: 1px solid #ccc !important; }
+
+    /* Really Classic Theme (EPIXGAMES Really Classic — matches the old bare table-grid look) */
+    body.really-classic-theme { background-color: #4287f5 !important; }
+    body.really-classic-theme h1, body.really-classic-theme h2 {
+      font-family: 'Verdana', sans-serif !important; color: #ffffff !important; text-shadow: none !important; font-weight: normal !important;
+    }
+    body.really-classic-theme h1 { font-size: 2em !important; }
+    body.really-classic-theme p, body.really-classic-theme .game dt, body.really-classic-theme .store-item h4,
+    body.really-classic-theme .store-item p, body.really-classic-theme .settings-section label,
+    body.really-classic-theme #searchResults p {
+      color: #ffffff !important; font-family: Arial, sans-serif !important; font-size: 14px !important; text-shadow: none !important;
+    }
+    body.really-classic-theme header, body.really-classic-theme header::before,
+    body.really-classic-theme .settings-section, body.really-classic-theme #messageBox,
+    body.really-classic-theme .management-list {
+      background: transparent !important; box-shadow: none !important; border: none !important;
+    }
+    /* Recreate the old <table class="tg"> grid: bordered cells, no gaps, no rounded cards */
+    body.really-classic-theme .games-container, body.really-classic-theme .store-grid {
+      display: flex !important; flex-wrap: wrap !important; gap: 0 !important; justify-content: flex-start !important;
+    }
+    body.really-classic-theme .game, body.really-classic-theme .store-item {
+      background: transparent !important; box-shadow: none !important; border-radius: 0 !important;
+      border: 1px solid #000000 !important; padding: 10px 5px !important; margin: 0 !important;
+    }
+    body.really-classic-theme .game img { border: none !important; border-radius: 0 !important; }
+    body.really-classic-theme #tabs-container {
+      background: transparent !important; box-shadow: none !important; border: 1px solid #000000 !important; border-radius: 0 !important;
+    }
+    body.really-classic-theme .tab-button { background-color: #f0f0f0 !important; color: #000000 !important; font-family: Arial, sans-serif !important; border-radius: 0 !important; }
+    body.really-classic-theme .tab-button.active { background-color: #d0d0d0 !important; color: #000000 !important; border: none !important; border-radius: 0 !important; }
+    /* No shop, no coins, no styled buttons — everything is a plain native input/button, like epixrc.html */
+    body.really-classic-theme .play-now-button, body.really-classic-theme .header-search-group button,
+    body.really-classic-theme .store-item button, body.really-classic-theme .settings-section button,
+    body.really-classic-theme #messageBox button, body.really-classic-theme .management-item button {
+      all: revert !important; cursor: pointer !important; font: revert !important; margin-top: 8px !important;
+    }
+    body.really-classic-theme .header-search-group input[type="text"] { all: revert !important; }
+    body.really-classic-theme #searchResults { background-color: #ffffff !important; color: #000000 !important; border: 1px solid #000000 !important; border-radius: 0 !important; }
 
     /* RGB Theme */
     body.rgb-theme h1, body.rgb-theme p, body.rgb-theme h2,
@@ -873,15 +918,32 @@
     #messageBox { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: var(--card-bg); color: var(--text-color); padding: 20px; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.6); z-index: 1001; display: none; text-align: center; font-family: 'Roboto', sans-serif; font-size: 1.1em; max-width: 300px; opacity: 0; visibility: hidden; }
     #messageBox button { background-color: var(--button-bg); color: var(--bg-color); border: none; border-radius: 8px; padding: 8px 15px; margin-top: 15px; cursor: pointer; transition: background-color 0.3s ease; }
     #messageBox button:hover { background-color: var(--button-hover-bg); }
+    body.classic-theme { background-color: #4287f5 !important; }
     body.classic-theme h1, body.classic-theme p, body.classic-theme h2, body.classic-theme .game dt, body.classic-theme .store-item h4, body.classic-theme .store-item p, body.classic-theme .settings-section label, body.classic-theme #searchResults p { color: #ffffff !important; font-family: 'Verdana', sans-serif !important; text-shadow: none !important; }
+    body.classic-theme h1 { font-size: 2em !important; font-weight: normal !important; }
     body.classic-theme .game dt { font-size: 14px !important; margin-top: 10px !important; }
-    body.classic-theme #tabs-container, body.classic-theme .tab-content, body.classic-theme .game, body.classic-theme .store-item, body.classic-theme .settings-section, body.classic-theme #messageBox, body.classic-theme .management-list { background-color: transparent !important; box-shadow: none !important; border: none !important; }
-    body.classic-theme .tab-button { background-color: transparent !important; border-right: none !important; }
-    body.classic-theme .tab-button.active { background-color: #e0e0e0 !important; color: #333 !important; border: 1px solid #a0a0a0 !important; border-radius: 4px !important; }
-    body.classic-theme .play-now-button, body.classic-theme .header-search-group button, body.classic-theme .store-item button, body.classic-theme .settings-section button, body.classic-theme #messageBox button, body.classic-theme .management-item button { background-color: #e0e0e0 !important; color: #333 !important; border: 1px solid #a0a0a0 !important; border-radius: 4px !important; }
-    body.classic-theme .header-search-group input[type="text"] { background-color: #ffffff !important; color: #000000 !important; border: 1px solid #ccc !important; }
+    body.classic-theme #tabs-container, body.classic-theme .tab-content, body.classic-theme .game, body.classic-theme .store-item, body.classic-theme .settings-section, body.classic-theme #messageBox, body.classic-theme .management-list, body.classic-theme header { background-color: transparent !important; box-shadow: none !important; border: none !important; }
+    body.classic-theme header::before { display: none !important; }
+    body.classic-theme .tab-button { background-color: transparent !important; border-right: none !important; color: #ffffff !important; font-family: 'Verdana', sans-serif !important; }
+    body.classic-theme .tab-button.active { background-color: #007bff !important; color: #ffffff !important; border: none !important; border-radius: 5px !important; }
+    body.classic-theme .play-now-button, body.classic-theme .header-search-group button, body.classic-theme .store-item button, body.classic-theme .settings-section button, body.classic-theme #messageBox button, body.classic-theme .management-item button { all: revert !important; cursor: pointer !important; font: revert !important; margin-top: 8px !important; }
+    body.classic-theme .header-search-group input[type="text"] { background-color: #ffffff !important; color: #000000 !important; border: 1px solid #ccc !important; font-family: 'Verdana', sans-serif !important; }
     body.classic-theme .game img { border: none !important; }
     body.classic-theme #searchResults { background-color: #ffffff !important; color: #000000 !important; border: 1px solid #ccc !important; }
+    body.really-classic-theme { background-color: #4287f5 !important; }
+    body.really-classic-theme h1, body.really-classic-theme h2 { font-family: 'Verdana', sans-serif !important; color: #ffffff !important; text-shadow: none !important; font-weight: normal !important; }
+    body.really-classic-theme h1 { font-size: 2em !important; }
+    body.really-classic-theme p, body.really-classic-theme .game dt, body.really-classic-theme .store-item h4, body.really-classic-theme .store-item p, body.really-classic-theme .settings-section label, body.really-classic-theme #searchResults p { color: #ffffff !important; font-family: Arial, sans-serif !important; font-size: 14px !important; text-shadow: none !important; }
+    body.really-classic-theme header, body.really-classic-theme header::before, body.really-classic-theme .settings-section, body.really-classic-theme #messageBox, body.really-classic-theme .management-list { background-color: transparent !important; box-shadow: none !important; border: none !important; }
+    body.really-classic-theme .games-container, body.really-classic-theme .store-grid { display: flex !important; flex-wrap: wrap !important; gap: 0 !important; justify-content: flex-start !important; }
+    body.really-classic-theme .game, body.really-classic-theme .store-item { background-color: transparent !important; box-shadow: none !important; border-radius: 0 !important; border: 1px solid #000000 !important; padding: 10px 5px !important; margin: 0 !important; }
+    body.really-classic-theme .game img { border: none !important; border-radius: 0 !important; }
+    body.really-classic-theme #tabs-container { background-color: transparent !important; box-shadow: none !important; border: 1px solid #000000 !important; border-radius: 0 !important; }
+    body.really-classic-theme .tab-button { background-color: #f0f0f0 !important; color: #000000 !important; font-family: Arial, sans-serif !important; border-radius: 0 !important; }
+    body.really-classic-theme .tab-button.active { background-color: #d0d0d0 !important; color: #000000 !important; border: none !important; border-radius: 0 !important; }
+    body.really-classic-theme .play-now-button, body.really-classic-theme .header-search-group button, body.really-classic-theme .store-item button, body.really-classic-theme .settings-section button, body.really-classic-theme #messageBox button, body.really-classic-theme .management-item button { all: revert !important; cursor: pointer !important; font: revert !important; margin-top: 8px !important; }
+    body.really-classic-theme .header-search-group input[type="text"] { all: revert !important; }
+    body.really-classic-theme #searchResults { background-color: #ffffff !important; color: #000000 !important; border: 1px solid #000000 !important; border-radius: 0 !important; }
     body.rgb-theme h1, body.rgb-theme p, body.rgb-theme h2, body.rgb-theme .game dt, body.rgb-theme .store-item h4, body.rgb-theme .store-item p, body.rgb-theme .settings-section label, body.rgb-theme #searchResults p { color: #ffffff !important; }
     /* Web 2.0 Gloss Theme — Windows 7 / Vista inspired (CSS vars injected by JS: --gloss-r, --gloss-g, --gloss-b) */
     body.web20-gloss-theme { background: var(--gloss-bg, #dde8f5) !important; color: #1a1a2e !important; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important; }
@@ -1109,7 +1171,7 @@
 <header>
   <div class="header-content">
     <h1>BlockIn<span class="accent-dot">.</span></h1>
-    <p>version 7.24.2026.part1</p>
+    <p>version 7.24.2026.part2</p>
     <p id="homeSubtitleText"></p>
   </div>
 </header>
@@ -1190,6 +1252,12 @@
     <h2 class="animate-on-scroll">Settings ⚙️</h2>
 
     <div class="settings-section animate-on-scroll">
+      <label for="themeSelect">Theme:</label>
+      <select id="themeSelect"></select>
+      <p style="font-size:0.85em;color:var(--fog);margin:0;">Switch your applied background/color theme here, or head to the Store to buy new ones.</p>
+    </div>
+
+    <div class="settings-section animate-on-scroll">
       <label for="accentColorPicker">Choose Accent Color:</label>
       <input type="color" id="accentColorPicker" value="#7c5cff">
     </div>
@@ -1205,14 +1273,14 @@
     </div>
 
     <div class="settings-section animate-on-scroll">
-      <div class="toggle-row">
-        <label class="switch" for="legacyModeToggle" style="margin:0;">
-          <input type="checkbox" id="legacyModeToggle">
-          <span class="slider"></span>
-        </label>
-        <label for="legacyModeToggle" style="margin:0;">Press Start 2P (classic BlockIn/EPIX look)</label>
-      </div>
-      <p style="font-size:0.85em;color:var(--fog);margin:0;">What a classic look, specifically for those who liked the old look from EPIX, and was initally used in BlockIn's early days. It also works good with the Classic EPIXGAMES look, for those who liked that old blue HTML-style look.</p>
+      <label for="siteLookSelect">Site Look:</label>
+      <select id="siteLookSelect">
+        <option value="blockin">BlockIn (Modern)</option>
+        <option value="early-blockin">EPIX / early BlockIn</option>
+        <option value="epix-classic">EPIXGAMES Classic</option>
+        <option value="epix-rc">EPIXGAMES RC (Really Classic)</option>
+      </select>
+      <p style="font-size:0.85em;color:var(--fog);margin:0;">These are free, built-in looks (not Store items) that change the whole site's structure and styling. "EPIX / early BlockIn" brings back the Press Start 2P look from BlockIn's early days. "EPIXGAMES Classic" and "EPIXGAMES RC" bring back two older looks of the original EPIXGAMES site. Won't be pixel-perfect, but it's close.</p>
     </div>
 
     
@@ -1486,6 +1554,18 @@ let currentLoadedGamePath = '';
 let grabMethod = localStorage.getItem('epixgamesGrabMethod') || 'iframe';
 let isLegacyMode = JSON.parse(localStorage.getItem('epixgamesLegacyMode') || 'false');
 
+// Site Look: one of 'blockin' (modern), 'early-blockin' (Press Start 2P legacy),
+// 'epix-classic' (EPIXGAMES Classic), 'epix-rc' (EPIXGAMES Really Classic).
+// These are free built-in looks, not Store accessories.
+let siteLook = localStorage.getItem('epixgamesSiteLook');
+if (!siteLook) {
+  // Migrate from older settings that used to live on the accessory system / legacy toggle.
+  if (appliedAccessory === 'classic-theme') siteLook = 'epix-classic';
+  else if (appliedAccessory === 'reallyclassic-theme') siteLook = 'epix-rc';
+  else if (isLegacyMode) siteLook = 'early-blockin';
+  else siteLook = 'blockin';
+}
+
 // Game resize/resolution: mode is 'default' (responsive, fills the box) or
 // 'actual' | 'fit' | 'stretch', applied against a chosen width/height.
 let gameResizeMode = localStorage.getItem('epixgamesResizeMode') || 'default';
@@ -1525,14 +1605,14 @@ let fullScreenButton, exitGameButton, copyLinkButton, bookmarkButton, bookmarkMe
 let gameIframeContainer, resizeButton, resizeMenu, resizeWidthInput, resizeHeightInput, applyResizeButton, resetResizeButton;
 let tabButtons, tabContents;
 let staticGamesContainer, customGamesContainer, customGamesTitle;
-let storeItemsContainer, resetEverythingButton, resetConfirmationMessage;
+let storeItemsContainer, resetEverythingButton, resetConfirmationMessage, themeSelect;
 let messageBox, messageBoxText, messageBoxCloseButton;
 let enable3DAnimationCheckbox, background3DCanvas, homeSubtitleTextElement;
 let commandPromptOverlay, consoleOutput, commandInput, fileInput;
 let currentMoneySpan, moreLinksContainer;
 let gameContextMenu, contextMenuHideButton, contextMenuToggleFavoriteButton;
 let hiddenGamesList, favoriteGamesList;
-let legacyModeToggle, modernStyleEl, legacyStyleEl;
+let legacyModeToggle, modernStyleEl, legacyStyleEl, siteLookSelect;
 let continuePlayingTitle, continuePlayingStrip, sidebarHistory, sidebarRecommended, historyManagementList, clearHistoryButton;
 let appsContainer, videosContainer, continueWatchingTitle, continueWatchingStrip;
 let searchToggleButton, searchWidgetContainer;
@@ -1634,6 +1714,40 @@ function setLegacyMode(on, opts = {}) {
   document.body.classList.toggle('legacy-mode', on);
   if (legacyModeToggle) legacyModeToggle.checked = on;
   if (!opts.silent) showMessageBox(on ? 'Okay, reverting back. It will not be exact, but it is close.' : 'Oh, where we going? Back to the new one? Okay then.');
+}
+
+// --- Site Look (unified dropdown: BlockIn / early BlockIn / EPIXGAMES Classic / EPIXGAMES RC) ---
+const SITE_LOOKS = ['blockin', 'early-blockin', 'epix-classic', 'epix-rc'];
+
+function setSiteLook(look, opts = {}) {
+  if (!SITE_LOOKS.includes(look)) look = 'blockin';
+  siteLook = look;
+  localStorage.setItem('epixgamesSiteLook', look);
+  if (siteLookSelect) siteLookSelect.value = look;
+
+  // Press Start 2P / early-BlockIn structural look
+  setLegacyMode(look === 'early-blockin', { silent: true });
+
+  // EPIXGAMES Classic / RC visual skins (layered on top of whichever structural look is active)
+  document.body.classList.remove('classic-theme', 'really-classic-theme');
+  if (look === 'epix-classic') document.body.classList.add('classic-theme');
+  if (look === 'epix-rc') document.body.classList.add('really-classic-theme');
+
+  const userPrefers3D = JSON.parse(localStorage.getItem('epixgames3DAnimationEnabled') || 'false');
+  toggle3DAnimation(userPrefers3D && look === 'blockin');
+  if (enable3DAnimationCheckbox) enable3DAnimationCheckbox.checked = userPrefers3D;
+
+  toggleAccentColorPickerState();
+
+  if (!opts.silent) {
+    const messages = {
+      'blockin': 'Right back to modern? Okay.',
+      'early-blockin': 'Noice. The classic Press Start 2P look.',
+      'epix-classic': 'What the era, the classic blue look.',
+      'epix-rc': 'And this...this is the initial blue look. Noice.'
+    };
+    showMessageBox(messages[look] || 'Look updated!');
+  }
 }
 
 // --- Three.js ---
@@ -2360,6 +2474,22 @@ function stopMoneyGranting() {
 }
 
 // --- Store ---
+function populateThemeSelect() {
+  if (!themeSelect) return;
+  const STORE_ITEMS_SAFE = (typeof STORE_ITEMS !== 'undefined') ? STORE_ITEMS : [];
+  const all = [...STORE_ITEMS_SAFE, ...window.customThemes];
+  themeSelect.innerHTML = '';
+  all.forEach(item => {
+    const owned = ownedAccessories[item.id] || item.default;
+    const opt = document.createElement('option');
+    opt.value = item.id;
+    opt.textContent = owned ? item.name : `${item.name} (locked — ${item.cost} 💰 in Store)`;
+    opt.disabled = !owned;
+    themeSelect.appendChild(opt);
+  });
+  themeSelect.value = appliedAccessory;
+}
+
 function renderStore() {
   storeItemsContainer.innerHTML = '';
   const STORE_ITEMS_SAFE = (typeof STORE_ITEMS !== 'undefined') ? STORE_ITEMS : [];
@@ -2397,6 +2527,7 @@ function renderStore() {
     storeItemsContainer.appendChild(div);
     animationObserver.observe(div);
   });
+  populateThemeSelect();
 }
 
 function buyAccessory(id, cost) {
@@ -2417,10 +2548,10 @@ function applyAccessory(id) {
   if (!item) return;
 
   stopRgbEffect();
-  document.body.classList.remove('classic-theme', 'rgb-theme', 'web20-gloss-theme');
+  document.body.classList.remove('rgb-theme', 'web20-gloss-theme');
 
   const userPrefers3D = JSON.parse(localStorage.getItem('epixgames3DAnimationEnabled') || 'false');
-  toggle3DAnimation(userPrefers3D && id !== 'classic-theme');
+  toggle3DAnimation(userPrefers3D && siteLook === 'blockin');
   if (enable3DAnimationCheckbox) enable3DAnimationCheckbox.checked = userPrefers3D;
 
   root.style.setProperty('--home-background', '#0b0d17');
@@ -2444,7 +2575,6 @@ function applyAccessory(id) {
     root.style.setProperty('--secondary-color', item.value);
     root.style.setProperty('--text-color', item.value);
   } else if (item.type === 'full-theme') {
-    if (id === 'classic-theme') document.body.classList.add('classic-theme');
     for (const p in item.value) root.style.setProperty(p, item.value[p]);
   } else if (item.type === 'dynamic-theme' && id === 'rgb-theme') {
     document.body.classList.add('rgb-theme');
@@ -2477,7 +2607,7 @@ function resetAllData() {
 }
 
 function toggleAccentColorPickerState() {
-  const disabled = appliedAccessory === 'classic-theme';
+  const disabled = siteLook === 'epix-classic' || siteLook === 'epix-rc';
   accentColorPicker.disabled = disabled;
   accentColorPicker.style.opacity = disabled ? 0.5 : 1;
   accentColorPicker.style.cursor = disabled ? 'not-allowed' : 'pointer';
@@ -3010,6 +3140,7 @@ document.addEventListener('DOMContentLoaded', () => {
   customGamesContainer    = document.getElementById('customGamesContainer');
   customGamesTitle        = document.getElementById('customGamesTitle');
   storeItemsContainer     = document.getElementById('storeItemsContainer');
+  themeSelect             = document.getElementById('themeSelect');
   resetEverythingButton   = document.getElementById('resetEverythingButton');
   resetConfirmationMessage= document.getElementById('resetConfirmationMessage');
   messageBox              = document.getElementById('messageBox');
@@ -3030,6 +3161,7 @@ document.addEventListener('DOMContentLoaded', () => {
   hiddenGamesList         = document.getElementById('hiddenGamesList');
   favoriteGamesList       = document.getElementById('favoriteGamesList');
   legacyModeToggle        = document.getElementById('legacyModeToggle');
+  siteLookSelect          = document.getElementById('siteLookSelect');
   modernStyleEl           = document.getElementById('modernStyle');
   legacyStyleEl           = document.getElementById('legacyStyle');
   continuePlayingTitle    = document.getElementById('continuePlayingTitle');
@@ -3092,7 +3224,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!ownedAccessories['default-theme']) { ownedAccessories['default-theme'] = true; localStorage.setItem('epixgamesOwnedAccessories', JSON.stringify(ownedAccessories)); }
   applyAccessory(appliedAccessory);
 
-  setLegacyMode(isLegacyMode, { silent: true });
+  setSiteLook(siteLook, { silent: true });
 
   if (enable3DAnimationCheckbox) {
     enable3DAnimationCheckbox.checked = JSON.parse(localStorage.getItem('epixgames3DAnimationEnabled') || 'false');
@@ -3104,13 +3236,33 @@ document.addEventListener('DOMContentLoaded', () => {
     legacyModeToggle.addEventListener('change', e => setLegacyMode(e.target.checked));
   }
 
+  if (siteLookSelect) {
+    siteLookSelect.value = siteLook;
+    siteLookSelect.addEventListener('change', e => setSiteLook(e.target.value));
+  }
+
+  if (themeSelect) {
+    themeSelect.addEventListener('change', e => {
+      const STORE_ITEMS_SAFE = (typeof STORE_ITEMS !== 'undefined') ? STORE_ITEMS : [];
+      const all = [...STORE_ITEMS_SAFE, ...window.customThemes];
+      const item = all.find(i => i.id === e.target.value);
+      if (!item) return;
+      if (ownedAccessories[item.id] || item.default) {
+        applyAccessory(item.id);
+      } else {
+        showMessageBox(`You don't own "${item.name}" yet — buy it in the Store for ${item.cost} 💰.`);
+        themeSelect.value = appliedAccessory;
+      }
+    });
+  }
+
   if (clearHistoryButton) clearHistoryButton.addEventListener('click', clearGameHistory);
 
   // Event listeners
   accentColorPicker.addEventListener('input', e => {
-    if (appliedAccessory === 'rgb-theme' || appliedAccessory === 'classic-theme') {
+    if (appliedAccessory === 'rgb-theme') {
       stopRgbEffect();
-      document.body.classList.remove('classic-theme', 'rgb-theme');
+      document.body.classList.remove('rgb-theme');
       appliedAccessory = 'default-theme';
       localStorage.setItem('epixgamesAppliedAccessory', appliedAccessory);
     }
