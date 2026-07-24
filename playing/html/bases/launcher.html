@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BI Loader for broken games</title>
+<style>
+  :root {
+    --bg: #0b0d10;
+    --panel: #14171c;
+    --accent: #5ee6a8;
+    --accent-dim: #2f7a5c;
+    --text: #e7ebee;
+    --text-dim: #93a0ab;
+    --border: #262b31;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg);
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  #stage {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+    display: block;
+  }
+
+  #game-frame {
+    display: block;
+    border: 0;
+    background: #000;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Applied while "match window resolution" is active: the frame is
+     pinned to its locked pixel size, then visually stretched with a
+     transform so its actual render resolution never changes. */
+  #game-frame.res-locked {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: top left;
+  }
+
+  /* ---- Overlay ---- */
+  #overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(8, 9, 11, 0.72);
+    backdrop-filter: blur(6px);
+    transition: opacity 0.25s ease;
+  }
+
+  #overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  #panel {
+    width: min(460px, 100%);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    color: var(--text);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  #panel h1 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 0 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  #panel h1 .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex: none;
+  }
+
+  #panel p {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--text-dim);
+    margin: 0 0 16px;
+  }
+
+  #panel p strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #0e1013;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 16px;
+  }
+
+  .row-label {
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .row-label small {
+    display: block;
+    color: var(--text-dim);
+    font-size: 11.5px;
+    margin-top: 2px;
+  }
+
+  /* Toggle switch */
+  .switch {
+    position: relative;
+    width: 42px;
+    height: 24px;
+    flex: none;
+  }
+
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .switch-track {
+    position: absolute;
+    inset: 0;
+    background: #2a2f36;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .switch-track::before {
+    content: "";
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    left: 3px;
+    top: 3px;
+    background: #cfd6db;
+    border-radius: 50%;
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+
+  .switch input:checked + .switch-track {
+    background: var(--accent-dim);
+  }
+
+  .switch input:checked + .switch-track::before {
+    transform: translateX(18px);
+    background: var(--accent);
+  }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  button.btn {
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    padding: 11px 16px;
+    cursor: pointer;
+    transition: transform 0.08s ease, background 0.15s ease, border-color 0.15s ease;
+  }
+
+  button.btn:active { transform: scale(0.97); }
+
+  .btn-primary {
+    flex: 1;
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #062018;
+  }
+
+  .btn-primary:hover { background: #6ff0b4; }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-dim);
+  }
+
+  .btn-secondary:hover { color: var(--text); border-color: #3a4048; }
+
+  /* ---- Reopen tab ---- */
+  #reopen {
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    z-index: 40;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: rgba(20, 23, 28, 0.85);
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 15px;
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  #reopen.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  #reopen:hover { color: var(--text); border-color: #3a4048; }
+</style>
+</head>
+<body>
+
+  <div id="stage">
+    <!-- Replace src below with the actual game URL -->
+    <iframe id="game-frame" src="" allowfullscreen title="Game"></iframe>
+  </div>
+
+  <button id="reopen" title="Show resize helper again">i</button>
+
+  <div id="overlay">
+    <div id="panel">
+      <h1><span class="dot"></span>Warning</h1>
+      <p>
+        This game has an issue that we are unable to fix that causes an issue where resizing the game won't make it fit to the screen, and instead in the corner or such.
+      </p>
+      <p>
+        Before playing,<strong>make sure to resize or fullscreen.</strong> When done, make sure to click <strong>"Start game"</strong> below. You can also toggle on <strong>Auto-resize</strong> to fit the game to future resizes, which is recommended if you resize or exit/enter fullscreen a lot.
+      </p>
+
+      <div class="row">
+        <div class="row-label">
+          Auto-resize
+          <small>Resize the game to the current window and fits that game to future resizes.</small>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="match-res-toggle">
+          <span class="switch-track"></span>
+        </label>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="confirm-btn">Start game</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const stage = document.getElementById('stage');
+    const frame = document.getElementById('game-frame');
+    const overlay = document.getElementById('overlay');
+    const reopenBtn = document.getElementById('reopen');
+    const confirmBtn = document.getElementById('confirm-btn');
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    const matchResToggle = document.getElementById('match-res-toggle');
+
+    // The window size captured at the moment "match window resolution"
+    // is switched on. This becomes the iframe's fixed, real render
+    // resolution — it is never changed again while locked, only
+    // stretched visually.
+    let lockedSize = null;
+
+    function normalSizing() {
+      frame.classList.remove('res-locked');
+      frame.style.transform = '';
+      frame.style.width = '100%';
+      frame.style.height = '100%';
+    }
+
+    // Pins the iframe at lockedSize (its actual resolution) and scales
+    // it with a CSS transform to cover the current viewport. Scaling
+    // is independent per axis, so it stretches to fill rather than
+    // preserving aspect ratio.
+    function applyLockedStretch() {
+      if (!lockedSize) return;
+      frame.classList.add('res-locked');
+      frame.style.width = lockedSize.w + 'px';
+      frame.style.height = lockedSize.h + 'px';
+
+      const scaleX = window.innerWidth / lockedSize.w;
+      const scaleY = window.innerHeight / lockedSize.h;
+      frame.style.transform = `scale(${scaleX}, ${scaleY})`;
+    }
+
+    function applySizing() {
+      if (matchResToggle.checked) {
+        applyLockedStretch();
+      } else {
+        normalSizing();
+      }
+    }
+
+    // Best-effort nudge to make the embedded game recalculate its own
+    // layout/canvas size. Only meaningful when the resolution isn't
+    // locked — while locked, the iframe's actual size never changes,
+    // so there's nothing for the game to resize, just a visual stretch.
+    function nudgeGameResize() {
+      if (matchResToggle.checked) {
+        applyLockedStretch();
+        return;
+      }
+      applySizing();
+      // Force a reflow between size changes so engines that only check
+      // size on transition (not continuously) actually detect a change.
+      requestAnimationFrame(() => {
+        window.dispatchEvent(new Event('resize'));
+        try {
+          frame.contentWindow && frame.contentWindow.dispatchEvent(new Event('resize'));
+        } catch (e) {
+          // Cross-origin iframe — can't reach into it, the outer resize
+          // event above is the fallback signal.
+        }
+      });
+    }
+
+    matchResToggle.addEventListener('change', () => {
+      if (matchResToggle.checked) {
+        // Capture the window size as it is right now — this becomes
+        // the game's locked resolution going forward.
+        lockedSize = { w: window.innerWidth, h: window.innerHeight };
+        applyLockedStretch();
+      } else {
+        lockedSize = null;
+        nudgeGameResize();
+      }
+    });
+
+    // While locked, further window resizes only update the stretch
+    // amount — the iframe's real resolution (lockedSize) is untouched.
+    window.addEventListener('resize', () => {
+      if (matchResToggle.checked) {
+        applyLockedStretch();
+      }
+    });
+
+    confirmBtn.addEventListener('click', () => {
+      nudgeGameResize();
+      overlay.classList.add('hidden');
+      reopenBtn.classList.add('visible');
+    });
+
+    reopenBtn.addEventListener('click', () => {
+      overlay.classList.remove('hidden');
+      reopenBtn.classList.remove('visible');
+    });
+
+    fullscreenBtn.addEventListener('click', async () => {
+      try {
+        if (!document.fullscreenElement) {
+          await stage.requestFullscreen();
+        } else {
+          await document.exitFullscreen();
+        }
+      } catch (e) {
+        // Fullscreen may be blocked by the parent page's iframe
+        // permissions if allowfullscreen isn't set upstream.
+        console.warn('Fullscreen request failed:', e);
+      }
+    });
+
+    document.addEventListener('fullscreenchange', nudgeGameResize);
+
+    // Initial sizing pass on load.
+    applySizing();
+  </script>
+
+</body>
+</html>
