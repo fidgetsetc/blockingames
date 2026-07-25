@@ -9,22 +9,22 @@ const APPS = [
 // Games
 const STATIC_GAMES = [
   { id: 'game-brick', name: 'Brick', h2: 'Theres a ton of locked tablets. Guess youll toss bricks!', img: './img/brick.png', path: './html/brick/index.html?x=1' },
-  { id: 'game-bp', name: 'Bad Piggies', h2: 'Build contraptions to get to the end. Tip: Use cheats and use Field of Dreams to build almost anything', img: './img/bp.jpg', path: './html/bp/index.html' },
-  { id: 'game-ctr', name: 'Cut The Rope', h2: 'Cut some ropes and feed candy to Om Nom!', img: './img/ctr.jpg', path: './html/ctr/index.html' },
-  { id: 'game-sm', name: 'Slice Master', h2: 'Become the master of slicing.', img: './img/sm.jpg', path: './html/sm/index.html' },
+  { id: 'game-bp', name: 'Bad Piggies', h2: 'Build contraptions to get to the end. Tip: Use cheats and use Field of Dreams to build almost anything', img: './img/bp.webp', path: './html/bp/index.html' },
+  { id: 'game-ctr', name: 'Cut The Rope', h2: 'Cut some ropes and feed candy to Om Nom!', img: './img/ctr.png', path: './html/ctr/index.html' },
+  { id: 'game-sm', name: 'Slice Master', h2: 'Become the master of slicing.', img: './img/sm.png', path: './html/sm/index.html' },
   { id: 'game-smb', name: 'Super Mario Bros', h2: 'Rescue Peach from Bowser and defeat other monsters on the way.', img: './img/smb.jpg', path: './html/smb/index.html' },
-  { id: 'game-fnf', name: 'FNF', h2: 'Can you keep up with the rhythm?', img: './img/fnf.jpg', path: './html/fnf/index.html' },
-  { id: 'game-fb', name: 'Flappy Bird', h2: 'Flap! Flap! Flap thru pipes!', img: './img/fb.webp', path: './html/fb/index.html' },
-  { id: 'game-bb', name: 'Block Blast', h2: 'Place blocks and match to edges.', img: './img/bb2.png', path: './html/bb/index.html' }, 
-  { id: 'game-au', name: 'Among Us', h2: 'A decent web replica. Who is the imposter?! ', img: './img/au.jpeg', path: './html/au/index.html' },
+  { id: 'game-fnf', name: 'FNF', h2: 'Can you keep up with the rhythm?', img: './img/fnf.webp', path: './html/fnf/index.html' },
+  { id: 'game-fb', name: 'Flappy Bird', h2: 'Flap! Flap! Flap thru pipes!', img: './img/fb.jpg', path: './html/fb/index.html' },
+  { id: 'game-bb', name: 'Block Blast', h2: 'Place blocks and match to edges.', img: './img/bb.webp', path: './html/bb/index.html' }, 
+  { id: 'game-au', name: 'Among Us', h2: 'A decent web replica. Who is the imposter?! ', img: './img/au.webp', path: './html/au/index.html' },
   { id: 'game-dd4', name: 'Droistroy 4', h2: 'Wreck Android 4. But not with malware!', img: './img/dd4.png', path: './html/dd4/index.html?x=1' },
-  { id: 'game-is', name: 'Incredibox Sprunk!', h2: 'This used to be popular. Not a fan of it but my brother likes it so why not. This has a feature to not have the hat.', img: './img/spr.jpeg', path: './html/spr/index.html?x=1' },
-  { id: 'game-mc18', name: 'Minecraf+ 1.8', h2: 'Craft, mine, and build, all in this game.', img: './img/mc.jpg', path: './html/mc18/index.html' },
-  { id: 'game-mc112', name: 'Minecraf+ 1.12', h2: 'Craft, mine, and build, all in this game.', img: './img/mc.jpg', path: './html/mc112/index.html' },
+  { id: 'game-is', name: 'Incredibox Sprunk!', h2: 'This used to be popular. Not a fan of it but my brother likes it so why not. This has a feature to not have the hat.', img: './img/spr.webp', path: './html/spr/index.html?x=1' },
+  { id: 'game-mc18', name: 'Minecraf+ 1.8', h2: 'Craft, mine, and build, all in this game.', img: './img/mc.webp', path: './html/mc18/index.html' },
+  { id: 'game-mc112', name: 'Minecraf+ 1.12', h2: 'Craft, mine, and build, all in this game.', img: './img/mc.webp', path: './html/mc112/index.html' },
   { id: 'game-yuao', name: 'POV: you use an OS many people hate: an endless runner', h2: 'Play as an Ubuntu user running from an Arch user who hates your distro... (THIS IS A BETA AND REALLY BUGGY.)', img: './img/yuao.png', path: './html/yuao/index.html' },
-  { id: 'game-abswf', name: 'Angry Birds SWF', h2: 'The eggs were stolen by pigs. The solution? Fling birds at pigs. A decently accurate remake!', path: './html/ab/index.html', img: './img/ab.jpg' }
+  { id: 'game-abswf', name: 'Angry Birds SWF', h2: 'The eggs were stolen by pigs. The solution? Fling birds at pigs. A decently accurate remake!', path: './html/ab/index.html', img: './img/ab.webp' }
 ];
 // Videos
 const VIDEOS = [
-  { id: 'vid-ab1', name: 'Angry Birds Movie', h2: 'Flightless birds lead a mostly happy existence, except for Red (Clay Kaytis), who just can not get past the daily annoyances of life. His temperament leads him to anger management class, where he meets fellow misfits Chuck (Fergal Reilly) and Bomb.', img: 'https://archive.org/download/the-angry-birds-movie-2016-upload-copy/maxresdefault.jpg', src: 'https://archive.org/download/the-angry-birds-movie-us-dvd-2016/The%20Angry%20Birds%20Movie%20%28US%20DVD%29%20%5B2016%5D.mp4' },
+  { id: 'vid-ab1', name: 'Angry Birds Movie', h2: 'Flightless birds lead a mostly happy existence, except for Red (Clay Kaytis), who just can not get past the daily annoyances of life. His temperament leads him to anger management class, where he meets fellow misfits Chuck (Fergal Reilly) and Bomb.', img: './img/abm.jpg', src: 'https://archive.org/download/the-angry-birds-movie-us-dvd-2016/The%20Angry%20Birds%20Movie%20%28US%20DVD%29%20%5B2016%5D.mp4' },
 ];
