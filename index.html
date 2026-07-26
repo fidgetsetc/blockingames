@@ -24,8 +24,10 @@
 <header>
   <div class="header-content">
     <h1>BlockIn<span class="accent-dot">.</span></h1>
-    <p>version 7.25.2026.part2</p>
+    <p>version 7.25.2026.part3</p>
     <p id="homeSubtitleText"></p>
+    <br>
+    <p>add /goguardian to end of link to get no website blocked screen</p>
   </div>
 </header>
 
@@ -133,6 +135,17 @@
         </label>
         <label for="enable3DAnimation" style="margin:0;">3D Cubes in Background</label>
       </div>
+    </div>
+
+    <div class="settings-section animate-on-scroll">
+      <div class="toggle-row">
+        <label class="switch" for="enableSounds" style="margin:0;">
+          <input type="checkbox" id="enableSounds">
+          <span class="slider"></span>
+        </label>
+        <label for="enableSounds" style="margin:0;">UI Sound Effects</label>
+      </div>
+      <p style="font-size:0.85em;color:var(--fog);margin:0;">Controls tab-switch sounds and game open/close sounds. Doesn't affect the background music player.</p>
     </div>
 
     <div class="settings-section animate-on-scroll">
@@ -469,6 +482,8 @@ const TAB_SOUNDS = {
 const GAME_LAUNCH_SOUND = 'music/open.ogg';
 const GAME_EXIT_SOUND = 'music/exit.ogg';
 const SFX_VOLUME = 0.5;
+let soundsEnabled = JSON.parse(localStorage.getItem('epixgamesSoundsEnabled') || 'true');
+let enableSoundsCheckbox;
 let bgMusicAudio, musicAppletToggle, musicAppletPanel, musicAppletPlayPause, musicAppletVolume, musicAppletTrackName;
 let bgMusicIsPlaying = false;
 let grabMethod = localStorage.getItem('epixgamesGrabMethod') || 'iframe';
@@ -2066,7 +2081,7 @@ function renderHome() {
 }
 
 function playSfx(path) {
-  if (!path) return;
+  if (!path || !soundsEnabled) return;
   try {
     const sfx = new Audio(path);
     sfx.volume = SFX_VOLUME;
@@ -2534,6 +2549,7 @@ document.addEventListener('DOMContentLoaded', () => {
   messageBoxText          = document.getElementById('messageBoxText');
   messageBoxCloseButton   = document.getElementById('messageBoxCloseButton');
   enable3DAnimationCheckbox = document.getElementById('enable3DAnimation');
+  enableSoundsCheckbox = document.getElementById('enableSounds');
   background3DCanvas      = document.getElementById('background3DCanvas');
   homeSubtitleTextElement = document.getElementById('homeSubtitleText');
   commandPromptOverlay    = document.getElementById('commandPromptOverlay');
@@ -2624,6 +2640,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (enable3DAnimationCheckbox) {
     enable3DAnimationCheckbox.checked = JSON.parse(localStorage.getItem('epixgames3DAnimationEnabled') || 'false');
     enable3DAnimationCheckbox.addEventListener('change', e => { localStorage.setItem('epixgames3DAnimationEnabled', JSON.stringify(e.target.checked)); applyAccessory(appliedAccessory); });
+  }
+  if (enableSoundsCheckbox) {
+    enableSoundsCheckbox.checked = soundsEnabled;
+    enableSoundsCheckbox.addEventListener('change', e => {
+      soundsEnabled = e.target.checked;
+      localStorage.setItem('epixgamesSoundsEnabled', JSON.stringify(soundsEnabled));
+    });
   }
 
   if (legacyModeToggle) {
