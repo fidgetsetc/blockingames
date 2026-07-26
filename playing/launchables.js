@@ -5,6 +5,7 @@ const APPS = [
   { id: 'app-bd', name: 'Bouncing Distros', h2: 'Bouncing logos of Linux distros. We are not affiliated with any distros.', img: './img/ldb.png', path: './html/ldb/index.html' },
   { id: 'app-yio', name: 'Yell It Out', h2: 'Just go type things to channels, see if someone recieves it, sorta a pseudo chat!', img: './img/yio.png', path: './html/yio/index.html?x=1' },
   { id: 'app-dowb', name: 'Doge Randomizer Web Browser', h2: 'Randomized l!nks for Doge', img: './img/dbr.png', path: './html/browser/index.html?x=1' }, 
+  { id: 'app-mcs', name: 'Minecraf+ Server List', h2: 'Get servers for MC', img: './img/mc.webp', path: './html/mcserver/index.html' },
 
 ];
 // Games
@@ -20,8 +21,8 @@ const STATIC_GAMES = [
   { id: 'game-au', name: 'Among Us', h2: 'A decent web replica. Who is the imposter?! ', img: './img/au.webp', path: './html/au/index.html' },
   { id: 'game-dd4', name: 'Droistroy 4', h2: 'Wreck Android 4. But not with malware!', img: './img/dd4.png', path: './html/dd4/index.html?x=1' },
   { id: 'game-is', name: 'Incredibox Sprunk!', h2: 'This used to be popular. Not a fan of it but my brother likes it so why not. This has a feature to not have the hat.', img: './img/spr.webp', path: './html/spr/index.html?x=1' },
-  { id: 'game-mc18', name: 'Minecraf+ 1.8', h2: 'Craft, mine, and build, all in this game.', img: './img/mc.webp', path: './html/mc18/index.html' },
-  { id: 'game-mc112', name: 'Minecraf+ 1.12', h2: 'Craft, mine, and build, all in this game.', img: './img/mc.webp', path: './html/mc112/index.html' },
+  { id: 'game-mc18', name: 'Minecraf+ 1.8', h2: 'Craft, mine, and build, all in this game. Check out Apps for servers.', img: './img/mc.webp', path: './html/mc18/index.html' },
+  { id: 'game-mc112', name: 'Minecraf+ 1.12', h2: 'Craft, mine, and build, all in this game. Check out Apps for servers.', img: './img/mc.webp', path: './html/mc112/index.html' },
   { id: 'game-yuao', name: 'POV: you use an OS many people hate: an endless runner', h2: 'Play as an Ubuntu user running from an Arch user who hates your distro... (THIS IS A BETA AND REALLY BUGGY.)', img: './img/yuao.png', path: './html/yuao/index.html' },
   { id: 'game-abswf', name: 'Angry Birds SWF', h2: 'The eggs were stolen by pigs. The solution? Fling birds at pigs. A decently accurate remake!', path: './html/ab/index.html', img: './img/ab.webp' }
 ];

@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Server List</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Custom styles for the Minecraft aesthetic */
+        @import url('https://fonts.googleapis.com/css2?family=VT323&family=Inter:wght@400;600;800&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a2e;
+            color: #e2e8f0;
+            background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
+            /* Fallback pattern if transparenttextures is down */
+            background-size: auto;
+        }
+
+        .mc-title {
+            font-family: 'VT323', monospace;
+            text-shadow: 4px 4px 0px #000;
+            letter-spacing: 2px;
+        }
+
+        .server-card {
+            background-color: rgba(30, 41, 59, 0.85); /* slate-800 with opacity */
+            border: 2px solid #334155; /* slate-700 */
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        .server-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            border-color: #10b981; /* emerald-500 highlight on hover */
+        }
+        
+        .status-badge.online {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border: 1px solid #10b981;
+        }
+
+        .status-badge.offline {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border: 1px solid #ef4444;
+        }
+
+        .copy-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .copy-btn:hover {
+            background-color: #34d399; /* emerald-400 */
+            color: #064e3b; /* emerald-900 */
+        }
+        
+        .copy-btn.copied {
+            background-color: #10b981;
+            color: white;
+            cursor: default;
+        }
+
+        /* Toast Notification Styling */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background-color: #10b981;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transform: translateX(120%);
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-12">
+
+    <header class="pt-16 pb-8 px-4 text-center">
+        <h1 class="mc-title text-6xl md:text-8xl text-emerald-400 mb-4 inline-block">Eagl3rCraft servers</h1>
+        <p class="text-xl text-slate-300 max-w-2xl mx-auto">A list of Min3craft servers. Click the link to copy it instantly, add them to Minecraft by launching Minecraft, clicking Multiplayer, clicking Add Server, pasting the link, and boom, you have the server.</p>
+    </header>
+
+    <main class="container mx-auto px-4 max-w-6xl">
+        
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 bg-slate-800/80 p-4 rounded-xl border border-slate-700 backdrop-blur-sm">
+            
+            <div class="mt-4 md:mt-0 w-full md:w-auto">
+                <div class="relative">
+                    <input type="text" id="search-input" placeholder="Search servers..." class="w-full md:w-64 bg-slate-900 border border-slate-600 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="server-list">
+            <!-- Servers will be injected here by JavaScript -->
+        </div>
+    </main>
+
+    <footer class="mt-16 text-center text-slate-500 text-sm">
+        <p>&copy; Not affiliated with Mojang AB.</p>
+    </footer>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // EDIT YOUR SERVERS HERE
+            const serversData = [
+                {
+                    name: "DuckCraft Play",
+                    description: "For fair duels, Skyblock, Creative",
+                    ip: "wss://play.duckcraft.top:8081",
+                    categories: []
+                },
+                {
+                    name: "DuckCraft PVP",
+                    description: "PvP Server, though esentially a regular survival server with lifesteal, shops, auction house, and other fun plugins and public builds/warps",
+                    ip: "wss://pvp.duckcraft.top",
+                    categories: []
+                },
+                {
+                    name: "DuckCraft Mystic",
+                    description: "OP Mobs, fun to play, build tricky bases, and defeat mobs that have way too much health!",
+                    ip: "wss://mystic.duckcraft.top",
+                    categories: []
+                },
+                {
+                    name: "DuckCraft Survival",
+                    description: "Regular survival, little to no major plugins, no moderation, no ranks",
+                    ip: "wss://survival.duckcraft.top",
+                    categories: []
+                },
+            ];
+
+            const serverListContainer = document.getElementById('server-list');
+            const toastContainer = document.getElementById('toast-container');
+            const searchInput = document.getElementById('search-input');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+
+            let currentFilter = 'all';
+            let searchQuery = '';
+
+            // Function to generate the HTML for a single server card
+            function createServerCard(server) {
+                // Join categories into a space-separated string for the data attribute
+                const categoryString = server.categories.join(' ');
+                
+                return `
+                    <div class="server-card rounded-xl p-6 flex flex-col h-full" data-category="${categoryString}">
+                        <div class="mb-3">
+                            <h2 class="server-name text-2xl font-bold text-white">${server.name}</h2>
+                        </div>
+                        
+                        <div class="mb-5 flex-grow">
+                            <p class="text-slate-300 text-sm">${server.description}</p>
+                        </div>
+
+                        <div class="mt-auto pt-4 border-t border-slate-700">
+                            <button class="copy-btn w-full flex items-center justify-between bg-slate-900 border border-slate-600 rounded-lg p-3 text-left group" data-ip="${server.ip}">
+                                <div>
+                                    <div class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1 group-hover:text-emerald-300 transition-colors">Server IP</div>
+                                    <div class="text-emerald-400 font-mono text-lg font-bold">${server.ip}</div>
+                                </div>
+                                <div class="bg-slate-800 p-2 rounded-md group-hover:bg-emerald-500 group-hover:text-emerald-900 transition-colors icon-container">
+                                    <i class="far fa-copy text-xl copy-icon"></i>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Function to render all servers based on current data
+            function renderServers() {
+                serverListContainer.innerHTML = '';
+                serversData.forEach(server => {
+                    serverListContainer.innerHTML += createServerCard(server);
+                });
+                // Re-attach copy event listeners to newly created buttons
+                attachCopyListeners();
+                // Apply current filters to newly rendered list
+                applyFilters();
+            }
+
+            // Function to show a toast notification
+            function showToast(message) {
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+                
+                toastContainer.appendChild(toast);
+                
+                toast.offsetHeight; // Trigger reflow
+                toast.classList.add('show');
+
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 300);
+                }, 3000);
+            }
+
+            // Fallback copy method
+            function fallbackCopyTextToClipboard(text) {
+                var textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.top = "0";
+                textArea.style.left = "0";
+                textArea.style.position = "fixed";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+
+                try {
+                    var successful = document.execCommand('copy');
+                    return successful;
+                } catch (err) {
+                    console.error('Fallback: Oops, unable to copy', err);
+                    return false;
+                } finally {
+                    document.body.removeChild(textArea);
+                }
+            }
+
+            // Main copy function
+            function copyTextToClipboard(text, btnElement) {
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        handleCopySuccess(btnElement, text);
+                    }).catch(err => {
+                        console.error('Failed to copy using clipboard API: ', err);
+                        if(fallbackCopyTextToClipboard(text)) handleCopySuccess(btnElement, text);
+                    });
+                } else {
+                    if(fallbackCopyTextToClipboard(text)) handleCopySuccess(btnElement, text);
+                }
+            }
+
+            // Handle UI changes after successful copy
+            function handleCopySuccess(btn, ip) {
+                showToast(`Copied IP: ${ip}`);
+                
+                const iconContainer = btn.querySelector('.icon-container');
+                const icon = btn.querySelector('.copy-icon');
+                const textLabel = btn.querySelector('.text-xs');
+                const ipText = btn.querySelector('.text-lg');
+
+                if(iconContainer && icon && textLabel) {
+                    btn.classList.add('copied');
+                    iconContainer.classList.remove('bg-slate-800', 'group-hover:bg-emerald-500');
+                    iconContainer.classList.add('bg-white');
+                    icon.className = 'fas fa-check text-emerald-500 text-xl copy-icon';
+                    textLabel.textContent = 'COPIED!';
+                    textLabel.classList.add('text-white');
+                    textLabel.classList.remove('text-slate-400');
+                    
+                    // Reset styling classes temporarily applied
+                    ipText.classList.remove('text-emerald-400');
+                    ipText.classList.add('text-white');
+
+                    setTimeout(() => {
+                        btn.classList.remove('copied');
+                        // Restore original classes
+                        iconContainer.classList.add('bg-slate-800', 'group-hover:bg-emerald-500');
+                        iconContainer.classList.remove('bg-white');
+                        icon.className = 'far fa-copy text-xl copy-icon';
+                        textLabel.textContent = 'SERVER IP';
+                        textLabel.classList.remove('text-white');
+                        textLabel.classList.add('text-slate-400');
+                        ipText.classList.add('text-emerald-400');
+                        ipText.classList.remove('text-white');
+                    }, 2000);
+                }
+            }
+
+            function attachCopyListeners() {
+                const copyButtons = document.querySelectorAll('.copy-btn');
+                copyButtons.forEach(btn => {
+                    // Remove existing listeners to avoid duplicates if re-rendered
+                    btn.replaceWith(btn.cloneNode(true));
+                });
+                
+                // Re-select after cloning
+                const newCopyButtons = document.querySelectorAll('.copy-btn');
+                newCopyButtons.forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const ipToCopy = this.getAttribute('data-ip');
+                        if (ipToCopy) {
+                            copyTextToClipboard(ipToCopy, this);
+                        }
+                    });
+                });
+            }
+
+            function applyFilters() {
+                const cards = document.querySelectorAll('.server-card');
+                
+                cards.forEach(card => {
+                    const name = card.querySelector('.server-name').textContent.toLowerCase();
+                    const categories = card.getAttribute('data-category') || '';
+                    
+                    const matchesSearch = name.includes(searchQuery);
+                    
+                    // Check if currentFilter is 'all' OR if the card's categories include the currentFilter
+                    const matchesFilter = currentFilter === 'all' || categories.split(' ').includes(currentFilter);
+
+                    if (matchesSearch && matchesFilter) {
+                        card.style.display = 'flex'; 
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+
+            if(searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    searchQuery = e.target.value.toLowerCase();
+                    applyFilters();
+                });
+            }
+
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterBtns.forEach(b => {
+                        b.classList.remove('bg-emerald-600', 'text-white');
+                        b.classList.add('bg-slate-700', 'hover:bg-slate-600', 'text-white');
+                    });
+                    
+                    btn.classList.remove('bg-slate-700', 'hover:bg-slate-600');
+                    btn.classList.add('bg-emerald-600');
+
+                    currentFilter = btn.getAttribute('data-filter');
+                    applyFilters();
+                });
+            });
+
+            // Initial render
+            renderServers();
+        });
+    </script>
+</body>
+</html>
