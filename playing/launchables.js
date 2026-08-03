@@ -6,6 +6,7 @@ const APPS = [
   { id: 'app-yio', name: 'Yell It Out', h2: 'Just go type things to channels, see if someone recieves it, sorta a pseudo chat!', img: './img/yio.png', path: './html/yio/index.html?x=1' },
   { id: 'app-dowb', name: 'Doge Randomizer Web Browser', h2: 'Randomized l!nks for Doge', img: './img/dbr.png', path: './html/browser/index.html?x=1' }, 
   { id: 'app-mcs', name: 'Minecraf+ Server List', h2: 'Get servers for MC', img: './img/mc.webp', path: './html/mcserver/index.html' },
+  { id: 'app-fl', name: 'FileLock', h2: 'Store and lock your files with privacy.', img: './img/fl.png', path: './html/fl/index.html' },
 
 ];
 // Games

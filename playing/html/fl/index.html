@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FileLock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  :root{
+    --primary: #3F51B5;
+    --primary-dark: #303F9F;
+    --primary-light: #C5CAE9;
+    --accent: #FF4081;
+    --accent-dark: #F50057;
+    --bg: #FAFAFA;
+    --surface: #FFFFFF;
+    --text-primary: rgba(0,0,0,0.87);
+    --text-secondary: rgba(0,0,0,0.60);
+    --divider: rgba(0,0,0,0.12);
+    --danger: #F44336;
+    --ok: #4CAF50;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;height:100%;
+    font-family:'Roboto',sans-serif;
+    background:var(--bg);
+    color:var(--text-primary);
+    -webkit-font-smoothing:antialiased;
+  }
+  /* ===== App bar ===== */
+  .appbar{
+    background:var(--primary);
+    color:#fff;
+    height:64px;
+    display:flex;
+    align-items:center;
+    padding:0 24px;
+    box-shadow:0 2px 4px -1px rgba(0,0,0,.2),0 4px 5px 0 rgba(0,0,0,.14),0 1px 10px 0 rgba(0,0,0,.12);
+    position:sticky;top:0;z-index:50;
+  }
+  .appbar h1{
+    font-family:'Roboto Condensed',sans-serif;
+    font-weight:700;
+    font-size:22px;
+    letter-spacing:.5px;
+    margin:0;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .appbar .lock-icon{font-size:24px;line-height:1;}
+  .appbar .spacer{flex:1;}
+  .appbar-sub{
+    font-size:13px;
+    font-weight:400;
+    opacity:.85;
+    margin-left:16px;
+    padding-left:16px;
+    border-left:1px solid rgba(255,255,255,.4);
+  }
+  .icon-btn{
+    background:transparent;
+    border:none;
+    color:#fff;
+    width:40px;height:40px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    font-size:20px;
+    transition:background .15s;
+  }
+  .icon-btn:hover{background:rgba(255,255,255,.15);}
+  .icon-btn:active{background:rgba(255,255,255,.25);}
+
+  /* ===== Layout ===== */
+  .container{max-width:900px;margin:0 auto;padding:24px 16px 96px;}
+  .hint{color:var(--text-secondary);font-size:14px;margin:0 0 20px 4px;}
+
+  /* ===== Card / Paper ===== */
+  .card{
+    background:var(--surface);
+    border-radius:2px;
+    box-shadow:0 1px 3px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.24);
+    transition:box-shadow .2s ease;
+  }
+  .card:hover{box-shadow:0 3px 6px rgba(0,0,0,.16),0 3px 6px rgba(0,0,0,.23);}
+
+  /* ===== Database list ===== */
+  .db-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+  .db-tile{
+    padding:20px;
+    cursor:pointer;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    min-height:120px;
+  }
+  .db-tile .db-name{font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px;}
+  .db-tile .db-meta{font-size:13px;color:var(--text-secondary);}
+  .db-tile .db-badge{
+    position:absolute;top:14px;right:14px;
+    font-size:18px;
+    color:var(--primary);
+  }
+  .db-tile .db-badge.global{color:var(--accent-dark);}
+  .db-tile .file-count{
+    margin-top:auto;
+    font-size:12px;
+    color:var(--text-secondary);
+    display:flex;align-items:center;gap:6px;
+  }
+  .db-actions{position:absolute;bottom:8px;right:8px;display:flex;gap:2px;}
+
+  .new-db-tile{
+    border:2px dashed var(--divider);
+    background:transparent;
+    box-shadow:none;
+    display:flex;align-items:center;justify-content:center;
+    flex-direction:column;
+    gap:8px;
+    color:var(--text-secondary);
+    cursor:pointer;
+    min-height:120px;
+    border-radius:2px;
+    transition:border-color .15s, color .15s;
+  }
+  .new-db-tile:hover{border-color:var(--primary);color:var(--primary);}
+  .new-db-tile .plus-circle{
+    width:40px;height:40px;border-radius:50%;
+    background:var(--primary-light);
+    color:var(--primary-dark);
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;
+  }
+
+  /* ===== File view ===== */
+  .toolbar{
+    display:flex;align-items:center;gap:12px;
+    margin-bottom:16px;flex-wrap:wrap;
+  }
+  .toolbar .title-block{flex:1;min-width:200px;}
+  .toolbar h2{margin:0;font-size:20px;font-weight:500;}
+  .toolbar .status{font-size:13px;color:var(--text-secondary);margin-top:2px;}
+  .status.dirty{color:var(--accent-dark);font-weight:500;}
+  .status.locked{color:var(--ok);}
+
+  .file-list{padding:0;}
+  .file-row{
+    display:flex;align-items:center;gap:14px;
+    padding:12px 20px;
+    border-bottom:1px solid var(--divider);
+  }
+  .file-row:last-child{border-bottom:none;}
+  .file-icon{
+    width:40px;height:40px;border-radius:50%;
+    background:var(--primary-light);color:var(--primary-dark);
+    display:flex;align-items:center;justify-content:center;
+    font-size:18px;flex-shrink:0;
+  }
+  .file-info{flex:1;min-width:0;}
+  .file-name{font-size:15px;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .file-meta{font-size:12px;color:var(--text-secondary);}
+  .file-row-actions{display:flex;gap:2px;}
+
+  .empty-state{
+    text-align:center;padding:60px 20px;color:var(--text-secondary);
+  }
+  .empty-state .big-icon{font-size:64px;color:var(--divider);margin-bottom:12px;}
+
+  /* ===== Buttons ===== */
+  .btn{
+    font-family:'Roboto',sans-serif;
+    font-size:14px;font-weight:500;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+    border:none;
+    border-radius:2px;
+    padding:10px 20px;
+    cursor:pointer;
+    background:transparent;
+    color:var(--primary);
+    transition:background .15s;
+  }
+  .btn:hover{background:rgba(63,81,181,.08);}
+  .btn.raised{
+    background:var(--primary);
+    color:#fff;
+    box-shadow:0 2px 2px rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px rgba(0,0,0,.12);
+  }
+  .btn.raised:hover{background:var(--primary-dark);}
+  .btn.accent{color:var(--accent-dark);}
+  .btn.accent.raised{background:var(--accent);color:#fff;}
+  .btn.accent.raised:hover{background:var(--accent-dark);}
+  .btn.danger{color:var(--danger);}
+  .btn:disabled{color:rgba(0,0,0,.26)!important;background:transparent!important;cursor:default;box-shadow:none!important;}
+
+  .fab{
+    position:fixed;right:28px;bottom:28px;
+    width:56px;height:56px;border-radius:50%;
+    background:var(--accent);
+    color:#fff;
+    border:none;
+    font-size:24px;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 3px 5px -1px rgba(0,0,0,.2),0 6px 10px 0 rgba(0,0,0,.14),0 1px 18px 0 rgba(0,0,0,.12);
+    cursor:pointer;
+    transition:background .15s, transform .1s;
+    z-index:40;
+  }
+  .fab:hover{background:var(--accent-dark);}
+  .fab:active{transform:scale(.94);}
+  .fab.lock-fab{background:var(--ok);}
+  .fab.lock-fab:hover{background:#388E3C;}
+
+  /* ===== Modal / Dialog ===== */
+  .overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.5);
+    display:none;align-items:center;justify-content:center;
+    z-index:100;padding:16px;
+  }
+  .overlay.show{display:flex;}
+  .dialog{
+    background:var(--surface);
+    border-radius:2px;
+    width:100%;max-width:420px;
+    box-shadow:0 11px 15px -7px rgba(0,0,0,.2),0 24px 38px 3px rgba(0,0,0,.14),0 9px 46px 8px rgba(0,0,0,.12);
+    overflow:hidden;
+    animation:pop .15s ease;
+  }
+  @keyframes pop{from{transform:scale(.9);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .dialog-title{font-size:20px;font-weight:500;padding:24px 24px 8px;}
+  .dialog-body{padding:0 24px 8px;font-size:14px;color:var(--text-secondary);}
+  .dialog-body .warn{
+    background:#FFF3E0;color:#E65100;
+    border-radius:2px;padding:10px 12px;font-size:13px;margin:8px 0;
+    display:flex;gap:8px;align-items:flex-start;
+  }
+  .dialog-actions{
+    padding:8px 8px 8px 24px;display:flex;justify-content:flex-end;gap:4px;
+  }
+
+  .field{margin:16px 24px 8px;position:relative;}
+  .field label{
+    display:block;font-size:12px;color:var(--text-secondary);margin-bottom:4px;
+  }
+  .field input[type=text], .field input[type=password]{
+    width:100%;
+    border:none;
+    border-bottom:1px solid var(--divider);
+    padding:8px 2px;
+    font-size:15px;
+    font-family:'Roboto',sans-serif;
+    background:transparent;
+    color:var(--text-primary);
+    outline:none;
+    transition:border-color .15s;
+  }
+  .field input:focus{border-bottom:2px solid var(--primary);padding-bottom:7px;}
+  .field .error-text{color:var(--danger);font-size:12px;margin-top:4px;min-height:14px;}
+  .checkbox-row{
+    display:flex;align-items:flex-start;gap:10px;margin:12px 24px;font-size:14px;
+    cursor:pointer;color:var(--text-primary);
+  }
+  .checkbox-row input{margin-top:3px;accent-color:var(--accent);}
+
+  /* toast */
+  .toast{
+    position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(80px);
+    background:#323232;color:#fff;
+    padding:14px 20px;border-radius:2px;
+    font-size:14px;
+    box-shadow:0 3px 5px -1px rgba(0,0,0,.2),0 6px 10px 0 rgba(0,0,0,.14),0 1px 18px 0 rgba(0,0,0,.12);
+    transition:transform .25s ease;
+    z-index:200;
+    max-width:90vw;
+  }
+  .toast.show{transform:translateX(-50%) translateY(0);}
+
+  .hidden{display:none!important;}
+  .material-icons-fallback{font-family:'Roboto',sans-serif;}
+
+  /* ===== Preview dialog ===== */
+  .preview-dialog{
+    background:var(--surface);
+    border-radius:2px;
+    width:100%;max-width:760px;max-height:88vh;
+    display:flex;flex-direction:column;
+    box-shadow:0 11px 15px -7px rgba(0,0,0,.2),0 24px 38px 3px rgba(0,0,0,.14),0 9px 46px 8px rgba(0,0,0,.12);
+    overflow:hidden;
+    animation:pop .15s ease;
+  }
+  .preview-header{
+    display:flex;align-items:center;gap:12px;
+    padding:14px 8px 14px 20px;
+    border-bottom:1px solid var(--divider);
+    flex-shrink:0;
+  }
+  .preview-header .file-icon{flex-shrink:0;}
+  .preview-header .ph-info{flex:1;min-width:0;}
+  .preview-header .ph-name{font-size:16px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .preview-header .ph-meta{font-size:12px;color:var(--text-secondary);}
+  .preview-body{
+    flex:1;overflow:hidden;
+    background:#EEEEEE;
+    display:flex;
+    min-height:200px;
+  }
+  .preview-body iframe{width:100%;height:78vh;border:none;background:#fff;}
+  .preview-actions{
+    padding:8px 12px;display:flex;justify-content:flex-end;gap:4px;
+    border-top:1px solid var(--divider);flex-shrink:0;
+  }
+</style>
+</head>
+<body>
+
+<div class="appbar">
+  <h1><span class="lock-icon">&#128274;</span> FileLock</h1>
+  <span id="dbSubtitle" class="appbar-sub hidden"></span>
+  <div class="spacer"></div>
+  <button class="icon-btn" id="settingsBtn" title="Settings">&#9881;&#65039;</button>
+</div>
+
+<div class="container">
+
+  <!-- ===== DATABASE LIST VIEW ===== -->
+  <div id="listView">
+    <p class="hint">Your archives, stored locally in this browser. Unlock one with its password to view or add files.</p>
+    <div class="db-grid" id="dbGrid"></div>
+  </div>
+
+  <!-- ===== FILE VIEW (inside an unlocked database) ===== -->
+  <div id="fileView" class="hidden">
+    <div class="toolbar">
+      <button class="icon-btn" id="backBtn" style="color:var(--primary);" title="Back to databases">&#8592;</button>
+      <div class="title-block">
+        <h2 id="fileViewTitle"></h2>
+        <div class="status" id="fileViewStatus"></div>
+      </div>
+      <button class="btn" id="addFilesBtn">&#43; Add files</button>
+      <button class="btn accent raised" id="lockBtn">&#128274; Lock</button>
+    </div>
+    <div class="card">
+      <div class="file-list" id="fileList"></div>
+    </div>
+  </div>
+
+</div>
+
+<input type="file" id="fileInput" multiple class="hidden">
+
+<button class="fab hidden" id="fabAddDb" title="New database">&#43;</button>
+
+<!-- ===== DIALOG: Create Database ===== -->
+<div class="overlay" id="createDbOverlay">
+  <div class="dialog">
+    <div class="dialog-title">New database</div>
+    <div class="dialog-body">Give your archive a name<span id="createDbGlobalNote"></span>.</div>
+    <div class="field">
+      <label>Database name</label>
+      <input type="text" id="newDbName" placeholder="e.g. Tax Documents">
+      <div class="error-text" id="newDbNameErr"></div>
+    </div>
+    <div id="createDbPwFields">
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="newDbPw" placeholder="Enter a password">
+      </div>
+      <div class="field">
+        <label>Confirm password</label>
+        <input type="password" id="newDbPw2" placeholder="Re-enter password">
+        <div class="error-text" id="newDbPwErr"></div>
+      </div>
+    </div>
+    <div class="dialog-actions">
+      <button class="btn" id="createDbCancel">Cancel</button>
+      <button class="btn raised" id="createDbConfirm">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DIALOG: Unlock Database ===== -->
+<div class="overlay" id="unlockOverlay">
+  <div class="dialog">
+    <div class="dialog-title">Unlock <span id="unlockDbName"></span></div>
+    <div class="dialog-body">Enter the password to view this database's files.</div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="unlockPw" placeholder="Password">
+      <div class="error-text" id="unlockPwErr"></div>
+    </div>
+    <div class="dialog-actions">
+      <button class="btn" id="unlockCancel">Cancel</button>
+      <button class="btn raised" id="unlockConfirm">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DIALOG: Delete confirm ===== -->
+<div class="overlay" id="deleteOverlay">
+  <div class="dialog">
+    <div class="dialog-title">Delete database?</div>
+    <div class="dialog-body">This permanently deletes "<span id="deleteDbName"></span>" and every file inside it. This cannot be undone.</div>
+    <div class="dialog-actions">
+      <button class="btn" id="deleteCancel">Cancel</button>
+      <button class="btn danger" id="deleteConfirm">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DIALOG: Settings / Global password ===== -->
+<div class="overlay" id="settingsOverlay">
+  <div class="dialog">
+    <div class="dialog-title">Settings</div>
+    <div class="dialog-body">
+      <label class="checkbox-row" style="margin:0 0 8px;">
+        <input type="checkbox" id="globalToggle">
+        <span>Use one password for every archive</span>
+      </label>
+      <div class="warn">
+        <span>&#9888;&#65039;</span>
+        <span>Not recommended. The single password is stored on this device so archives can unlock automatically, which is far less secure than a unique password kept only in your memory.</span>
+      </div>
+    </div>
+    <div id="globalPwFields" class="hidden">
+      <div class="field">
+        <label>Global password</label>
+        <input type="password" id="globalPw" placeholder="Enter a password">
+      </div>
+      <div class="field">
+        <label>Confirm global password</label>
+        <input type="password" id="globalPw2" placeholder="Re-enter password">
+        <div class="error-text" id="globalPwErr"></div>
+      </div>
+    </div>
+
+    <div style="border-top:1px solid var(--divider);margin-top:8px;"></div>
+    <div class="dialog-body" style="padding-top:16px;">
+      <label class="checkbox-row" style="margin:0 0 4px;">
+        <input type="checkbox" id="compressToggle">
+        <span>Compress images &amp; videos on import</span>
+      </label>
+      <div style="font-size:13px;color:var(--text-secondary);margin:0 24px 8px;">Shrinks file size before adding to the database. Originals on disk are untouched.</div>
+    </div>
+    <div id="compressFields" class="hidden">
+      <div class="field">
+        <label>Image quality: <span id="imgQualityVal">75%</span></label>
+        <input type="range" id="imgQuality" min="10" max="95" value="75" style="width:100%;accent-color:var(--primary);">
+      </div>
+      <div class="field">
+        <label>Max image dimension</label>
+        <select id="imgMaxDim" style="width:100%;padding:8px 2px;font-size:15px;border:none;border-bottom:1px solid var(--divider);background:transparent;color:var(--text-primary);">
+          <option value="1280">1280px</option>
+          <option value="1920" selected>1920px</option>
+          <option value="2560">2560px</option>
+          <option value="0">No resize</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Video quality</label>
+        <select id="videoQuality" style="width:100%;padding:8px 2px;font-size:15px;border:none;border-bottom:1px solid var(--divider);background:transparent;color:var(--text-primary);">
+          <option value="1000000">Low (1 Mbps)</option>
+          <option value="2500000" selected>Medium (2.5 Mbps)</option>
+          <option value="5000000">High (5 Mbps)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="dialog-actions">
+      <button class="btn" id="settingsCancel">Close</button>
+      <button class="btn raised" id="settingsSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DIALOG: File Preview ===== -->
+<div class="overlay" id="previewOverlay">
+  <div class="preview-dialog">
+    <div class="preview-header">
+      <div class="file-icon" id="previewIcon"></div>
+      <div class="ph-info">
+        <div class="ph-name" id="previewName"></div>
+        <div class="ph-meta" id="previewMeta"></div>
+      </div>
+      <button class="icon-btn" id="previewCloseX" style="color:var(--text-secondary)" title="Close">&#10005;</button>
+    </div>
+    <div class="preview-body" id="previewBody"></div>
+    <div class="preview-actions">
+      <button class="btn" id="previewDownloadBtn">&#8681; Download</button>
+      <button class="btn raised" id="previewCloseBtn">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- storage keys ---------- */
+  const DB_KEY = "filelock_databases";
+  const GLOBAL_KEY = "filelock_global_settings";
+  const COMPRESS_KEY = "filelock_compress_settings";
+
+  /* ---------- state ---------- */
+  let databases = loadDatabases();      // array of db meta records (persisted shape)
+  let globalSettings = loadGlobal();    // {enabled, password}
+  let compressSettings = loadCompress();// {enabled, imgQuality, imgMaxDim, videoBitrate}
+  let current = null;                   // {id, name, files:[{name,size,data:ArrayBuffer}], usesGlobal, dirty}
+
+  /* ================= persistence helpers ================= */
+  function loadDatabases(){
+    try{
+      const raw = localStorage.getItem(DB_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){ return []; }
+  }
+  function saveDatabases(){
+    localStorage.setItem(DB_KEY, JSON.stringify(databases));
+  }
+  function loadGlobal(){
+    try{
+      const raw = localStorage.getItem(GLOBAL_KEY);
+      return raw ? JSON.parse(raw) : {enabled:false, password:null};
+    }catch(e){ return {enabled:false, password:null}; }
+  }
+  function saveGlobal(){
+    localStorage.setItem(GLOBAL_KEY, JSON.stringify(globalSettings));
+  }
+  function loadCompress(){
+    try{
+      const raw = localStorage.getItem(COMPRESS_KEY);
+      return raw ? JSON.parse(raw) : {enabled:false, imgQuality:0.75, imgMaxDim:1920, videoBitrate:2500000};
+    }catch(e){ return {enabled:false, imgQuality:0.75, imgMaxDim:1920, videoBitrate:2500000}; }
+  }
+  function saveCompress(){
+    localStorage.setItem(COMPRESS_KEY, JSON.stringify(compressSettings));
+  }
+
+  /* ================= crypto helpers ================= */
+  function bufToB64(buf){
+    const bytes = new Uint8Array(buf);
+    let bin = "";
+    const chunk = 0x8000;
+    for(let i=0;i<bytes.length;i+=chunk){
+      bin += String.fromCharCode.apply(null, bytes.subarray(i, i+chunk));
+    }
+    return btoa(bin);
+  }
+  function b64ToBuf(b64){
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
+    return bytes.buffer;
+  }
+  function randomBytes(n){
+    const a = new Uint8Array(n);
+    crypto.getRandomValues(a);
+    return a;
+  }
+  async function deriveKey(password, saltBytes){
+    const enc = new TextEncoder();
+    const baseKey = await crypto.subtle.importKey(
+      "raw", enc.encode(password), {name:"PBKDF2"}, false, ["deriveKey"]
+    );
+    return crypto.subtle.deriveKey(
+      {name:"PBKDF2", salt:saltBytes, iterations:150000, hash:"SHA-256"},
+      baseKey,
+      {name:"AES-GCM", length:256},
+      false,
+      ["encrypt","decrypt"]
+    );
+  }
+  async function encryptBytes(password, dataBuf){
+    const salt = randomBytes(16);
+    const iv = randomBytes(12);
+    const key = await deriveKey(password, salt);
+    const cipher = await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, dataBuf);
+    return {
+      salt: bufToB64(salt.buffer),
+      iv: bufToB64(iv.buffer),
+      cipher: bufToB64(cipher)
+    };
+  }
+  async function decryptBytes(password, saltB64, ivB64, cipherB64){
+    const salt = new Uint8Array(b64ToBuf(saltB64));
+    const iv = new Uint8Array(b64ToBuf(ivB64));
+    const key = await deriveKey(password, salt);
+    const cipherBuf = b64ToBuf(cipherB64);
+    // will throw if password is wrong (GCM auth tag fails)
+    return crypto.subtle.decrypt({name:"AES-GCM", iv}, key, cipherBuf);
+  }
+
+  /* ================= zip helpers ================= */
+  async function filesToZipBuffer(files){
+    const zip = new JSZip();
+    files.forEach(f => zip.file(f.name, f.data));
+    return zip.generateAsync({type:"arraybuffer", compression:"DEFLATE"});
+  }
+  async function zipBufferToFiles(buf){
+    if(!buf || buf.byteLength === 0) return [];
+    const zip = await JSZip.loadAsync(buf);
+    const out = [];
+    const entries = Object.values(zip.files).filter(e => !e.dir);
+    for(const entry of entries){
+      const data = await entry.async("arraybuffer");
+      out.push({name: entry.name, size: data.byteLength, data});
+    }
+    return out;
+  }
+
+  /* ================= toast ================= */
+  let toastTimer = null;
+  function toast(msg){
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=> el.classList.remove("show"), 2600);
+  }
+
+  /* ================= icon helper ================= */
+  function iconForFile(name){
+    const ext = (name.split(".").pop() || "").toLowerCase();
+    const map = {
+      pdf:"\u{1F4C4}", doc:"\u{1F4C4}", docx:"\u{1F4C4}",
+      xls:"\u{1F4CA}", xlsx:"\u{1F4CA}", csv:"\u{1F4CA}",
+      ppt:"\u{1F4D1}", pptx:"\u{1F4D1}",
+      jpg:"\u{1F5BC}\uFE0F", jpeg:"\u{1F5BC}\uFE0F", png:"\u{1F5BC}\uFE0F", gif:"\u{1F5BC}\uFE0F",
+      zip:"\u{1F5C3}\uFE0F", rar:"\u{1F5C3}\uFE0F",
+      mp3:"\u{1F3B5}", wav:"\u{1F3B5}",
+      mp4:"\u{1F3AC}", mov:"\u{1F3AC}",
+      txt:"\u{1F4DD}"
+    };
+    return map[ext] || "\u{1F4C1}";
+  }
+  function formatSize(bytes){
+    if(bytes < 1024) return bytes + " B";
+    if(bytes < 1024*1024) return (bytes/1024).toFixed(1) + " KB";
+    return (bytes/(1024*1024)).toFixed(1) + " MB";
+  }
+
+  /* ================= render: database list ================= */
+  function renderDbList(){
+    const grid = document.getElementById("dbGrid");
+    grid.innerHTML = "";
+    databases.forEach(db => {
+      const tile = document.createElement("div");
+      tile.className = "card db-tile";
+      tile.innerHTML = `
+        <span class="db-badge ${db.usesGlobal ? 'global':''}" title="${db.usesGlobal ? 'Uses global password' : 'Individual password'}">
+          ${db.usesGlobal ? '&#128273;' : '&#128274;'}
+        </span>
+        <div class="db-name">${escapeHtml(db.name)}</div>
+        <div class="db-meta">Updated ${new Date(db.updatedAt).toLocaleString()}</div>
+        <div class="file-count">&#128193; ${db.fileCount} file${db.fileCount===1?'':'s'} &middot; ${formatSize(db.approxSize||0)}</div>
+        <div class="db-actions">
+          <button class="icon-btn del-db-btn" style="color:var(--danger)" title="Delete database">&#128465;&#65039;</button>
+        </div>
+      `;
+      tile.addEventListener("click", (e)=>{
+        if(e.target.closest(".del-db-btn")) return;
+        openUnlock(db);
+      });
+      tile.querySelector(".del-db-btn").addEventListener("click", (e)=>{
+        e.stopPropagation();
+        openDeleteConfirm(db);
+      });
+      grid.appendChild(tile);
+    });
+
+    const newTile = document.createElement("div");
+    newTile.className = "new-db-tile";
+    newTile.innerHTML = `<div class="plus-circle">&#43;</div><div>New database</div>`;
+    newTile.addEventListener("click", openCreateDb);
+    grid.appendChild(newTile);
+  }
+  function escapeHtml(s){
+    const d = document.createElement("div");
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  /* ================= render: file view ================= */
+  function renderFileView(){
+    document.getElementById("fileViewTitle").textContent = current.name;
+    const statusEl = document.getElementById("fileViewStatus");
+    if(current.dirty){
+      statusEl.textContent = "Unsaved changes \u2014 click Lock to save, or they will be lost";
+      statusEl.className = "status dirty";
+    } else {
+      statusEl.textContent = "Unlocked \u2014 up to date";
+      statusEl.className = "status locked";
+    }
+
+    const list = document.getElementById("fileList");
+    list.innerHTML = "";
+    if(current.files.length === 0){
+      list.innerHTML = `<div class="empty-state">
+        <div class="big-icon">&#128193;</div>
+        <div>No files yet. Tap "Add files" to import something.</div>
+      </div>`;
+      return;
+    }
+    current.files.forEach((f, idx) => {
+      const row = document.createElement("div");
+      row.className = "file-row";
+      row.innerHTML = `
+        <div class="file-icon">${iconForFile(f.name)}</div>
+        <div class="file-info">
+          <div class="file-name">${escapeHtml(f.name)}</div>
+          <div class="file-meta">${formatSize(f.size)}</div>
+        </div>
+        <div class="file-row-actions">
+          <button class="icon-btn pv-btn" style="color:var(--primary)" title="Preview">&#128065;&#65039;</button>
+          <button class="icon-btn dl-btn" style="color:var(--primary)" title="Download">&#8681;</button>
+          <button class="icon-btn rm-btn" style="color:var(--danger)" title="Remove">&#10005;</button>
+        </div>
+      `;
+      row.style.cursor = "pointer";
+      row.addEventListener("click", (e)=>{
+        if(e.target.closest(".dl-btn") || e.target.closest(".rm-btn")) return;
+        openPreview(f);
+      });
+      row.querySelector(".dl-btn").addEventListener("click", (e)=>{ e.stopPropagation(); downloadFile(f); });
+      row.querySelector(".rm-btn").addEventListener("click", (e)=>{
+        e.stopPropagation();
+        current.files.splice(idx,1);
+        current.dirty = true;
+        renderFileView();
+      });
+      list.appendChild(row);
+    });
+  }
+
+  function downloadFile(f){
+    const blob = new Blob([f.data]);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = f.name;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(()=> URL.revokeObjectURL(url), 2000);
+  }
+
+  /* ================= preview ================= */
+  let previewObjectUrl = null;
+
+  function mimeFor(ext){
+    const map = {
+      png:"image/png", jpg:"image/jpeg", jpeg:"image/jpeg", gif:"image/gif",
+      webp:"image/webp", svg:"image/svg+xml", bmp:"image/bmp", ico:"image/x-icon",
+      pdf:"application/pdf",
+      mp3:"audio/mpeg", wav:"audio/wav", ogg:"audio/ogg", m4a:"audio/mp4", flac:"audio/flac", aac:"audio/aac",
+      mp4:"video/mp4", webm:"video/webm", ogv:"video/ogg", mov:"video/quicktime",
+      json:"application/json", html:"text/html", htm:"text/html", css:"text/css",
+      js:"text/javascript", xml:"application/xml", csv:"text/csv", txt:"text/plain", md:"text/plain"
+    };
+    return map[ext] || "text/plain";
+  }
+
+  function closePreview(){
+    document.getElementById("previewOverlay").classList.remove("show");
+    document.getElementById("previewBody").innerHTML = "";
+    if(previewObjectUrl){
+      URL.revokeObjectURL(previewObjectUrl);
+      previewObjectUrl = null;
+    }
+  }
+
+  function openPreview(f){
+    const ext = (f.name.split(".").pop() || "").toLowerCase();
+    document.getElementById("previewIcon").textContent = iconForFile(f.name);
+    document.getElementById("previewName").textContent = f.name;
+    document.getElementById("previewMeta").textContent = formatSize(f.size);
+    document.getElementById("previewOverlay").dataset.currentFileName = f.name;
+    const body = document.getElementById("previewBody");
+    body.innerHTML = "";
+
+    if(previewObjectUrl){ URL.revokeObjectURL(previewObjectUrl); previewObjectUrl = null; }
+
+    const blob = new Blob([f.data], {type: mimeFor(ext)});
+    previewObjectUrl = URL.createObjectURL(blob);
+    const iframe = document.createElement("iframe");
+    iframe.src = previewObjectUrl;
+    body.appendChild(iframe);
+
+    document.getElementById("previewOverlay").classList.add("show");
+  }
+
+  /* ================= view switching ================= */
+  function showListView(){
+    current = null;
+    document.getElementById("listView").classList.remove("hidden");
+    document.getElementById("fileView").classList.add("hidden");
+    document.getElementById("fabAddDb").classList.remove("hidden");
+    document.getElementById("dbSubtitle").classList.add("hidden");
+    renderDbList();
+  }
+  function showFileView(){
+    document.getElementById("listView").classList.add("hidden");
+    document.getElementById("fileView").classList.remove("hidden");
+    document.getElementById("fabAddDb").classList.add("hidden");
+    const sub = document.getElementById("dbSubtitle");
+    sub.textContent = current.name;
+    sub.classList.remove("hidden");
+    renderFileView();
+  }
+
+  /* ================= create database ================= */
+  function openCreateDb(){
+    document.getElementById("newDbName").value = "";
+    document.getElementById("newDbPw").value = "";
+    document.getElementById("newDbPw2").value = "";
+    document.getElementById("newDbNameErr").textContent = "";
+    document.getElementById("newDbPwErr").textContent = "";
+    const usesGlobal = globalSettings.enabled && globalSettings.password;
+    document.getElementById("createDbPwFields").classList.toggle("hidden", !!usesGlobal);
+    document.getElementById("createDbGlobalNote").textContent = usesGlobal
+      ? " \u2014 it will use your global password automatically"
+      : "";
+    document.getElementById("createDbOverlay").classList.add("show");
+    setTimeout(()=> document.getElementById("newDbName").focus(), 50);
+  }
+  function closeCreateDb(){
+    document.getElementById("createDbOverlay").classList.remove("show");
+  }
+  async function confirmCreateDb(){
+    const name = document.getElementById("newDbName").value.trim();
+    const nameErr = document.getElementById("newDbNameErr");
+    const pwErr = document.getElementById("newDbPwErr");
+    nameErr.textContent = ""; pwErr.textContent = "";
+
+    if(!name){ nameErr.textContent = "Please enter a name."; return; }
+    if(databases.some(d => d.name.toLowerCase() === name.toLowerCase())){
+      nameErr.textContent = "A database with that name already exists."; return;
+    }
+
+    const usesGlobal = globalSettings.enabled && globalSettings.password;
+    let password;
+    if(usesGlobal){
+      password = globalSettings.password;
+    } else {
+      password = document.getElementById("newDbPw").value;
+      const password2 = document.getElementById("newDbPw2").value;
+      if(!password || password.length < 4){ pwErr.textContent = "Password must be at least 4 characters."; return; }
+      if(password !== password2){ pwErr.textContent = "Passwords do not match."; return; }
+    }
+
+    const empty = new ArrayBuffer(0);
+    const enc = await encryptBytes(password, empty);
+    const id = "db_" + Date.now() + "_" + Math.random().toString(36).slice(2,8);
+    const record = {
+      id, name,
+      salt: enc.salt, iv: enc.iv, cipher: enc.cipher,
+      usesGlobal: !!usesGlobal,
+      fileCount: 0, approxSize: 0,
+      createdAt: Date.now(), updatedAt: Date.now()
+    };
+    databases.push(record);
+    saveDatabases();
+    closeCreateDb();
+    renderDbList();
+    toast(`Database "${name}" created`);
+  }
+
+  /* ================= unlock database ================= */
+  function openUnlock(db){
+    document.getElementById("unlockDbName").textContent = db.name;
+    document.getElementById("unlockPw").value = "";
+    document.getElementById("unlockPwErr").textContent = "";
+    document.getElementById("unlockOverlay").dataset.dbId = db.id;
+    document.getElementById("unlockOverlay").classList.add("show");
+
+    if(db.usesGlobal && globalSettings.enabled && globalSettings.password){
+      // auto unlock, still show briefly then proceed
+      performUnlock(db, globalSettings.password);
+      return;
+    }
+    setTimeout(()=> document.getElementById("unlockPw").focus(), 50);
+  }
+  function closeUnlock(){
+    document.getElementById("unlockOverlay").classList.remove("show");
+  }
+  async function confirmUnlock(){
+    const id = document.getElementById("unlockOverlay").dataset.dbId;
+    const db = databases.find(d => d.id === id);
+    const pw = document.getElementById("unlockPw").value;
+    const errEl = document.getElementById("unlockPwErr");
+    if(!pw){ errEl.textContent = "Enter your password."; return; }
+    errEl.textContent = "Unlocking\u2026";
+    try{
+      await performUnlock(db, pw);
+    }catch(e){
+      errEl.textContent = "Incorrect password.";
+    }
+  }
+  async function performUnlock(db, pw){
+    let zipBuf;
+    try{
+      zipBuf = await decryptBytes(pw, db.salt, db.iv, db.cipher);
+    }catch(e){
+      const errEl = document.getElementById("unlockPwErr");
+      if(errEl) errEl.textContent = "Incorrect password.";
+      throw e;
+    }
+    let files = [];
+    try{
+      files = await zipBufferToFiles(zipBuf);
+    }catch(e){
+      const errEl = document.getElementById("unlockPwErr");
+      if(errEl) errEl.textContent = "Incorrect password.";
+      throw e;
+    }
+    current = { id: db.id, name: db.name, files, usesGlobal: db.usesGlobal, dirty:false };
+    closeUnlock();
+    showFileView();
+    toast(`"${db.name}" unlocked`);
+  }
+
+  /* ================= delete database ================= */
+  function openDeleteConfirm(db){
+    document.getElementById("deleteDbName").textContent = db.name;
+    document.getElementById("deleteOverlay").dataset.dbId = db.id;
+    document.getElementById("deleteOverlay").classList.add("show");
+  }
+  function closeDeleteConfirm(){
+    document.getElementById("deleteOverlay").classList.remove("show");
+  }
+  function confirmDelete(){
+    const id = document.getElementById("deleteOverlay").dataset.dbId;
+    const db = databases.find(d => d.id === id);
+    databases = databases.filter(d => d.id !== id);
+    saveDatabases();
+    closeDeleteConfirm();
+    renderDbList();
+    toast(`Database "${db ? db.name : ''}" deleted`);
+  }
+
+  /* ================= compression engine ================= */
+  const IMAGE_EXTS_FOR_COMPRESS = ["jpg","jpeg","png","webp","bmp"];
+  const VIDEO_EXTS_FOR_COMPRESS = ["mp4","webm","mov","ogv","m4v"];
+
+  function extOf(name){ return (name.split(".").pop() || "").toLowerCase(); }
+
+  function compressImageFile(file){
+    return new Promise((resolve)=>{
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = ()=>{
+        let {width, height} = img;
+        const maxDim = compressSettings.imgMaxDim;
+        if(maxDim && Math.max(width, height) > maxDim){
+          const scale = maxDim / Math.max(width, height);
+          width = Math.round(width * scale);
+          height = Math.round(height * scale);
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob((blob)=>{
+          URL.revokeObjectURL(url);
+          if(!blob){ resolve(null); return; }
+          resolve(blob);
+        }, "image/jpeg", compressSettings.imgQuality);
+      };
+      img.onerror = ()=>{ URL.revokeObjectURL(url); resolve(null); };
+      img.src = url;
+    });
+  }
+
+  function compressVideoFile(file){
+    return new Promise((resolve)=>{
+      const url = URL.createObjectURL(file);
+      const video = document.createElement("video");
+      video.src = url;
+      video.muted = true;
+      video.playsInline = true;
+
+      video.onloadedmetadata = async ()=>{
+        try{
+          let stream;
+          if(video.captureStream) stream = video.captureStream();
+          else if(video.mozCaptureStream) stream = video.mozCaptureStream();
+          else { URL.revokeObjectURL(url); resolve(null); return; }
+
+          let mimeType = "video/webm;codecs=vp9";
+          if(!MediaRecorder.isTypeSupported(mimeType)) mimeType = "video/webm;codecs=vp8";
+          if(!MediaRecorder.isTypeSupported(mimeType)) mimeType = "video/webm";
+
+          const recorder = new MediaRecorder(stream, {
+            mimeType,
+            videoBitsPerSecond: compressSettings.videoBitrate
+          });
+          const chunks = [];
+          recorder.ondataavailable = (e)=>{ if(e.data && e.data.size) chunks.push(e.data); };
+          recorder.onstop = ()=>{
+            URL.revokeObjectURL(url);
+            resolve(new Blob(chunks, {type:"video/webm"}));
+          };
+          recorder.onerror = ()=>{ URL.revokeObjectURL(url); resolve(null); };
+
+          video.onended = ()=> recorder.stop();
+          recorder.start();
+          await video.play();
+        }catch(e){
+          URL.revokeObjectURL(url); resolve(null);
+        }
+      };
+      video.onerror = ()=>{ URL.revokeObjectURL(url); resolve(null); };
+    });
+  }
+
+  async function maybeCompress(file){
+    if(!compressSettings.enabled) return null;
+    const ext = extOf(file.name);
+    if(IMAGE_EXTS_FOR_COMPRESS.includes(ext)){
+      const blob = await compressImageFile(file);
+      if(!blob) return null;
+      const newName = file.name.replace(/\.[^.]+$/, "") + ".jpg";
+      return { name: newName, blob };
+    }
+    if(VIDEO_EXTS_FOR_COMPRESS.includes(ext) && typeof MediaRecorder !== "undefined"){
+      const blob = await compressVideoFile(file);
+      if(!blob) return null;
+      const newName = file.name.replace(/\.[^.]+$/, "") + ".webm";
+      return { name: newName, blob };
+    }
+    return null;
+  }
+
+  /* ================= add files ================= */
+  function triggerAddFiles(){
+    document.getElementById("fileInput").click();
+  }
+  async function handleFilesSelected(fileListObj){
+    const arr = Array.from(fileListObj);
+    if(arr.length === 0) return;
+
+    if(compressSettings.enabled){
+      toast(`Processing ${arr.length} file${arr.length===1?'':'s'}\u2026 this may take a moment for video`);
+    }
+
+    let addedCount = 0;
+    for(const f of arr){
+      const compressed = await maybeCompress(f);
+      if(compressed){
+        const data = await compressed.blob.arrayBuffer();
+        current.files.push({ name: compressed.name, size: data.byteLength, data });
+      } else {
+        const data = await f.arrayBuffer();
+        current.files.push({ name: f.name, size: f.size, data });
+      }
+      addedCount++;
+    }
+    current.dirty = true;
+    renderFileView();
+    toast(`${addedCount} file${addedCount===1?'':'s'} added \u2014 remember to Lock`);
+  }
+
+  /* ================= lock (save) database ================= */
+  async function lockCurrentDatabase(){
+    if(!current) return;
+    const db = databases.find(d => d.id === current.id);
+    if(!db){ toast("Database no longer exists."); return; }
+
+    let password;
+    if(db.usesGlobal){
+      password = globalSettings.password;
+      if(!password){ toast("Global password missing \u2014 cannot lock."); return; }
+    } else {
+      password = await promptRelockPassword(db.name);
+      if(password === null) return; // cancelled
+    }
+
+    try{
+      const zipBuf = await filesToZipBuffer(current.files);
+      const enc = await encryptBytes(password, zipBuf);
+      db.salt = enc.salt; db.iv = enc.iv; db.cipher = enc.cipher;
+      db.fileCount = current.files.length;
+      db.approxSize = current.files.reduce((s,f)=> s+f.size, 0);
+      db.updatedAt = Date.now();
+      saveDatabases();
+      current.dirty = false;
+      toast(`"${db.name}" locked and saved`);
+      showListView();
+    }catch(e){
+      console.error(e);
+      toast("Failed to lock database.");
+    }
+  }
+
+  // simple inline password re-entry using the unlock dialog styled prompt
+  function promptRelockPassword(name){
+    return new Promise((resolve)=>{
+      const overlay = document.getElementById("unlockOverlay");
+      document.getElementById("unlockDbName").textContent = name + " (confirm to lock)";
+      document.getElementById("unlockPw").value = "";
+      document.getElementById("unlockPwErr").textContent = "";
+      overlay.dataset.dbId = "__relock__";
+      overlay.classList.add("show");
+      setTimeout(()=> document.getElementById("unlockPw").focus(), 50);
+
+      const confirmBtn = document.getElementById("unlockConfirm");
+      const cancelBtn = document.getElementById("unlockCancel");
+
+      function cleanup(){
+        confirmBtn.removeEventListener("click", onConfirm);
+        cancelBtn.removeEventListener("click", onCancel);
+        overlay.classList.remove("show");
+        overlay.dataset.dbId = "";
+      }
+      function onConfirm(){
+        const pw = document.getElementById("unlockPw").value;
+        if(!pw){ document.getElementById("unlockPwErr").textContent = "Enter your password."; return; }
+        cleanup();
+        resolve(pw);
+      }
+      function onCancel(){
+        cleanup();
+        resolve(null);
+      }
+      confirmBtn.addEventListener("click", onConfirm);
+      cancelBtn.addEventListener("click", onCancel);
+    });
+  }
+
+  /* ================= settings / global password ================= */
+  function openSettings(){
+    document.getElementById("globalToggle").checked = !!globalSettings.enabled;
+    document.getElementById("globalPwFields").classList.toggle("hidden", !globalSettings.enabled);
+    document.getElementById("globalPw").value = "";
+    document.getElementById("globalPw2").value = "";
+    document.getElementById("globalPwErr").textContent = "";
+
+    document.getElementById("compressToggle").checked = !!compressSettings.enabled;
+    document.getElementById("compressFields").classList.toggle("hidden", !compressSettings.enabled);
+    document.getElementById("imgQuality").value = Math.round(compressSettings.imgQuality * 100);
+    document.getElementById("imgQualityVal").textContent = Math.round(compressSettings.imgQuality * 100) + "%";
+    document.getElementById("imgMaxDim").value = String(compressSettings.imgMaxDim);
+    document.getElementById("videoQuality").value = String(compressSettings.videoBitrate);
+
+    document.getElementById("settingsOverlay").classList.add("show");
+  }
+  function closeSettings(){
+    document.getElementById("settingsOverlay").classList.remove("show");
+  }
+  function saveSettings(){
+    const enabled = document.getElementById("globalToggle").checked;
+    const errEl = document.getElementById("globalPwErr");
+    errEl.textContent = "";
+    if(enabled){
+      const pw = document.getElementById("globalPw").value;
+      const pw2 = document.getElementById("globalPw2").value;
+      if(pw){
+        if(pw.length < 4){ errEl.textContent = "Password must be at least 4 characters."; return; }
+        if(pw !== pw2){ errEl.textContent = "Passwords do not match."; return; }
+        globalSettings.password = pw;
+      } else if(!globalSettings.password){
+        errEl.textContent = "Enter a global password.";
+        return;
+      }
+      globalSettings.enabled = true;
+    } else {
+      globalSettings.enabled = false;
+    }
+    saveGlobal();
+
+    compressSettings.enabled = document.getElementById("compressToggle").checked;
+    compressSettings.imgQuality = Number(document.getElementById("imgQuality").value) / 100;
+    compressSettings.imgMaxDim = Number(document.getElementById("imgMaxDim").value);
+    compressSettings.videoBitrate = Number(document.getElementById("videoQuality").value);
+    saveCompress();
+
+    closeSettings();
+    toast("Settings saved");
+  }
+
+  /* ================= before unload warning ================= */
+  window.addEventListener("beforeunload", (e)=>{
+    if(current && current.dirty){
+      e.preventDefault();
+      e.returnValue = "";
+      return "";
+    }
+  });
+
+  /* ================= wire up events ================= */
+  document.getElementById("fabAddDb").addEventListener("click", openCreateDb);
+  document.getElementById("createDbCancel").addEventListener("click", closeCreateDb);
+  document.getElementById("createDbConfirm").addEventListener("click", confirmCreateDb);
+
+  document.getElementById("unlockCancel").addEventListener("click", closeUnlock);
+  document.getElementById("unlockConfirm").addEventListener("click", confirmUnlock);
+  document.getElementById("unlockPw").addEventListener("keydown", (e)=>{ if(e.key==="Enter") confirmUnlock(); });
+
+  document.getElementById("deleteCancel").addEventListener("click", closeDeleteConfirm);
+  document.getElementById("deleteConfirm").addEventListener("click", confirmDelete);
+
+  document.getElementById("settingsBtn").addEventListener("click", openSettings);
+  document.getElementById("settingsCancel").addEventListener("click", closeSettings);
+  document.getElementById("settingsSave").addEventListener("click", saveSettings);
+  document.getElementById("globalToggle").addEventListener("change", (e)=>{
+    document.getElementById("globalPwFields").classList.toggle("hidden", !e.target.checked);
+  });
+  document.getElementById("compressToggle").addEventListener("change", (e)=>{
+    document.getElementById("compressFields").classList.toggle("hidden", !e.target.checked);
+  });
+  document.getElementById("imgQuality").addEventListener("input", (e)=>{
+    document.getElementById("imgQualityVal").textContent = e.target.value + "%";
+  });
+
+  document.getElementById("backBtn").addEventListener("click", ()=>{
+    if(current && current.dirty){
+      if(!confirm("You have unsaved changes. Leaving without locking will discard them. Continue?")) return;
+    }
+    showListView();
+  });
+  document.getElementById("addFilesBtn").addEventListener("click", triggerAddFiles);
+  document.getElementById("fileInput").addEventListener("change", (e)=>{
+    handleFilesSelected(e.target.files);
+    e.target.value = "";
+  });
+  document.getElementById("lockBtn").addEventListener("click", lockCurrentDatabase);
+
+  document.getElementById("previewCloseBtn").addEventListener("click", closePreview);
+  document.getElementById("previewCloseX").addEventListener("click", closePreview);
+  document.getElementById("previewDownloadBtn").addEventListener("click", ()=>{
+    const name = document.getElementById("previewOverlay").dataset.currentFileName;
+    const f = current && current.files.find(x => x.name === name);
+    if(f) downloadFile(f);
+  });
+
+  // close dialogs on overlay click (outside dialog)
+  document.querySelectorAll(".overlay").forEach(ov => {
+    ov.addEventListener("click", (e)=>{
+      if(e.target === ov){
+        if(ov.id === "previewOverlay"){
+          closePreview();
+        } else {
+          ov.classList.remove("show");
+        }
+      }
+    });
+  });
+
+  /* ================= init ================= */
+  renderDbList();
+  showListView();
+
+})();
+</script>
+</body>
+</html>
