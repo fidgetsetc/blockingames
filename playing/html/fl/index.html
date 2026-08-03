@@ -304,12 +304,15 @@
   .preview-header .ph-name{font-size:16px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .preview-header .ph-meta{font-size:12px;color:var(--text-secondary);}
   .preview-body{
-    flex:1;overflow:hidden;
+    flex:1;overflow:auto;
     background:#EEEEEE;
-    display:flex;
+    display:flex;align-items:center;justify-content:center;
     min-height:200px;
   }
   .preview-body iframe{width:100%;height:78vh;border:none;background:#fff;}
+  .preview-body img{max-width:100%;max-height:78vh;display:block;box-shadow:0 1px 4px rgba(0,0,0,.3);}
+  .preview-body video{max-width:100%;max-height:78vh;background:#000;}
+  .preview-body audio{width:80%;max-width:480px;}
   .preview-actions{
     padding:8px 12px;display:flex;justify-content:flex-end;gap:4px;
     border-top:1px solid var(--divider);flex-shrink:0;
@@ -773,6 +776,10 @@
     }
   }
 
+  const IMAGE_EXTS = ["png","jpg","jpeg","gif","webp","svg","bmp","ico"];
+  const AUDIO_EXTS = ["mp3","wav","ogg","m4a","flac","aac","weba"];
+  const VIDEO_EXTS = ["mp4","webm","ogv","mov","m4v"];
+
   function openPreview(f){
     const ext = (f.name.split(".").pop() || "").toLowerCase();
     document.getElementById("previewIcon").textContent = iconForFile(f.name);
@@ -786,9 +793,26 @@
 
     const blob = new Blob([f.data], {type: mimeFor(ext)});
     previewObjectUrl = URL.createObjectURL(blob);
-    const iframe = document.createElement("iframe");
-    iframe.src = previewObjectUrl;
-    body.appendChild(iframe);
+
+    let el;
+    if(IMAGE_EXTS.includes(ext)){
+      el = document.createElement("img");
+      el.src = previewObjectUrl;
+      el.alt = f.name;
+    } else if(VIDEO_EXTS.includes(ext)){
+      el = document.createElement("video");
+      el.src = previewObjectUrl;
+      el.controls = true;
+      el.autoplay = false;
+    } else if(AUDIO_EXTS.includes(ext)){
+      el = document.createElement("audio");
+      el.src = previewObjectUrl;
+      el.controls = true;
+    } else {
+      el = document.createElement("iframe");
+      el.src = previewObjectUrl;
+    }
+    body.appendChild(el);
 
     document.getElementById("previewOverlay").classList.add("show");
   }
