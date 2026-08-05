@@ -25,7 +25,8 @@ const STATIC_GAMES = [
   { id: 'game-mc18', name: 'Minecraf+ 1.8', h2: 'Craft, mine, and build, all in this game. Check out Apps for servers.', img: './img/mc.webp', path: './html/mc18/index.html' },
   { id: 'game-mc112', name: 'Minecraf+ 1.12', h2: 'Craft, mine, and build, all in this game. Check out Apps for servers.', img: './img/mc.webp', path: './html/mc112/index.html' },
   { id: 'game-yuao', name: 'POV: you use an OS many people hate: an endless runner', h2: 'Play as an Ubuntu user running from an Arch user who hates your distro... (THIS IS A BETA AND REALLY BUGGY.)', img: './img/yuao.png', path: './html/yuao/index.html' },
-  { id: 'game-abswf', name: 'Angry Birds SWF', h2: 'The eggs were stolen by pigs. The solution? Fling birds at pigs. A decently accurate remake!', path: './html/ab/index.html', img: './img/ab.webp' }
+  { id: 'game-abswf', name: 'Angry Birds SWF', h2: 'The eggs were stolen by pigs. The solution? Fling birds at pigs. A decently accurate remake!', path: './html/ab/index.html', img: './img/ab.webp' },
+  { id: 'game-stk', name: 'SuperTuxKart', h2: 'A fun open-source racing game, with many mascots of open-source projects. (experimental)', path: './html/stk/supertuxkart.pages.dev/supertuxkart.pages.dev/index.html', img: './img/stk.png' }
 ];
 // Videos
 const VIDEOS = [
