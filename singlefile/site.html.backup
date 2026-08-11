@@ -58,7 +58,7 @@
             color: var(--text-color);
         }
         h1 span { color: var(--secondary-color); }
-        
+
         p.subtitle { color: var(--fog); margin-top: 0; }
 
         #tabs-container {
@@ -172,7 +172,7 @@
             overflow: hidden;
             position: relative;
         }
-        
+
         .loading-overlay {
             position: absolute;
             inset: 0;
@@ -231,16 +231,16 @@
             cursor: pointer;
             font-weight: bold;
         }
-        
+
         .player-controls button:hover {
             background: #23284f;
         }
 
         .player-controls button.close-btn { background: #ff5470; border-color: #ff5470; }
         .player-controls button.close-btn:hover { background: #e04a62; }
+
         .player-controls button#randomDomainBtn { background: #4a90e2; border-color: #4a90e2; }
         .player-controls button#randomDomainBtn:hover { background: #3a7bc8; }
-
         #settings-tab { text-align: center; color: var(--fog); max-width: 600px; margin: 0 auto; }
         .log-box {
             background: #000;
@@ -260,12 +260,17 @@
 <body>
 
     <div class="experimental-warning">
-        ⚠️ WARNING: This lightweight single-file version is experimental. Some games/apps may not load properly.
+        �� ⚠��️ WARNING: This lightweight single-file version is experimental. Some games/apps may not load properly.
     </div>
 
     <header>
-        <h1>BlockIn<span>.</span></h1>
-        <p class="subtitle">Super Lightweight Edition</p>
+        <div class="header-content">
+            <h1>BlockIn<span class="accent-dot">.</span></h1>
+            <p>version 8.11.26.part1</p>
+            <p id="homeSubtitleText"></p>
+            <br>
+            <p>add /goguardian to end of link to get no website blocked screen</p>
+        </div>
     </header>
 
     <div id="tabs-container">
@@ -279,12 +284,12 @@
     <div id="games-tab" class="tab-content active"><div class="item-grid" id="games-grid">Loading...</div></div>
     <div id="apps-tab" class="tab-content"><div class="item-grid" id="apps-grid">Loading...</div></div>
     <div id="videos-tab" class="tab-content"><div class="item-grid" id="videos-grid">Loading...</div></div>
-    
+
     <div id="settings-tab" class="tab-content">
         <h3>Integration Logs</h3>
         <p>This panel shows the status of the launchables data fetching.</p>
         <label>
-            <input type="checkbox" id="experimentalBlobLoader" checked> 
+            <input type="checkbox" id="experimentalBlobLoader" checked>
             Use Blob HTML Loader (Fetches raw HTML for cross-origin bypass)
         </label>
         <div class="log-box" id="logs"></div>
@@ -303,9 +308,9 @@
         </div>
         <div class="player-controls">
             <button onclick="toggleFullscreen()">Fullscreen</button>
-            <button class="close-btn" onclick="closePlayer()">Close Player</button><div id="randomDomainContainer" style="display: inline-flex; align-items: center; gap: 8px;"><button id="randomDomainBtn" onclick="selectRandomDomain()" title="Use Random Official Domain">Random Domain</button><select id="domainModeSelect" onchange="onDomainModeChange()" style="background: var(--card-bg); color: white; border: 1px solid var(--line); border-radius: 4px; padding: 4px 8px; font-size: 0.9em;"><option value="files">Use for Files</option><option value="embed">Embed Link</option></select></div>
+            <button onclick="reloadPlayer()">Reload</button>
             <button onclick="openCurrentInNewTab()">Open in New Tab</button>
-            <button class="close-btn" onclick="closePlayer()">Close Player</button>
+            <button class="close-btn" onclick="closePlayer()">Close Player</button><button id="randomDomainBtn" onclick="selectRandomDomain()" title="Use Random Official Domain">���������������������������������������������🎲 Random Domain</button>
         </div>
     </div>
 
@@ -321,9 +326,8 @@
         let validDomains = [];
         let currentLoadedUrl = '';
         let fakeProgressInterval;
-        let selectedRandomDomain = null;
-        let domainMode = "files";
 
+        let selectedRandomDomain = null;
         function updateProgress(percent, text) {
             const bar = document.getElementById('loadingBarFill');
             const label = document.getElementById('loadingText');
@@ -339,11 +343,7 @@
                 if(p > 85) p = 85;
                 updateProgress(p, 'Loading assets...');
             }, 500);
-        }
 
-        function stopFakeProgress() {
-            clearInterval(fakeProgressInterval);
-        }
         async function selectRandomDomain() {
             if (validDomains.length === 0) {
                 await fetchDomains();
@@ -360,26 +360,6 @@
                 logMsg(`No official domains available`, true);
             }
         }
-
-        function onDomainModeChange() {
-            const select = document.getElementById("domainModeSelect");
-            domainMode = select.value;
-            logMsg(`Domain mode changed to: ${domainMode}`);
-            // If we have a currently loaded URL and a random domain selected, reload with new mode
-            if (currentLoadedUrl && selectedRandomDomain) {
-                reloadPlayer();
-            }
-        }
-
-        function logMsg(msg, isError = false) {
-            const logs = document.getElementById('logs');
-            if(!logs) return;
-            const prefix = isError ? '[ERROR] ' : '[INFO] ';
-            logs.innerHTML += prefix + msg + '\n';
-            logs.scrollTop = logs.scrollHeight;
-            if (isError) console.error(msg);
-        }
-
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
@@ -403,7 +383,7 @@
                 logMsg(`Loaded ${validDomains.length} fallback domains.`);
             } catch (error) {
                 logMsg(`Domain fetch failed: ${error.message}`, true);
-                validDomains = [CONFIG.HTML_BASE_URL]; 
+                validDomains = [CONFIG.HTML_BASE_URL];
             }
         }
 
@@ -422,7 +402,7 @@
                     const bracketStart = rawText.indexOf('[', arrayStart);
                     let bracketEnd = rawText.indexOf('];', bracketStart);
                     if (bracketEnd === -1) bracketEnd = rawText.indexOf(']', bracketStart);
-                    
+
                     if (bracketStart === -1 || bracketEnd === -1) return parsedItems;
                     const arrayContent = rawText.substring(bracketStart + 1, bracketEnd).trim();
                     const entries = arrayContent.split('},');
@@ -448,6 +428,58 @@
             } catch (error) {
                 logMsg(`Data fetch failed: ${error.message}`, true);
             }
+        }
+
+        // ADDITIONAL LAUNCHABLES ACCESS METHODS
+        function findGameById(id) {
+            return launchablesData.games.find(game => game.id === id);
+        }
+
+        function findGameByPath(path) {
+            return launchablesData.games.find(game => game.path === path);
+        }
+
+        function findAppById(id) {
+            return launchablesData.apps.find(app => app.id === id);
+        }
+
+        function findAppByPath(path) {
+            return launchablesData.apps.find(app => app.path === path);
+        }
+
+        function findVideoById(id) {
+            return launchablesData.videos.find(video => video.id === id);
+        }
+
+        function getAllGames() {
+            return [...launchablesData.games];
+        }
+
+        function getAllApps() {
+            return [...launchablesData.apps];
+        }
+
+        function getAllVideos() {
+            return [...launchablesData.videos];
+        }
+
+        function searchLaunchables(query) {
+            const lowerQuery = query.toLowerCase();
+            const results = {
+                games: launchablesData.games.filter(game =>
+                    game.name.toLowerCase().includes(lowerQuery) ||
+                    game.h2.toLowerCase().includes(lowerQuery)
+                ),
+                apps: launchablesData.apps.filter(app =>
+                    app.name.toLowerCase().includes(lowerQuery) ||
+                    app.h2.toLowerCase().includes(lowerQuery)
+                ),
+                videos: launchablesData.videos.filter(video =>
+                    video.name.toLowerCase().includes(lowerQuery) ||
+                    video.h2.toLowerCase().includes(lowerQuery)
+                )
+            };
+            return results;
         }
 
         async function createBlobUrlFromHtml(htmlPath) {
@@ -480,14 +512,14 @@
                 updateProgress(20, 'Fetching raw HTML (Blob)...');
                 const blobUrl = await createBlobUrlFromHtml(itemSrc);
                 if (blobUrl) finalUrl = blobUrl;
-            } 
-            
+            }
+
             if (!finalUrl) {
                 updateProgress(40, 'Resolving target URL...');
-                const domain = selectedRandomDomain || (validDomains.length > 0 ? validDomains[0] : CONFIG.HTML_BASE_URL); 
+                const domain = selectedRandomDomain || (validDomains.length > 0 ? validDomains[0] : CONFIG.HTML_BASE_URL);
                 let cleanDomain = domain.endsWith('/') ? domain : domain + '/';
                 if(!cleanDomain.includes('playing')) cleanDomain += 'playing/';
-                
+
                 let cleanSrc = itemSrc.startsWith('./') ? itemSrc.substring(2) : itemSrc;
                 finalUrl = cleanSrc.startsWith('http') ? cleanSrc : cleanDomain + cleanSrc;
             }
@@ -533,21 +565,21 @@
             document.getElementById('playerOverlay').classList.remove('active');
             document.getElementById('loadingOverlay').classList.add('hidden');
             stopFakeProgress();
-            
+
             document.getElementById('gameIframe').src = '';
-            
+
             const video = document.getElementById('videoPlayer');
             video.pause();
             video.src = '';
             video.style.display = 'none';
             document.getElementById('gameIframe').style.display = 'block';
-            
+
             currentLoadedUrl = '';
         }
 
         function toggleFullscreen() {
             const container = document.getElementById('playerContainer');
-            
+
             if (!document.fullscreenElement) {
                 if (container.requestFullscreen) {
                     container.requestFullscreen();
@@ -596,7 +628,7 @@
         function renderGUI() {
             const renderSection = (items, containerId, isVideo = false) => {
                 const container = document.getElementById(containerId);
-                container.innerHTML = ''; 
+                container.innerHTML = '';
 
                 if (!items || items.length === 0) {
                     container.innerHTML = '<p style="color:var(--fog);">No items found.</p>';
@@ -607,14 +639,6 @@
                     const itemImage = item.img || item.image || item.icon || '';
                     const itemSource = item.src || item.url || item.path || item.link || '';
                     const imgUrl = resolvePath(itemImage, CONFIG.IMAGE_BASE_URL);
-
-                    const card = document.createElement('div');
-                    card.className = 'item-card';
-                    card.innerHTML = `
-                        <img src="${imgUrl}" alt="Icon" onerror="this.src='https://placehold.co/150x150/1b1f3b/ffffff?text=No+Img'">
-                        <h3>${item.name || 'Unnamed'}</h3>
-                        <button onclick="handleLaunch('${itemSource}', ${!isVideo}, ${isVideo})">Launch</button>
-                    `;
                     container.appendChild(card);
                 });
             };

@@ -7,7 +7,7 @@ const APPS = [
   { id: 'app-dowb', name: 'Doge Randomizer Web Browser', h2: 'Randomized l!nks for Doge', img: './img/dbr.png', path: './html/browser/index.html?x=1' }, 
   { id: 'app-mcs', name: 'Minecraf+ Server List', h2: 'Get servers for MC', img: './img/mc.webp', path: './html/mcserver/index.html' },
   { id: 'app-fl', name: 'FileLock', h2: 'Store and lock your files with privacy.', img: './img/fl.png', path: './html/fl/index.html' },
-
+  { id: 'app-ytm', name: 'Music w/ YT', h2: 'Listen to tons of music.', img: './img/ytm.png', path: './html/ytm/index.html' },
 ];
 // Games
 const STATIC_GAMES = [
