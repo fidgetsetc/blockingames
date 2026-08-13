@@ -1,13 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" 
-     width="100vw" 
-     height="100vh" 
-     viewBox="0 0 100 100" 
-     preserveAspectRatio="none">
+     width="100%" 
+     height="100%" 
+     style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; margin: 0; padding: 0;">
   
   <foreignObject width="100%" height="100%">
-    <body xmlns="http://www.w3.org/1999/xhtml" style="margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden;">
+    <body xmlns="http://www.w3.org/1999/xhtml" style="margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; position: absolute; top: 0; left: 0;">
       <iframe id="birdmath-frame" 
-              style="width: 100%; height: 100%; border: none; display: block;">
+              style="width: 100%; height: 100%; border: none; display: block; position: absolute; top: 0; left: 0;">
       </iframe>
     </body>
   </foreignObject>
