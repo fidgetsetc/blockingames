@@ -28,6 +28,9 @@ const STATIC_GAMES = [
   { id: 'game-abswf', name: 'Angry Birds SWF', h2: 'The eggs were stolen by pigs. The solution? Fling birds at pigs. A decently accurate remake!', path: './html/ab/index.html', img: './img/ab.webp' },
   { id: 'game-cc', name: 'Collab Clicker', h2: 'A bunch of people playing one Cookie Clicker game.', path: './html/cc/index.html', img: './img/cc.png' },
 { id: 'game-cc1', name: 'Cookie Clicker', h2: 'The official Cookie Clicker game. Powered by Duckget.', path: './html/duckget/index.html#/class/cookie-clicker', img: './img/cc1.webp' },
+{ id: 'game-ls', name: 'Life Simulator', h2: 'It is sorta like BltLife. Powered by Duckget.', path: './html/duckget/index.html#/class/life-simulator', img: './img/cc1.webp' },
+{ id: 'game-bl', name: 'BltLife', h2: 'The official game.', path: './html/bl/index.html', img: './img/bl.png' },
+{ id: 'game-gd', name: 'Geometry Dash', h2: 'Dash thru obstacles, but do not hit them!', path: './html/gd/index.html', img: './img/gd.png' },
 ];
 // Videos
 const VIDEOS = [
