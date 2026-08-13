@@ -117,7 +117,7 @@
 
         .item-card img {
             width: 100%;
-            height: 120px;
+            aspect-ratio: 1 / 1;
             object-fit: cover;
             border-radius: 8px;
             margin-bottom: 10px;
@@ -219,7 +219,9 @@
         .player-controls {
             margin-top: 15px;
             display: flex;
-            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
         }
 
         .player-controls button {
@@ -230,16 +232,45 @@
             border-radius: 999px;
             cursor: pointer;
             font-weight: bold;
+            transition: background 0.2s;
         }
         
-        .player-controls button:hover {
-            background: #23284f;
-        }
-
+        .player-controls button:hover { background: #23284f; }
         .player-controls button.close-btn { background: #ff5470; border-color: #ff5470; }
         .player-controls button.close-btn:hover { background: #e04a62; }
-        .player-controls button#randomDomainBtn { background: #4a90e2; border-color: #4a90e2; }
-        .player-controls button#randomDomainBtn:hover { background: #3a7bc8; }
+
+        .control-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            background: var(--card-bg);
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 4px 16px;
+        }
+
+        .control-group select {
+            background: transparent;
+            color: white;
+            border: none;
+            outline: none;
+            font-family: var(--font-body);
+            font-size: 0.9em;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .control-group select option {
+            background: var(--card-bg);
+            color: white;
+        }
+
+        .control-divider {
+            width: 1px;
+            height: 20px;
+            background: var(--line);
+            margin: 0 4px;
+        }
 
         #settings-tab { text-align: center; color: var(--fog); max-width: 600px; margin: 0 auto; }
         .log-box {
@@ -250,7 +281,7 @@
             font-family: monospace;
             font-size: 0.85em;
             text-align: left;
-            height: 200px;
+            height: 300px;
             overflow-y: auto;
             margin-top: 20px;
             border: 1px solid var(--line);
@@ -282,11 +313,7 @@
     
     <div id="settings-tab" class="tab-content">
         <h3>Integration Logs</h3>
-        <p>This panel shows the status of the launchables data fetching.</p>
-        <label>
-            <input type="checkbox" id="experimentalBlobLoader" checked> 
-            Use Blob HTML Loader (Fetches raw HTML for cross-origin bypass)
-        </label>
+        <p>This panel shows the status of the launchables data fetching and domain loading.</p>
         <div class="log-box" id="logs"></div>
     </div>
 
@@ -303,9 +330,29 @@
         </div>
         <div class="player-controls">
             <button onclick="toggleFullscreen()">Fullscreen</button>
-            <button class="close-btn" onclick="closePlayer()">Close Player</button><div id="randomDomainContainer" style="display: inline-flex; align-items: center; gap: 8px;"><button id="randomDomainBtn" onclick="selectRandomDomain()" title="Use Random Official Domain">Random Domain</button><select id="domainModeSelect" onchange="onDomainModeChange()" style="background: var(--card-bg); color: white; border: 1px solid var(--line); border-radius: 4px; padding: 4px 8px; font-size: 0.9em;"><option value="files">Use for Files</option><option value="embed">Embed Link</option></select></div>
+            
+            <!-- Proper Dropdown Controls for Network Methods -->
+            <div class="control-group">
+                <select id="domainSelect" onchange="handleSettingsChange()" title="Select Proxy Domain">
+                    <option value="default">🌐 Default Domain</option>
+                    <option value="random">🎲 Random Domain</option>
+                    <!-- Dynamically populated options will go here -->
+                </select>
+                
+                <div class="control-divider"></div>
+                
+                <select id="methodSelect" onchange="handleSettingsChange()" title="Select Launch Method">
+                    <option value="iframe">📄 Direct IFrame (Standard)</option>
+                    <option value="blob">📦 Proxy Fetch -> Blob</option>
+                    <option value="jsdelivr-blob">⚡ JSDelivr Fetch -> Blob</option>
+                </select>
+            </div>
+
             <button onclick="openCurrentInNewTab()">Open in New Tab</button>
             <button class="close-btn" onclick="closePlayer()">Close Player</button>
+        </div>
+        <div style="color: var(--fog); font-size: 0.9em; margin-top: 15px; text-align: center; font-weight: bold;">
+            💡 If your launchable isn't working, change the methods in the dropdown.
         </div>
     </div>
 
@@ -321,8 +368,9 @@
         let validDomains = [];
         let currentLoadedUrl = '';
         let fakeProgressInterval;
-        let selectedRandomDomain = null;
-        let domainMode = "files";
+        
+        // Save the active item so we can re-evaluate URL builds when dropdowns change
+        let activeItemState = null; 
 
         function updateProgress(percent, text) {
             const bar = document.getElementById('loadingBarFill');
@@ -343,32 +391,6 @@
 
         function stopFakeProgress() {
             clearInterval(fakeProgressInterval);
-        }
-        async function selectRandomDomain() {
-            if (validDomains.length === 0) {
-                await fetchDomains();
-            }
-            if (validDomains.length > 0) {
-                const randomIndex = Math.floor(Math.random() * validDomains.length);
-                selectedRandomDomain = validDomains[randomIndex];
-                logMsg(`Selected random official domain: ${selectedRandomDomain}`);
-                // If we have a currently loaded URL, reload it with the new domain
-                if (currentLoadedUrl) {
-                    reloadPlayer();
-                }
-            } else {
-                logMsg(`No official domains available`, true);
-            }
-        }
-
-        function onDomainModeChange() {
-            const select = document.getElementById("domainModeSelect");
-            domainMode = select.value;
-            logMsg(`Domain mode changed to: ${domainMode}`);
-            // If we have a currently loaded URL and a random domain selected, reload with new mode
-            if (currentLoadedUrl && selectedRandomDomain) {
-                reloadPlayer();
-            }
         }
 
         function logMsg(msg, isError = false) {
@@ -396,15 +418,37 @@
 
         async function fetchDomains() {
             try {
-                logMsg(`Fetching domains...`);
+                logMsg(`Fetching valid domains...`);
                 const response = await fetch(CONFIG.DOMAINS_URL);
                 const text = await response.text();
-                validDomains = text.split('\n').map(d => d.trim()).filter(d => d.length > 0);
-                logMsg(`Loaded ${validDomains.length} fallback domains.`);
+                
+                validDomains = text.split('\n')
+                    .map(d => d.trim())
+                    .filter(d => d.length > 0 && d.startsWith('http'));
+                
+                logMsg(`Loaded ${validDomains.length} official domains.`);
+                populateDomainDropdown();
             } catch (error) {
                 logMsg(`Domain fetch failed: ${error.message}`, true);
-                validDomains = [CONFIG.HTML_BASE_URL]; 
+                validDomains = []; 
             }
+        }
+
+        function populateDomainDropdown() {
+            const select = document.getElementById('domainSelect');
+            // Keep default and random options
+            select.innerHTML = `
+                <option value="default">🌐 Default Domain</option>
+                <option value="random">🎲 Random Domain</option>
+            `;
+            // Append loaded domains dynamically
+            validDomains.forEach(domain => {
+                const opt = document.createElement('option');
+                opt.value = domain;
+                // Make display name cleaner by stripping http:// and trailing slashes
+                opt.textContent = '🔗 ' + domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
+                select.appendChild(opt);
+            });
         }
 
         async function fetchLaunchablesData() {
@@ -450,12 +494,23 @@
             }
         }
 
-        async function createBlobUrlFromHtml(htmlPath) {
+        async function createBlobUrlFromHtml(htmlPath, baseUrl) {
             try {
-                const absoluteHtmlUrl = resolvePath(htmlPath, CONFIG.HTML_BASE_URL);
+                const absoluteHtmlUrl = resolvePath(htmlPath, baseUrl || CONFIG.HTML_BASE_URL);
                 const response = await fetch(absoluteHtmlUrl);
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const text = await response.text();
+                let text = await response.text();
+                
+                // Inject <base> tag to fix relative paths (CSS, JS, Images) within the blob iframe
+                const basePath = absoluteHtmlUrl.substring(0, absoluteHtmlUrl.lastIndexOf('/') + 1);
+                const baseTag = `<base href="${basePath}">`;
+                
+                if (text.toLowerCase().includes('<head>')) {
+                    text = text.replace(/<head>/i, `<head>\n    ${baseTag}`);
+                } else {
+                    text = baseTag + text;
+                }
+
                 const blob = new Blob([text], { type: 'text/html' });
                 return URL.createObjectURL(blob);
             } catch (err) {
@@ -464,36 +519,87 @@
             }
         }
 
-        async function handleLaunch(itemSrc, isHtmlTarget, isVideo = false) {
+        function handleLaunch(itemSrc, isHtmlTarget, isVideo = false) {
             if (!itemSrc) return logMsg(`Launch Error: Invalid item source`, true);
+            
+            // Store active state for live dropdown updates
+            activeItemState = {
+                src: itemSrc,
+                isHtml: isHtmlTarget,
+                isVideo: isVideo
+            };
+            
+            executeLaunch();
+        }
 
-            // Open overlay immediately and show loading UI
+        function handleSettingsChange() {
+            if (activeItemState) {
+                logMsg('Settings changed, dynamically re-routing iframe...');
+                executeLaunch();
+            }
+        }
+
+        async function executeLaunch() {
+            if (!activeItemState) return;
+
+            // Show UI immediately
             document.getElementById('playerOverlay').classList.add('active');
             document.getElementById('loadingOverlay').classList.remove('hidden');
-            updateProgress(5, 'Initializing...');
+            updateProgress(5, 'Initializing Launch Route...');
             startFakeProgress();
 
-            const useBlob = document.getElementById('experimentalBlobLoader').checked;
-            let finalUrl = '';
+            const domainSelection = document.getElementById('domainSelect').value;
+            const methodSelection = document.getElementById('methodSelect').value;
 
-            if (useBlob && isHtmlTarget) {
-                updateProgress(20, 'Fetching raw HTML (Blob)...');
-                const blobUrl = await createBlobUrlFromHtml(itemSrc);
-                if (blobUrl) finalUrl = blobUrl;
+            let finalUrl = '';
+            let domainToUse = CONFIG.HTML_BASE_URL;
+
+            // Evaluate Domain selection logic (Fixes Randomization)
+            if (domainSelection === 'random') {
+                if (validDomains.length > 0) {
+                    domainToUse = validDomains[Math.floor(Math.random() * validDomains.length)];
+                    logMsg(`Random Domain Selected: ${domainToUse}`);
+                } else {
+                    logMsg('Random domain selected, but no valid domains exist. Falling back to default.');
+                }
+            } else if (domainSelection !== 'default') {
+                domainToUse = domainSelection;
+            }
+
+            // Evaluate Method selection logic
+            if ((methodSelection === 'blob' || methodSelection === 'jsdelivr-blob') && activeItemState.isHtml) {
+                updateProgress(20, 'Fetching raw HTML (Blob Method)...');
+                
+                let fetchBaseUrl = CONFIG.HTML_BASE_URL; // Default directly to jsdelivr for JSDelivr-Blob
+                
+                // If using the standard proxy blob, match the base URL to the selected proxy domain
+                if (methodSelection === 'blob') {
+                    let cleanDomain = domainToUse.endsWith('/') ? domainToUse : domainToUse + '/';
+                    if(!cleanDomain.includes('playing')) cleanDomain += 'playing/';
+                    fetchBaseUrl = cleanDomain;
+                }
+
+                const blobUrl = await createBlobUrlFromHtml(activeItemState.src, fetchBaseUrl);
+                if (blobUrl) {
+                    finalUrl = blobUrl;
+                    logMsg(`Successfully created blob proxy URL via ${methodSelection}.`);
+                } else {
+                    logMsg('Blob proxy failed. Falling back to standard iframe routing.', true);
+                }
             } 
             
+            // Standard Iframe Fallback/Routing
             if (!finalUrl) {
-                updateProgress(40, 'Resolving target URL...');
-                const domain = selectedRandomDomain || (validDomains.length > 0 ? validDomains[0] : CONFIG.HTML_BASE_URL); 
-                let cleanDomain = domain.endsWith('/') ? domain : domain + '/';
+                updateProgress(40, `Resolving via ${domainToUse}...`);
+                let cleanDomain = domainToUse.endsWith('/') ? domainToUse : domainToUse + '/';
                 if(!cleanDomain.includes('playing')) cleanDomain += 'playing/';
                 
-                let cleanSrc = itemSrc.startsWith('./') ? itemSrc.substring(2) : itemSrc;
+                let cleanSrc = activeItemState.src.startsWith('./') ? activeItemState.src.substring(2) : activeItemState.src;
                 finalUrl = cleanSrc.startsWith('http') ? cleanSrc : cleanDomain + cleanSrc;
             }
 
-            updateProgress(75, 'Opening player...');
-            openPlayer(finalUrl, isVideo);
+            updateProgress(75, 'Opening container...');
+            openPlayer(finalUrl, activeItemState.isVideo);
         }
 
         function openPlayer(url, isVideo = false) {
@@ -506,7 +612,7 @@
                 updateProgress(100, 'Ready!');
                 setTimeout(() => {
                     document.getElementById('loadingOverlay').classList.add('hidden');
-                }, 400); // Small delay to let user see 100%
+                }, 400); 
             };
 
             if (isVideo) {
@@ -526,7 +632,7 @@
                 iframe.src = url;
             }
 
-            logMsg(`Loaded into player: ${url}`);
+            logMsg(`Mounted resource: ${url}`);
         }
 
         function closePlayer() {
@@ -543,49 +649,21 @@
             document.getElementById('gameIframe').style.display = 'block';
             
             currentLoadedUrl = '';
+            activeItemState = null;
         }
 
         function toggleFullscreen() {
             const container = document.getElementById('playerContainer');
-            
             if (!document.fullscreenElement) {
-                if (container.requestFullscreen) {
-                    container.requestFullscreen();
-                } else if (container.mozRequestFullScreen) { /* Firefox */
-                    container.mozRequestFullScreen();
-                } else if (container.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
-                    container.webkitRequestFullscreen();
-                } else if (container.msRequestFullscreen) { /* IE/Edge */
-                    container.msRequestFullscreen();
-                }
+                if (container.requestFullscreen) container.requestFullscreen();
+                else if (container.mozRequestFullScreen) container.mozRequestFullScreen();
+                else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen();
+                else if (container.msRequestFullscreen) container.msRequestFullscreen();
             } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.mozCancelFullScreen) { /* Firefox */
-                    document.mozCancelFullScreen();
-                } else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) { /* IE/Edge */
-                    document.msExitFullscreen();
-                }
-            }
-        }
-
-        function reloadPlayer() {
-            if (!currentLoadedUrl) return;
-
-            document.getElementById('loadingOverlay').classList.remove('hidden');
-            updateProgress(5, 'Reloading...');
-            startFakeProgress();
-
-            const iframe = document.getElementById('gameIframe');
-            const video = document.getElementById('videoPlayer');
-
-            if (iframe.style.display === 'block') {
-                iframe.src = iframe.src; // Reloads iframe
-            } else if (video.style.display === 'block') {
-                video.load(); // Reloads video
-                video.play().catch(e => logMsg(`Video autoplay blocked on reload: ${e.message}`, true));
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                else if (document.msExitFullscreen) document.msExitFullscreen();
             }
         }
 
