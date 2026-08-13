@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlockIn Single File Download</title>
+    
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Load Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Load FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom styling to enforce font and animations -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Tailwind gray-100 */
+        }
+        
+        .toast-enter {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+        .toast-enter-active {
+            transform: translateY(0);
+            opacity: 1;
+            transition: all 0.3s ease-out;
+        }
+        .toast-exit {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .toast-exit-active {
+            transform: translateY(100%);
+            opacity: 0;
+            transition: all 0.3s ease-in;
+        }
+        
+        /* Spinner animation */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <!-- Main Card Container -->
+    <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center transition-all duration-300 hover:shadow-2xl">
+        
+        <!-- Header -->
+        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600">
+            <i class="fa-solid fa-cloud-arrow-down text-3xl"></i>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-800 mb-2">BlockIn Singlefile Downloader</h1>
+        <p class="text-gray-500 mb-8 text-sm">
+            Download the single file version of the site here.
+        </p>
+
+        <div class="space-y-4">
+            <!-- Button 1 -->
+            <button id="btn-file-1" class="group relative w-full flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-xl transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300">
+                <i id="icon-file-1" class="fa-solid fa-download"></i>
+                <span id="text-file-1">Download HTML variant</span>
+            </button>
+
+            <!-- Button 2 -->
+            <button id="btn-file-2" class="group relative w-full flex items-center justify-center gap-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-6 rounded-xl transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-300">
+                <i id="icon-file-2" class="fa-solid fa-download"></i>
+                <span id="text-file-2">Download SVG variant</span>
+            </button>
+        </div>
+        
+        <div class="mt-8 text-xs text-gray-400">
+            <i class="fa-solid fa-shield-halved mr-1"></i> simply download.
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-4 right-4 flex flex-col gap-2 z-50"></div>
+
+    <script>
+        // Data sources (using reliable public JSON API for demonstration)
+        const FILE_1_URL = 'site.html';
+        const FILE_2_URL = 'site.svg';
+
+        // UI Elements
+        const toastContainer = document.getElementById('toast-container');
+
+        // Function to show toast notifications (replaces alert)
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            
+            // Define styles based on type
+            let bgClass = 'bg-gray-800';
+            let icon = '<i class="fa-solid fa-circle-info"></i>';
+            
+            if (type === 'success') {
+                bgClass = 'bg-emerald-600';
+                icon = '<i class="fa-solid fa-circle-check"></i>';
+            } else if (type === 'error') {
+                bgClass = 'bg-red-600';
+                icon = '<i class="fa-solid fa-circle-exclamation"></i>';
+            }
+
+            toast.className = `flex items-center gap-3 text-white px-4 py-3 rounded-lg shadow-lg text-sm font-medium ${bgClass} toast-enter`;
+            toast.innerHTML = `${icon} <span>${message}</span>`;
+            
+            toastContainer.appendChild(toast);
+
+            // Trigger animation
+            requestAnimationFrame(() => {
+                toast.classList.remove('toast-enter');
+                toast.classList.add('toast-enter-active');
+            });
+
+            // Remove toast after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('toast-enter-active');
+                toast.classList.add('toast-exit-active');
+                
+                toast.addEventListener('transitionend', () => {
+                    toast.remove();
+                });
+            }, 3000);
+        }
+
+        /**
+         * Fetches a file from a URL and triggers a download
+         * @param {string} url - The URL to fetch
+         * @param {string} filename - The name to save the file as
+         * @param {string} buttonId - The ID of the button that triggered it (for loading state)
+         */
+        async function fetchAndDownload(url, filename, buttonId) {
+            const button = document.getElementById(`btn-${buttonId}`);
+            const icon = document.getElementById(`icon-${buttonId}`);
+            const text = document.getElementById(`text-${buttonId}`);
+            const originalIconClass = icon.className;
+            const originalText = text.innerText;
+
+            try {
+                // Set Loading State
+                button.disabled = true;
+                button.classList.add('opacity-75', 'cursor-not-allowed');
+                icon.className = 'fa-solid fa-circle-notch spinner';
+                text.innerText = 'Fetching...';
+
+                showToast(`Starting download for ${filename}...`, 'info');
+
+                // 1. Fetch the file contents
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                // 2. Get the data as a Blob
+                const blob = await response.blob();
+
+                // 3. Create a temporary URL for the Blob
+                const downloadUrl = window.URL.createObjectURL(blob);
+
+                // 4. Create an invisible anchor tag to trigger the download
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = downloadUrl;
+                a.download = filename;
+                
+                // Append to body, click, and remove
+                document.body.appendChild(a);
+                a.click();
+                
+                // 5. Clean up the URL object and DOM
+                window.URL.revokeObjectURL(downloadUrl);
+                document.body.removeChild(a);
+
+                showToast(`${filename} downloaded successfully!`, 'success');
+
+            } catch (error) {
+                console.error('Download failed:', error);
+                showToast(`Failed to download ${filename}.`, 'error');
+            } finally {
+                // Restore Button State
+                button.disabled = false;
+                button.classList.remove('opacity-75', 'cursor-not-allowed');
+                icon.className = originalIconClass;
+                text.innerText = originalText;
+            }
+        }
+
+        // Attach click events to the buttons
+        document.getElementById('btn-file-1').addEventListener('click', () => {
+            fetchAndDownload(FILE_1_URL, 'user_profile.json', 'file-1');
+        });
+
+        document.getElementById('btn-file-2').addEventListener('click', () => {
+            fetchAndDownload(FILE_2_URL, 'server_logs.json', 'file-2');
+        });
+
+    </script>
+</body>
+</html>
