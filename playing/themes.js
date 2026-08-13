@@ -12,6 +12,5 @@ const STORE_ITEMS = [
   { id: 'bg-crosoldhp',   name: 'BL | HP ChromeOS (old)',              type: 'background',     value: 'url(wp/chromeoldhp.jpg) no-repeat center center / cover', cost: 10, img: './wpthumb/oldhp.png' },
   { id: 'bg-crosnewhp',   name: 'BL | HP ChromeOS (new)',              type: 'background',     value: 'url(wp/chromenewhp.jpg) no-repeat center center / cover', cost: 10, img: './wpthumb/newhp.png' },
   { id: 'bg-android4',    name: 'BL | Android 4', type: 'background',     value: 'url(wp/dd4.jpg) no-repeat center center / cover', cost: 10, img: './wpthumb/dd4.png' },
-  { id: 'bg-bm',          name: 'ABL | BirdMath Beta 1 (ANIMATED)',     type: 'background',     value: 'url(wp/bmb1.webp) no-repeat center center / cover', cost: 40, img: './wpthumb/bmb1.png' },
   { id: 'bg-ab1',          name: 'BL | Angry Birds Classic',     type: 'background',     value: 'url(https://i.ibb.co/Qv0bnqdf/Gemini-Generated-Image-swexkdswexkdswex.png) no-repeat center center / cover', cost: 20, img: './wpthumb/ab1.png' }
 ];
