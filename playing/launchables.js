@@ -19,7 +19,7 @@ const STATIC_GAMES = [
   { id: 'game-fnf', name: 'FNF', h2: 'Can you keep up with the rhythm?', img: './img/fnf.webp', path: './html/fnf/index.html' },
   { id: 'game-fb', name: 'Flappy Bird', h2: 'Flap! Flap! Flap thru pipes!', img: './img/fb.jpg', path: './html/fb/index.html' },
   { id: 'game-bb', name: 'Block Blast', h2: 'Place blocks and match to edges. Powered by Duckget.', img: './img/bb.webp', path: './html/duckget/index.html#/class/block-blast' },
-  { id: 'game-au', name: 'Among Us', h2: 'A decent web replica. Who is the imposter?! ', img: './img/au.webp', path: './html/au/index.html' },
+  { id: 'game-au', name: 'Among Us', h2: 'A full port of the 2019 Among Us. Who is the imposter?! ', img: './img/au.webp', path: './html/au/index.html' },
   { id: 'game-dd4', name: 'Droistroy 4', h2: 'Wreck Android 4. But not with malware!', img: './img/dd4.png', path: './html/dd4/index.html?x=1' },
   { id: 'game-is', name: 'Incredibox Sprunk!', h2: 'This used to be popular. Not a fan of it but my brother likes it so why not. This has a feature to not have the hat.', img: './img/spr.webp', path: './html/spr/index.html?x=1' },
   { id: 'game-mc18', name: 'Minecraf+ 1.8', h2: 'Craft, mine, and build, all in this game. Check out Apps for servers.', img: './img/mc.webp', path: './html/mc18/index.html' },
