@@ -50,7 +50,7 @@
 <header>
   <div class="header-content">
     <h1>BlockIn<span class="accent-dot">.</span></h1>
-    <p>version 8.14.26.part1</p>
+    <p>version 8.14.26.part2</p>
     <p id="homeSubtitleText"></p>
     <h3>new:</h3>
     <p>check out epix mode, the revival of epix, with some refinements. access it by appliing /epixmode to your url.</p>
@@ -149,6 +149,24 @@
 
   <div id="settings-tab" class="tab-content">
     <h2 class="animate-on-scroll">Settings ⚙️</h2>
+
+    <div class="settings-section animate-on-scroll">
+      <label for="cloakMethodSelect">Cloaking Mode:</label>
+      <select id="cloakMethodSelect">
+        <option value="aboutblank">about:blank</option>
+        <option value="aboutblank-singlefile">about:blank singlefile (./singlefile/site.html)</option>
+        <option value="blob">blob:</option>
+        <option value="blob-singlefile">blob: singlefile (./singlefile/site.html)</option>
+        <option value="data">data URI</option>
+        <option value="data-singlefile">data URI singlefile (./singlefile/site.html)</option>
+      </select>
+      <button type="button" id="cloakOpenButton">Open in New Tab ↗</button>
+      <p style="font-size:0.85em;color:var(--fog);margin:0;">
+        Opens this site from its current location in a new tab using the selected browser URL/container method.
+        The singlefile modes load <code>./singlefile/site.html</code> relative to this site's location.
+      </p>
+      <p id="cloakStatus" style="font-size:0.85em;color:var(--fog);margin:0;display:none;"></p>
+    </div>
 
     <div class="settings-section animate-on-scroll">
       <label for="themeSelect">Theme:</label>
@@ -470,11 +488,12 @@
 const BANNER_TEXTS = [
   "Wowww...basic. Let's change it in the Theme Shop or just change the color in Settings.",
   "Unlock the terminal. By typing 'cmd'. Somehow.",
+  "Hide the site. Cloak in Settings.",
   "Made by a CachyOS user, probably works on ChromeOS and Windows.",
   "BIG has been tested to work on Chromium based browsers as low as version 66. This doesn't mean every game works.",
+  "Hide the site. Cloak in Settings.",
   "MADE BY BlockIn Games have been tested to work on Chromium based browsers as low as version 98.",
-  "six seeeveeennnnnnnn (sorry)",
-  "New look. Switch back in Settings."
+  "six seeeveeennnnnnnn (sorry)"
 ];
 
 function svgThumb(title, bg, fg) {
@@ -593,6 +612,7 @@ let currentRightClickedGameElement = null;
 let animationObserver;
 
 let accentColorPicker, root, searchInput, searchButton, searchResultsDiv;
+let cloakUrlInput, cloakMethodSelect, cloakOpenButton, cloakStatus;
 let gamePlayerOverlay, gameIframe, reloadGameButton;
 let fullScreenButton, exitGameButton, copyLinkButton, bookmarkButton, bookmarkMenu, bookmarkNormal, bookmarklet;
 let gameIframeContainer, resizeButton, resizeMenu, resizeWidthInput, resizeHeightInput, applyResizeButton, resetResizeButton;
@@ -1216,6 +1236,127 @@ function clearGameHistory() {
   renderHistoryManagement();
   renderHome();
   showMessageBox('Game history cleared.');
+}
+
+function setCloakStatus(message, isError = false) {
+  if (!cloakStatus) return;
+  cloakStatus.textContent = message;
+  cloakStatus.style.display = 'block';
+  cloakStatus.style.color = isError ? '#ff5470' : 'var(--fog)';
+}
+
+function getCloakTargetUrl() {
+  // Always use the URL/location this site was loaded from.
+  return new URL(window.location.href).href;
+}
+
+function makeSingleFileShell(html, targetUrl) {
+  const baseHref = new URL('./singlefile/', window.location.href).href;
+  const safeTarget = JSON.stringify(targetUrl);
+  const injected = `
+<base href="${baseHref.replace(/"/g, '&quot;')}">
+<style>
+  html,body{margin:0!important;padding:0!important;width:100%!important;height:100%!important;overflow:hidden!important}
+  #__blockin_cloak_frame{position:fixed;inset:0;width:100%;height:100%;border:0;margin:0;padding:0}
+</style>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var frame = document.createElement('iframe');
+    frame.id = '__blockin_cloak_frame';
+    frame.src = ${safeTarget};
+    frame.setAttribute('allowfullscreen', '');
+    frame.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
+    document.body.innerHTML = '';
+    document.body.appendChild(frame);
+  });
+<\/script>`;
+  if (/<\/head\s*>/i.test(html)) {
+    html = html.replace(/<\/head\s*>/i, injected + '</head>');
+  } else {
+    html = injected + html;
+  }
+  return html;
+}
+
+function openAboutBlankTarget(targetUrl) {
+  const win = window.open('about:blank', '_blank');
+  if (!win) throw new Error('The browser blocked the new tab. Allow pop-ups for this site.');
+  win.location.href = targetUrl;
+}
+
+async function openFetchedHtmlInTab(targetUrl, method) {
+  const win = window.open('about:blank', '_blank');
+  if (!win) throw new Error('The browser blocked the new tab. Allow pop-ups for this site.');
+
+  try {
+    const response = await fetch(targetUrl, { credentials: 'omit' });
+    if (!response.ok) throw new Error(`Fetch failed: HTTP ${response.status}`);
+    const html = await response.text();
+
+    if (method === 'blob') {
+      const blobUrl = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+      win.location.href = blobUrl;
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+    } else {
+      const dataUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(html);
+      win.location.href = dataUrl;
+    }
+  } catch (error) {
+    try { win.close(); } catch (_) {}
+    throw new Error(`${method === 'blob' ? 'Blob' : 'Data URI'} mode needs the target to allow browser fetch/CORS. ${error.message}`);
+  }
+}
+
+async function openSingleFileShellInTab(targetUrl, method) {
+  const win = window.open('about:blank', '_blank');
+  if (!win) throw new Error('The browser blocked the new tab. Allow pop-ups for this site.');
+
+  try {
+    const shellUrl = new URL('./singlefile/site.html', window.location.href).href;
+    const response = await fetch(shellUrl, { credentials: 'same-origin' });
+    if (!response.ok) throw new Error(`Could not load ./singlefile/site.html: HTTP ${response.status}`);
+    const shellHtml = makeSingleFileShell(await response.text(), targetUrl);
+
+    if (method === 'aboutblank-singlefile') {
+      win.document.open();
+      win.document.write(shellHtml);
+      win.document.close();
+    } else if (method === 'blob-singlefile') {
+      const blobUrl = URL.createObjectURL(new Blob([shellHtml], { type: 'text/html;charset=utf-8' }));
+      win.location.href = blobUrl;
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+    } else {
+      win.location.href = 'data:text/html;charset=utf-8,' + encodeURIComponent(shellHtml);
+    }
+  } catch (error) {
+    try { win.close(); } catch (_) {}
+    throw error;
+  }
+}
+
+async function openCloakedSite() {
+  try {
+    const targetUrl = getCloakTargetUrl();
+    const method = cloakMethodSelect ? cloakMethodSelect.value : 'aboutblank';
+    setCloakStatus('Opening…');
+
+    if (method === 'aboutblank') {
+      openAboutBlankTarget(targetUrl);
+    } else if (method === 'aboutblank-singlefile' ||
+               method === 'blob-singlefile' ||
+               method === 'data-singlefile') {
+      await openSingleFileShellInTab(targetUrl, method);
+    } else {
+      await openFetchedHtmlInTab(targetUrl, method);
+    }
+
+    localStorage.setItem('epixgamesCloakUrl', targetUrl);
+    localStorage.setItem('epixgamesCloakMethod', method);
+    setCloakStatus('Opened in a new tab.');
+  } catch (error) {
+    setCloakStatus(error.message || 'Unable to open the site.', true);
+    showMessageBox(`Cloaking mode failed: ${String(error.message || error).replace(/</g, '&lt;')}`);
+  }
 }
 
 async function openGameInIframe(path) {
@@ -3050,6 +3191,20 @@ function initApp() {
       grabMethod = e.target.value;
       localStorage.setItem('epixgamesGrabMethod', grabMethod);
     });
+  }
+
+  cloakMethodSelect = document.getElementById('cloakMethodSelect');
+  cloakOpenButton = document.getElementById('cloakOpenButton');
+  cloakStatus = document.getElementById('cloakStatus');
+
+  if (cloakMethodSelect) {
+    cloakMethodSelect.value = localStorage.getItem('epixgamesCloakMethod') || 'aboutblank';
+    cloakMethodSelect.addEventListener('change', e => {
+      localStorage.setItem('epixgamesCloakMethod', e.target.value);
+    });
+  }
+  if (cloakOpenButton) {
+    cloakOpenButton.addEventListener('click', openCloakedSite);
   }
 
   toggleAccentColorPickerState();
