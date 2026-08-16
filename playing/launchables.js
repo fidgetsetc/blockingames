@@ -4,10 +4,11 @@ const APPS = [
   { id: 'app-deb', name: 'Debian Terminal', h2: 'A simulated Debian terminal! Familar to Debian, Ubuntu, Mint, Pi, and similar users.', img: './img/deb.png', path: './html/deb/index.html' }, 
   { id: 'app-bd', name: 'Bouncing Distros', h2: 'Bouncing logos of Linux distros. We are not affiliated with any distros.', img: './img/ldb.png', path: './html/ldb/index.html' },
   { id: 'app-yio', name: 'Yell It Out', h2: 'Just go type things to channels, see if someone recieves it, sorta a pseudo chat!', img: './img/yio.png', path: './html/yio/index.html?x=1' },
-  { id: 'app-dowb', name: 'Doge Randomizer Web Browser', h2: 'Randomized l!nks for Doge', img: './img/dbr.png', path: './html/browser/index.html?x=1' }, 
+  { id: 'app-dowb', name: 'Doge Web Browser', h2: 'Browse the web. (Note: another tab may open, you can safely close it)', img: './img/dbr.png', path: './html/browser/index.html?x=1' },
   { id: 'app-mcs', name: 'Minecraf+ Server List', h2: 'Get servers for MC', img: './img/mc.webp', path: './html/mcserver/index.html' },
   { id: 'app-fl', name: 'FileLock', h2: 'Store and lock your files with privacy.', img: './img/fl.png', path: './html/fl/index.html' },
   { id: 'app-ytm', name: 'Music w/ YT', h2: 'Listen to tons of music.', img: './img/ytm.png', path: './html/ytm/index.html' },
+{ id: 'app-bic', name: 'BlockIn Chat BETA', h2: 'Chat with other users on the platform!', img: './img/chat.png', path: './html/chat/index.html' },
 ];
 // Games
 const STATIC_GAMES = [

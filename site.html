@@ -50,7 +50,6 @@
 <header>
   <div class="header-content">
     <h1>BlockIn<span class="accent-dot">.</span></h1>
-    <p>version 8.14.26.part2</p>
     <p id="homeSubtitleText"></p>
     <h3>new:</h3>
     <p>check out epix mode, the revival of epix, with some refinements. access it by appliing /epixmode to your url.</p>
@@ -235,7 +234,7 @@
         </label>
         <label for="uidConsentToggle" style="margin:0;">Anonymous Device UID</label>
       </div>
-      <p style="font-size:0.85em;color:var(--fog);margin:0;">Helps us improve BlockIn for your device and makes bug reports on the Discord server easier to track down. When off, the UID service isn't loaded at all.</p>
+      <p style="font-size:0.85em;color:var(--fog);margin:0;">Helps us improve BlockIn for your device and makes bug reports on the Discord server easier to track down, and only shares browser and OS. When off, the UID service isn't loaded at all.</p>
     </div>
 
     <div class="settings-section animate-on-scroll">
@@ -270,16 +269,7 @@
     <div class="game-iframe-container">
       <iframe id="gameIframe" class="game-iframe" allowfullscreen></iframe>
     </div>
-    <aside class="game-sidebar" id="gameSidebar">
-      <div>
-        <h3>Up Next</h3>
-        <div id="sidebarHistory" class="sidebar-list"></div>
-      </div>
-      <div>
-        <h3>Recommended</h3>
-        <div id="sidebarRecommended" class="sidebar-list"></div>
-      </div>
-    </aside>
+
   </div>
   <div class="game-controls-bar">
     <button id="reloadGameButton">Reload Game</button>
@@ -308,7 +298,7 @@
         <div class="resize-presets">
           <button type="button" class="resize-preset-button" data-w="1024" data-h="768">Landscape 4:3 768p</button>
           <button type="button" class="resize-preset-button" data-w="1366" data-h="768">Landscape 16:9 768p</button>
-          <button type="button" class="resize-preset-button" data-w="1228" data-h="768">Landscape 16:10 768p (AB)</button>
+          <button type="button" class="resize-preset-button" data-w="1228" data-h="768">Landscape 16:10 768p (works best with angry birds)</button>
           <button type="button" class="resize-preset-button" data-w="768" data-h="1024">Portait 4:3 768p</button>
           <button type="button" class="resize-preset-button" data-w="768" data-h="1366">Portait 16:9 768p</button>
           <button type="button" class="resize-preset-button" data-w="768" data-h="1228">Portait 16:10 768p</button>
@@ -461,7 +451,7 @@
   <div id="uidConsentModal">
     <h3>Help improve BlockIn?</h3>
     <p>BlockIn can generate a random, anonymous UID (User ID) for this browser. It helps us see how the platform runs on different devices, and if you report a bug on our Discord server, sharing your UID makes it much easier to track down and fix.</p>
-    <p style="font-size:0.82em;">No personal info is attached to it — it's just a random ID stored on this device. You can turn this on or off anytime in Settings. The ID itself is different for every session.</p>
+    <p style="font-size:0.82em;">No personal info is attached to it; it's just a random ID stored on this device. You can turn this on or off anytime in Settings. The ID itself is different for every session, and the only things shared along with the UID is the OS and browser.</p>
     <div class="uid-consent-buttons">
       <button type="button" id="uidConsentAcceptButton">Yes, use a UID</button>
       <button type="button" id="uidConsentDeclineButton">No thanks</button>
@@ -488,12 +478,11 @@
 const BANNER_TEXTS = [
   "Wowww...basic. Let's change it in the Theme Shop or just change the color in Settings.",
   "Unlock the terminal. By typing 'cmd'. Somehow.",
-  "Hide the site. Cloak in Settings.",
   "Made by a CachyOS user, probably works on ChromeOS and Windows.",
   "BIG has been tested to work on Chromium based browsers as low as version 66. This doesn't mean every game works.",
-  "Hide the site. Cloak in Settings.",
   "MADE BY BlockIn Games have been tested to work on Chromium based browsers as low as version 98.",
-  "six seeeveeennnnnnnn (sorry)"
+  "six seeeveeennnnnnnn (sorry)",
+  "New look. Switch back in Settings."
 ];
 
 function svgThumb(title, bg, fg) {
@@ -3258,6 +3247,71 @@ document.addEventListener('DOMContentLoaded', () => {
     hidePreloader();
   });
 });
+
+/* CLOAKING MODE START */
+(function () {
+  const cloakMethod = document.getElementById('cloakMethod');
+  const cloakButton = document.getElementById('cloakOpenButton');
+  if (!cloakMethod || !cloakButton) return;
+
+  const currentSiteURL = () => window.location.href;
+  const singleFileURL = () => new URL('./singlefile/site.html', window.location.href).href;
+
+  async function fetchHTML(url) {
+    const r = await fetch(url, { credentials: 'same-origin' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.text();
+  }
+
+  function toDataURL(html) {
+    const bytes = new TextEncoder().encode(html);
+    let binary = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) {
+      binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+    }
+    return 'data:text/html;base64,' + btoa(binary);
+  }
+
+  async function openCloaked() {
+    const method = cloakMethod.value;
+    const url = method.includes('singlefile') ? singleFileURL() : currentSiteURL();
+
+    try {
+      if (method === 'about-blank') {
+        const win = window.open('about:blank', '_blank');
+        if (!win) throw new Error('Popup blocked.');
+        const html = await fetchHTML(url);
+        win.document.open();
+        win.document.write(html);
+        win.document.close();
+        return;
+      }
+
+      const html = await fetchHTML(url);
+      const win = window.open('about:blank', '_blank');
+      if (!win) throw new Error('Popup blocked.');
+
+      if (method === 'blob' || method === 'blob-singlefile') {
+        const blobURL = URL.createObjectURL(
+          new Blob([html], { type: 'text/html;charset=utf-8' })
+        );
+        win.location.replace(blobURL);
+        setTimeout(() => URL.revokeObjectURL(blobURL), 60000);
+      } else if (method === 'data' || method === 'data-singlefile') {
+        win.location.replace(toDataURL(html));
+      } else if (method === 'about-blank-singlefile') {
+        win.document.open();
+        win.document.write(html);
+        win.document.close();
+      }
+    } catch (err) {
+      alert('Cloaking failed: ' + err.message);
+    }
+  }
+
+  cloakButton.addEventListener('click', openCloaked);
+})();
+ /* CLOAKING MODE END */
 </script>
 <iframe class="uid-service-iframe" data-src="./html/uid/index.html" style="border:1px #FFFFFF none" src="about:blank" title="iFrame" width="0px" height="0px" scrolling="no" frameborder="no" allow="fullscreen"></iframe>
 <iframe class="uid-service-iframe" data-src="./html/uid/index.html" style="border:1px #FFFFFF none" src="about:blank" title="iFrame" width="480px" height="80px" scrolling="no" frameborder="no" allow="fullscreen"></iframe>
