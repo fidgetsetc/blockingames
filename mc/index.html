@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>index.zip Loader</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #111; color: #eee; font-family: system-ui, Segoe UI, sans-serif; }
+  #app { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; background: #fff; display: none; }
+  #picker { height: 100%; display: flex; align-items: center; justify-content: center; }
+  #drop { border: 2px dashed #666; border-radius: 12px; padding: 40px 56px; text-align: center; max-width: 420px; transition: .15s; }
+  #drop.over { border-color: #4da3ff; background: #1b2735; }
+  #drop h1 { font-size: 20px; margin: 0 0 8px; font-weight: 600; }
+  #drop p { margin: 6px 0; color: #aaa; font-size: 14px; }
+  #drop button, #reset { background: #2a6fdb; color: #fff; border: 0; border-radius: 6px; padding: 9px 18px; font-size: 14px; cursor: pointer; margin-top: 12px; }
+  #status { margin-top: 14px; font-size: 13px; color: #8fd18f; min-height: 18px; white-space: pre-wrap; }
+  #status.err { color: #ff8a8a; }
+  #reset { position: fixed; top: 0; left: 50%; transform: translate(-50%, -100%); z-index: 99999; margin: 0; border-radius: 0 0 8px 8px;
+           padding: 5px 12px; font-size: 12px; opacity: .85; transition: transform .15s; display: none; }
+  #hot { position: fixed; top: 0; left: 30%; width: 40%; height: 6px; z-index: 99998; display: none; }
+  #hot:hover + #reset, #reset:hover { transform: translate(-50%, 0); }
+</style>
+</head>
+<body>
+
+<div id="picker">
+  <div id="drop">
+    <h1 id="title">Loading index.zip…</h1>
+    <div id="fallback" hidden>
+      <p>Couldn't read <code>index.zip</code> next to this file.<br>Browsers block this when a page is opened straight from disk (file://); serve the folder over http, or pick the zip manually.</p>
+      <button id="choose">Choose index.zip</button>
+      <input id="file" type="file" accept=".zip,application/zip" hidden>
+    </div>
+    <div id="status"></div>
+  </div>
+</div>
+
+<iframe id="app" allow="fullscreen; autoplay; clipboard-read; clipboard-write"></iframe>
+<div id="hot"></div>
+<button id="reset" title="Discard the stored copy and re-extract index.zip">Reload from index.zip. | Built by Claude and scrappy73_fr</button>
+
+<script>
+(() => {
+  const KEY = 'extracted_index_html_v1';
+  const META = 'extracted_index_html_meta_v1';
+  const $ = id => document.getElementById(id);
+  const statusEl = $('status');
+
+  const say = (msg, err = false) => { statusEl.textContent = msg; statusEl.className = err ? 'err' : ''; };
+
+  /* ---------- Minimal ZIP reader (stored + deflate) ---------- */
+  async function inflateRaw(bytes) {
+    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+    return new Uint8Array(await new Response(stream).arrayBuffer());
+  }
+
+  async function unzip(buffer) {
+    const dv = new DataView(buffer);
+    const u8 = new Uint8Array(buffer);
+    let eocd = -1;
+    for (let i = buffer.byteLength - 22; i >= Math.max(0, buffer.byteLength - 65557); i--) {
+      if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+    }
+    if (eocd < 0) throw new Error('Not a valid zip file (no end-of-central-directory).');
+    const count = dv.getUint16(eocd + 10, true);
+    let p = dv.getUint32(eocd + 16, true);
+    const dec = new TextDecoder();
+    const files = {};
+
+    for (let n = 0; n < count; n++) {
+      if (dv.getUint32(p, true) !== 0x02014b50) throw new Error('Corrupt zip directory.');
+      const flags = dv.getUint16(p + 8, true);
+      const method = dv.getUint16(p + 10, true);
+      const csize = dv.getUint32(p + 20, true);
+      const nameLen = dv.getUint16(p + 28, true);
+      const extraLen = dv.getUint16(p + 30, true);
+      const commentLen = dv.getUint16(p + 32, true);
+      const lho = dv.getUint32(p + 42, true);
+      const name = dec.decode(u8.subarray(p + 46, p + 46 + nameLen));
+      p += 46 + nameLen + extraLen + commentLen;
+
+      if (name.endsWith('/')) continue;
+      if (flags & 1) throw new Error('Encrypted zips are not supported.');
+      const lNameLen = dv.getUint16(lho + 26, true);
+      const lExtraLen = dv.getUint16(lho + 28, true);
+      const start = lho + 30 + lNameLen + lExtraLen;
+      const raw = u8.subarray(start, start + csize);
+
+      files[name] = { method, raw };
+    }
+    return {
+      names: Object.keys(files),
+      async read(name) {
+        const f = files[name];
+        if (f.method === 0) return f.raw;
+        if (f.method === 8) return inflateRaw(f.raw);
+        throw new Error('Unsupported compression method ' + f.method + ' for ' + name);
+      }
+    };
+  }
+
+  /* ---------- Asset inlining so the stored loader.html is self-contained ---------- */
+  const MIME = {
+    css: 'text/css', js: 'text/javascript', mjs: 'text/javascript', json: 'application/json',
+    png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp',
+    svg: 'image/svg+xml', ico: 'image/x-icon', bmp: 'image/bmp', avif: 'image/avif',
+    woff: 'font/woff', woff2: 'font/woff2', ttf: 'font/ttf', otf: 'font/otf',
+    mp3: 'audio/mpeg', wav: 'audio/wav', ogg: 'audio/ogg', mp4: 'video/mp4', webm: 'video/webm',
+    html: 'text/html', txt: 'text/plain'
+  };
+  const ext = p => (p.split('.').pop() || '').toLowerCase();
+  const mime = p => MIME[ext(p)] || 'application/octet-stream';
+  const isExternal = u => /^([a-z][a-z0-9+.-]*:|\/\/|#)/i.test(u);
+
+  function resolvePath(baseDir, rel) {
+    rel = rel.split('#')[0].split('?')[0];
+    try { rel = decodeURIComponent(rel); } catch (e) {}
+    const parts = (baseDir + rel).split('/');
+    const out = [];
+    for (const s of parts) {
+      if (s === '' || s === '.') continue;
+      if (s === '..') out.pop(); else out.push(s);
+    }
+    return out.join('/');
+  }
+
+  const toDataURI = (bytes, type) => new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(new Blob([bytes], { type }));
+  });
+
+  async function inlineCss(css, zip, dir) {
+    const re = /url\(\s*(['"]?)([^'")]+)\1\s*\)/g;
+    const jobs = [];
+    css.replace(re, (m, q, u) => { jobs.push([m, u]); return m; });
+    for (const [m, u] of jobs) {
+      if (isExternal(u)) continue;
+      const path = resolvePath(dir, u);
+      if (!zip.names.includes(path)) continue;
+      const uri = await toDataURI(await zip.read(path), mime(path));
+      css = css.split(m).join('url("' + uri + '")');
+    }
+    return css;
+  }
+
+  async function buildSelfContainedHtml(zip) {
+    const candidates = zip.names.filter(n => /(^|\/)loader\.html?$/i.test(n) && !n.startsWith('__MACOSX/'));
+    if (!candidates.length) throw new Error('No loader.html found inside the zip.');
+    candidates.sort((a, b) => a.split('/').length - b.split('/').length);
+    const indexPath = candidates[0];
+    const dir = indexPath.includes('/') ? indexPath.slice(0, indexPath.lastIndexOf('/') + 1) : '';
+
+    const html = new TextDecoder().decode(await zip.read(indexPath));
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const local = (el, attr) => {
+      const v = el.getAttribute(attr);
+      if (!v || isExternal(v)) return null;
+      const path = resolvePath(dir, v);
+      return zip.names.includes(path) ? path : null;
+    };
+
+    // Stylesheets
+    for (const el of [...doc.querySelectorAll('link[rel~="stylesheet"][href]')]) {
+      const path = local(el, 'href'); if (!path) continue;
+      const css = new TextDecoder().decode(await zip.read(path));
+      const style = doc.createElement('style');
+      style.textContent = await inlineCss(css, zip, path.includes('/') ? path.slice(0, path.lastIndexOf('/') + 1) : '');
+      el.replaceWith(style);
+    }
+    // Inline <style> blocks and style attributes
+    for (const el of [...doc.querySelectorAll('style')]) el.textContent = await inlineCss(el.textContent, zip, dir);
+    // Scripts
+    for (const el of [...doc.querySelectorAll('script[src]')]) {
+      const path = local(el, 'src'); if (!path) continue;
+      const js = new TextDecoder().decode(await zip.read(path));
+      el.removeAttribute('src');
+      el.textContent = js.replace(/<\/script/gi, '<\\/script');
+    }
+    // Other resources
+    const attrs = [['img','src'],['source','src'],['video','src'],['video','poster'],['audio','src'],
+                   ['link[rel~="icon"]','href'],['link[rel~="apple-touch-icon"]','href'],['image','href'],['embed','src']];
+    for (const [sel, attr] of attrs) {
+      for (const el of [...doc.querySelectorAll(sel)]) {
+        const path = local(el, attr); if (!path) continue;
+        el.setAttribute(attr, await toDataURI(await zip.read(path), mime(path)));
+      }
+    }
+    for (const el of [...doc.querySelectorAll('img[srcset],source[srcset]')]) el.removeAttribute('srcset');
+
+    return '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+  }
+
+  /* ---------- Launch ---------- */
+  function launch(html) {
+    $('picker').style.display = 'none';
+    const f = $('app');
+    f.style.display = 'block';
+    f.srcdoc = html;
+    $('hot').style.display = 'block';
+    $('reset').style.display = 'block';
+  }
+
+  async function handleZip(buffer) {
+    say('Extracting…');
+    try {
+      const zip = await unzip(buffer);
+      const html = await buildSelfContainedHtml(zip);
+      let saved = true;
+      try {
+        localStorage.setItem(KEY, html);
+        localStorage.setItem(META, JSON.stringify({ savedAt: new Date().toISOString(), bytes: html.length }));
+      } catch (e) {
+        saved = false;
+        console.warn('Could not store loader.html in localStorage:', e);
+      }
+      launch(html);
+      if (!saved) console.warn('loader.html is too large for localStorage (~5 MB limit); it will not persist.');
+    } catch (e) {
+      console.error(e);
+      say(e.message || String(e), true);
+    }
+  }
+
+  async function handleFile(file) {
+    if (!file) return;
+    handleZip(await file.arrayBuffer());
+  }
+
+  // UI wiring
+  const drop = $('drop'), input = $('file');
+  $('choose').onclick = () => input.click();
+  input.onchange = () => handleFile(input.files[0]);
+  ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', e => handleFile(e.dataTransfer.files[0]));
+  window.addEventListener('dragover', e => e.preventDefault());
+  window.addEventListener('drop', e => e.preventDefault());
+
+  $('reset').onclick = () => {
+    localStorage.removeItem(KEY);
+    localStorage.removeItem(META);
+    location.reload();
+  };
+
+  // Startup: fetch index.zip sitting next to this file (any filename for this page),
+  // extract it, run it, and store the result. If the zip can't be fetched, use the stored copy.
+  (async () => {
+    try {
+      const res = await fetch(new URL('index.zip', location.href), { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      await handleZip(await res.arrayBuffer());
+      return;
+    } catch (e) { console.warn('Could not fetch index.zip:', e); }
+
+    let stored = null;
+    try { stored = localStorage.getItem(KEY); } catch (e) {}
+    if (stored) { launch(stored); return; }
+
+    $('title').textContent = 'index.zip not found';
+    $('fallback').hidden = false;
+  })();
+})();
+</script>
+</body>
+</html>

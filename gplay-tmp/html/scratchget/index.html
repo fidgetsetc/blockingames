@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>scratchget</title>
+<script src="https://cdn.jsdelivr.net/npm/@turbowarp/scaffolding@0.4.0/dist/scaffolding-min.js"></script>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+  }
+  #stage-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: #000;
+  }
+  #overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #111;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    z-index: 10;
+  }
+  #overlay input {
+    padding: 10px;
+    width: 260px;
+    border-radius: 4px;
+    border: none;
+    font-size: 15px;
+  }
+  #overlay button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    background: #ffbf00;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 15px;
+  }
+  #overlay button:hover { background: #e6ac00; }
+  #statusMsg { font-size: 14px; color: #aaa; min-height: 18px; }
+  #overlay.loading-only #inputRow,
+  #overlay.loading-only h2 { display: none !important; }
+  #overlay.loading-only #statusMsg {
+    font-size: 18px;
+    color: #fff;
+  }
+  .spinner {
+    display: none;
+    width: 36px;
+    height: 36px;
+    border: 4px solid #444;
+    border-top-color: #ffbf00;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  #overlay.loading-only .spinner { display: block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div id="overlay">
+  <div id="inputRow" style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+    <input type="text" id="projectIdInput" placeholder="Enter Scratch project ID">
+    <button onclick="startFromInput()">Load Project</button>
+  </div>
+  <div class="spinner"></div>
+  <div id="statusMsg"></div>
+</div>
+
+<div id="stage-container"></div>
+
+<script>
+  // Per TurboWarp Scaffolding's official docs: use trampoline for metadata
+  // (Scratch API only allows scratch.mit.edu origins directly), then fetch
+  // project data from projects.scratch.mit.edu using the returned token.
+  const API_PROJECT_META = 'https://trampoline.turbowarp.org/api/projects/';
+  const PROJECT_HOST = 'https://projects.scratch.mit.edu/';
+
+  const overlay = document.getElementById('overlay');
+  const statusMsg = document.getElementById('statusMsg');
+  const stageContainer = document.getElementById('stage-container');
+
+  let scaffolding = null;
+
+  function getIdFromParams() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('id') || params.get('project') || params.get('projectId');
+  }
+
+  function setStatus(msg) {
+    statusMsg.textContent = msg;
+  }
+
+  async function fetchProjectData(id) {
+    // Step 1: get project metadata (title + token) via trampoline, since
+    // api.scratch.mit.edu only allows requests from scratch.mit.edu itself.
+    setStatus('Fetching project metadata...');
+    const metaRes = await fetch(API_PROJECT_META + id);
+    if (metaRes.status === 404) {
+      throw new Error('The project is unshared or does not exist.');
+    }
+    if (!metaRes.ok) {
+      throw new Error('HTTP error ' + metaRes.status + ' fetching project metadata.');
+    }
+    const meta = await metaRes.json();
+    const token = meta.project_token;
+
+    // Step 2: fetch the actual project data using the token.
+    setStatus('Downloading project file...');
+    const tokenParam = token ? `?token=${token}` : '';
+    const projRes = await fetch(`${PROJECT_HOST}${id}${tokenParam}`);
+    if (!projRes.ok) {
+      throw new Error('HTTP error ' + projRes.status + ' fetching project data.');
+    }
+    const projectData = await projRes.arrayBuffer();
+    return { meta, projectData };
+  }
+
+  async function loadProject(id) {
+    if (!/^\d+$/.test(id)) {
+      setStatus('Invalid project ID — must be numeric.');
+      return;
+    }
+
+    try {
+      const { meta, projectData } = await fetchProjectData(id);
+
+      setStatus('Booting TurboWarp engine...');
+
+      if (typeof Scaffolding === 'undefined') {
+        throw new Error('Scaffolding library failed to load from CDN.');
+      }
+
+      // Set up the self-hosted TurboWarp (Scaffolding) player
+      scaffolding = new Scaffolding.Scaffolding();
+      scaffolding.width = 480;
+      scaffolding.height = 360;
+      scaffolding.resizeMode = 'preserve-ratio'; // keep correct aspect ratio, letterbox if needed
+      
+      // Initialize scaffolding first so scaffolding.renderer exists
+      scaffolding.setup();
+
+      // Enable High Quality Pen on the renderer instance
+      if (scaffolding.renderer) {
+        scaffolding.renderer.highQualityPen = true;
+      }
+
+      scaffolding.appendTo(stageContainer);
+
+      // Tell scratch-storage where to download costumes/sounds from —
+      // without this, Scaffolding can't resolve project assets.
+      const storage = scaffolding.storage;
+      storage.addWebStore(
+        [storage.AssetType.ImageVector, storage.AssetType.ImageBitmap, storage.AssetType.Sound],
+        (asset) => `https://assets.scratch.mit.edu/internalapi/asset/${asset.assetId}.${asset.dataFormat}/get/`
+      );
+
+      setStatus('Loading project into engine...');
+      await scaffolding.loadProject(projectData);
+
+      scaffolding.start();
+      scaffolding.greenFlag();
+
+      overlay.style.display = 'none';
+      document.title = (meta.title || 'Scratch Project') + ' — Self-Hosted Player';
+
+      window.addEventListener('resize', () => {
+        if (scaffolding) {
+          scaffolding.relayout();
+        }
+      });
+    } catch (err) {
+      overlay.classList.remove('loading-only');
+      setStatus('Error: ' + err.message);
+    }
+  }
+
+  function startFromInput() {
+    const id = document.getElementById('projectIdInput').value.trim();
+    loadProject(id);
+  }
+
+  const initialId = getIdFromParams();
+  if (initialId) {
+    overlay.classList.add('loading-only');
+    document.getElementById('projectIdInput').value = initialId;
+    loadProject(initialId);
+  }
+</script>
+
+</body>
+</html>

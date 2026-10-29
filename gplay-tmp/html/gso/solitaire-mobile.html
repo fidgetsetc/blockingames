@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Google Solitaire</title>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <style preserve='css'>
+    body {
+      margin: 0;
+      background-color: black;
+      color:white;
+      font-family: 'HelveticaNeue-Medium',HelveticaNeue,Helvetica,Arial;
+      font-size: 16px;
+      font-weight: lighter;
+    }
+    body, html, #c {
+      height: 100%;
+    }
+    /* container */
+    #c {
+      /*
+       * Avoid scrollbars, since transform:scale(.5) doesn't reduce the size of
+       * the element for purposes of scrollbar calculations.
+       */
+      overflow: hidden;
+    }
+    /* iframe */
+    #i {
+      width: 320px;
+      height: 568px;
+      border: none;
+
+      /* Checked by css autoprefixer, should fit for most of the browsers.*/
+      -webkit-transform-origin: left top;
+      transform-origin: left top;
+    }
+
+    @media screen and (orientation: landscape) {
+      #i {
+        width: 568px;
+        height: 320px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id=c>
+    <iframe id=i src='/logos/fnbx/solitaire/standalone.html'>
+    <!--<iframe id=i src='/standalone_debug.html'>-->
+    </iframe>
+  </div>
+  <script>
+    var iframe = document.getElementById('i');
+
+    var portraitW = 320;
+    var portraitH = 568;
+
+    var landscapeW = 568;
+    var landscpaeH = 320;
+
+    window.onresize = function() {
+      // Uses different sets of sizes for portrait / landscape.
+      var isLandscape = window.innerWidth > window.innerHeight;
+      var w = isLandscape ? landscapeW : portraitW;
+      var h = isLandscape ? landscpaeH : portraitH;
+
+      // On iOS needs to reset the padding every time before scaling.
+      iframe.style.padding = '0';
+
+      var scale = Math.min(window.innerWidth / w, window.innerHeight / h);
+      iframe.style.webkitTransform = 'scale(' + scale + ')';
+      iframe.style.transform = 'scale(' + scale + ')';
+
+      if (!isLandscape) {
+        // Serving code on portrait and landscape seems different, landscape
+        // with padding is not functioning good on iOS.
+
+        var padding = Math.ceil((window.innerWidth / scale - w) / 2) + 'px';
+        iframe.style.paddingLeft = padding;
+        iframe.style.paddingRight = padding;
+        var paddingTop = Math.ceil((window.innerHeight / scale - h) / 2) + 'px';
+        iframe.style.paddingTop = paddingTop;
+        iframe.style.paddingBottom = paddingTop;
+      }
+
+      console.log('Containner padding: ', padding, paddingTop);
+    };
+    window.onresize();
+
+    // Without this, iOS GSA on iPad has an area in the lower-right corner where
+    // swiping scrolls the page instead of controlling pacman. See b/16665992.
+    // Adding a touchstart listener fixes this. I don't know why.
+    document.addEventListener('touchstart', function() {});
+  </script>
+</body>
+</html>

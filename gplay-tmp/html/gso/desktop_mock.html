@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+ <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Google Solitaire Mock</title>
+  </head>
+  <body>
+    <style>
+      #frame-dark {
+        background-color: rgba(0,0,0,0.9);
+        bottom: 0;
+        cursor: pointer;
+        left: 0;
+        position: fixed;
+        right: 0;
+        top: 0;
+        z-index: 9000;
+      }
+      #mock {
+        bottom: 0;
+        left: 0;
+        position: fixed;
+        right: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+      }
+      #funbox {
+        margin: auto;
+        cursor: default;
+        position: absolute;
+        width: 568px;
+        height: 320px;
+
+        font-family: sans-serif;
+
+        left: 0px;
+        top: 0px;
+        bottom: 0px;
+        right: 0px;
+      }
+      #funbox .header {
+        width: 100%;
+        background-color: white;
+        padding: 20px 0px;
+      }
+      #funbox .header .title {
+        font-size: 19pt;
+        color: black;
+        font-weight: bold;
+        margin: 0px 40px;
+      }
+      #funbox .content {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+    <iframe id="mock" src="mock/solitaire_desktop.html" seamless="seamless" frameBorder="0">
+      Please enable iframe support.
+    </iframe>
+    <div id="frame-dark">
+      <div id="funbox">
+        <iframe class="content" src="./standalone.html" seamless="seamless" frameBorder="0">
+          Please enable iframe support.
+        </iframe>
+      </div>
+    </div>
+  </body>
+</html>

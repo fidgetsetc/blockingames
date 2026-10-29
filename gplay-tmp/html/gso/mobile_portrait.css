@@ -1,0 +1,11 @@
+#solitaire-scorebar .item {
+  margin-right: 12px;
+}
+#solitaire-scorebar .title {
+  margin-left: 12px;
+}
+#solitaire-scorebar-move {
+  display: none;
+}
+
+/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uLy4uLy4uLy4uLy4uLy4uL2dvb2dsZWRhdGEvaHRtbC9qcy9lZ2cvZnVuYm94L3NvbGl0YWlyZS9tb2JpbGVfcG9ydHJhaXQuY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBO0VBQ0UsbUJBQW1CO0NBQ3BCO0FBQ0Q7RUFDRSxrQkFBa0I7Q0FDbkI7QUFDRDtFQUNFLGNBQWM7Q0FDZiIsImZpbGUiOiJtb2JpbGVfcG9ydHJhaXQuY3NzIiwic291cmNlc0NvbnRlbnQiOlsiI3NvbGl0YWlyZS1zY29yZWJhciAuaXRlbSB7XG4gIG1hcmdpbi1yaWdodDogMTJweDtcbn1cbiNzb2xpdGFpcmUtc2NvcmViYXIgLnRpdGxlIHtcbiAgbWFyZ2luLWxlZnQ6IDEycHg7XG59XG4jc29saXRhaXJlLXNjb3JlYmFyLW1vdmUge1xuICBkaXNwbGF5OiBub25lO1xufVxuIl19 */

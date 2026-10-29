@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TI-30XIIs Scientific Calculator Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Custom LCD pixel font styling */
+        .lcd-font {
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        /* Standardized button 3D physical style */
+        .calc-btn {
+            position: relative;
+            user-select: none;
+            transition: all 0.05s ease;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+        }
+
+        .calc-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Beveled body styling for realistic plastic feel */
+        .calc-body {
+            background: linear-gradient(145deg, #1d72b8 0%, #155184 60%, #0d385c 100%);
+            box-shadow: 
+                0 20px 35px rgba(0,0,0,0.5),
+                inset 0 2px 3px rgba(255,255,255,0.3),
+                inset 0 -3px 6px rgba(0,0,0,0.4);
+        }
+
+        .lcd-screen {
+            background: #b5c7aa;
+            box-shadow: inset 2px 2px 6px rgba(0,0,0,0.4), inset -1px -1px 2px rgba(255,255,255,0.5);
+            text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.15);
+        }
+
+        /* D-Pad 3D feel */
+        .dpad-btn {
+            background: #222;
+            box-shadow: 0 3px 0 #000;
+        }
+        .dpad-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #000;
+        }
+
+        /* Custom Scrollbars inside LCD if needed */
+        .lcd-screen::-webkit-scrollbar {
+            height: 4px;
+        }
+        .lcd-screen::-webkit-scrollbar-thumb {
+            background: #687a5e;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 min-h-screen flex items-center justify-center p-2 sm:p-4 text-slate-800 font-sans">
+
+    <!-- Calculator Main Container -->
+    <div class="calc-body relative w-full max-w-[390px] rounded-[36px] p-5 sm:p-6 border-2 border-blue-400/30">
+        
+        <!-- Top Logo & Solar Panel Header Section -->
+        <div class="bg-white rounded-t-2xl rounded-b-lg p-3 pb-2 mb-4 shadow-inner border border-slate-200">
+            <!-- Solar Cell & Brand Label -->
+            <div class="flex justify-between items-center mb-2">
+                <!-- Solar Panel -->
+                <div class="w-24 h-6 bg-stone-900 rounded border-2 border-stone-700 grid grid-cols-4 gap-0.5 p-0.5 shadow-inner">
+                    <div class="bg-amber-950/80 rounded-sm"></div>
+                    <div class="bg-amber-950/80 rounded-sm"></div>
+                    <div class="bg-amber-950/80 rounded-sm"></div>
+                    <div class="bg-amber-950/80 rounded-sm"></div>
+                </div>
+                <!-- Brand Text -->
+                <div class="text-right">
+                    <div class="text-[10px] font-bold text-slate-700 tracking-tighter flex items-center justify-end gap-1">
+                        <span class="inline-block w-2.5 h-2.5 bg-blue-600 rounded-full text-white text-[7px] text-center font-serif leading-none pt-0.5">ti</span>
+                        TEXAS INSTRUMENTS
+                    </div>
+                    <div class="text-lg font-black tracking-wider text-slate-900 leading-none">TI-30X<span class="text-sm">IIs</span></div>
+                </div>
+            </div>
+
+            <!-- LCD Display Screen -->
+            <div class="lcd-screen rounded p-2 text-stone-900 h-24 flex flex-col justify-between overflow-hidden relative border border-stone-500">
+                
+                <!-- Status Indicators Row -->
+                <div class="flex justify-between text-[10px] font-bold tracking-widest text-stone-700 h-4 border-b border-stone-400/40 pb-0.5">
+                    <span id="ind-2nd" class="opacity-10">2nd</span>
+                    <span id="ind-hyp" class="opacity-10">HYP</span>
+                    <span id="ind-sci" class="opacity-10">SCI</span>
+                    <span id="ind-eng" class="opacity-10">ENG</span>
+                    <span id="ind-stat" class="opacity-10">STAT</span>
+                    <span id="ind-angle" class="opacity-100">DEG</span>
+                </div>
+
+                <!-- Input Line (Scrollable) -->
+                <div id="lcd-input" class="lcd-font text-lg leading-tight tracking-wider overflow-x-auto whitespace-nowrap scrollbar-none py-1 flex items-center min-h-[28px]">
+                    <span id="lcd-input-text">0</span>
+                </div>
+
+                <!-- Output Line (Result) -->
+                <div id="lcd-output" class="lcd-font text-2xl text-right leading-none font-bold tracking-wider overflow-x-auto whitespace-nowrap">
+                    0
+                </div>
+            </div>
+        </div>
+
+        <!-- Secondary Functions Legend Banner -->
+        <div class="grid grid-cols-5 gap-1.5 px-1 mb-1 text-[9px] font-bold text-sky-200 text-center uppercase tracking-tighter">
+            <div>2nd</div>
+            <div>SCI/ENG</div>
+            <div>INS</div>
+            <div class="col-span-2"></div>
+        </div>
+
+        <!-- Row 1: Function Control Keys + D-Pad -->
+        <div class="grid grid-cols-5 gap-1.5 mb-2.5">
+            <!-- 2nd Key -->
+            <button onclick="pressKey('2nd')" class="calc-btn bg-white text-blue-900 font-extrabold text-xs py-2 rounded-md hover:bg-slate-100">2nd</button>
+            <!-- DRG -->
+            <button onclick="pressKey('DRG')" class="calc-btn bg-blue-900 text-white font-semibold text-xs py-2 rounded-md hover:bg-blue-800">DRG</button>
+            <!-- DEL -->
+            <button onclick="pressKey('DEL')" class="calc-btn bg-blue-900 text-white font-semibold text-xs py-2 rounded-md hover:bg-blue-800">DEL</button>
+            
+            <!-- D-Pad Navigation Controls (Spans 2 cols, 2 rows) -->
+            <div class="col-span-2 row-span-2 relative flex items-center justify-center p-1">
+                <div class="bg-slate-900/40 p-1.5 rounded-full border border-blue-400/30">
+                    <div class="grid grid-cols-3 grid-rows-3 gap-0.5 w-20 h-20 items-center justify-items-center">
+                        <div></div>
+                        <button onclick="navigate('up')" class="dpad-btn w-6 h-6 rounded-t-md text-white text-[10px] flex items-center justify-center">▲</button>
+                        <div></div>
+                        <button onclick="navigate('left')" class="dpad-btn w-6 h-6 rounded-l-md text-white text-[10px] flex items-center justify-center">◀</button>
+                        <div class="w-4 h-4 rounded-full bg-slate-800 border border-slate-600"></div>
+                        <button onclick="navigate('right')" class="dpad-btn w-6 h-6 rounded-r-md text-white text-[10px] flex items-center justify-center">▶</button>
+                        <div></div>
+                        <button onclick="navigate('down')" class="dpad-btn w-6 h-6 rounded-b-md text-white text-[10px] flex items-center justify-center">▼</button>
+                        <div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 2 Secondary Labels -->
+        <div class="grid grid-cols-5 gap-1.5 px-1 text-[8px] font-semibold text-sky-200 text-center">
+            <div>10<sup>x</sup></div>
+            <div>F◄►D</div>
+            <div>e<sup>x</sup></div>
+            <div class="col-span-2"></div>
+        </div>
+
+        <!-- Row 2 Buttons -->
+        <div class="grid grid-cols-5 gap-1.5 mb-2">
+            <button onclick="pressKey('LOG')" class="calc-btn bg-blue-900 text-white font-medium text-xs py-1.5 rounded-md">LOG</button>
+            <button onclick="pressKey('PRB')" class="calc-btn bg-blue-900 text-white font-medium text-xs py-1.5 rounded-md">PRB</button>
+            <button onclick="pressKey('LN')" class="calc-btn bg-blue-900 text-white font-medium text-xs py-1.5 rounded-md">LN</button>
+            <div class="col-span-2"></div>
+        </div>
+
+        <!-- Row 3 Secondary Labels -->
+        <div class="grid grid-cols-5 gap-1.5 px-1 text-[8px] font-semibold text-sky-200 text-center">
+            <div>3√x</div>
+            <div>Ab/c◄►d/e</div>
+            <div>STAT</div>
+            <div>EXIT STAT</div>
+            <div></div>
+        </div>
+
+        <!-- Row 3 Buttons -->
+        <div class="grid grid-cols-5 gap-1.5 mb-2">
+            <button onclick="pressKey('DATA')" class="calc-btn bg-blue-900 text-white font-medium text-xs py-1.5 rounded-md">DATA</button>
+            <button onclick="pressKey('FRAC')" class="calc-btn bg-blue-900 text-white font-medium text-xs py-1.5 rounded-md">A b/c</button>
+            <button onclick="pressKey('STATVAR')" class="calc-btn bg-blue-900 text-white font-medium text-xs py-1.5 rounded-md">STATVAR</button>
+            <button onclick="pressKey('CLEAR')" class="calc-btn bg-sky-200 text-blue-950 font-bold text-xs py-1.5 rounded-md hover:bg-sky-100">CLEAR</button>
+            <button onclick="pressKey('DIV')" class="calc-btn bg-slate-900 text-white font-bold text-base py-1.5 rounded-md hover:bg-slate-800">÷</button>
+        </div>
+
+        <!-- Row 4 Secondary Labels -->
+        <div class="grid grid-cols-5 gap-1.5 px-1 text-[8px] font-semibold text-sky-200 text-center">
+            <div>HYP</div>
+            <div>sin<sup>-1</sup></div>
+            <div>cos<sup>-1</sup></div>
+            <div>tan<sup>-1</sup></div>
+            <div>K</div>
+        </div>
+
+        <!-- Row 4 Buttons -->
+        <div class="grid grid-cols-5 gap-1.5 mb-2">
+            <button onclick="pressKey('PI')" class="calc-btn bg-blue-900 text-white font-medium text-xs py-1.5 rounded-md">π</button>
+            <button onclick="pressKey('SIN')" class="calc-btn bg-blue-900 text-white font-medium text-xs py-1.5 rounded-md">SIN</button>
+            <button onclick="pressKey('COS')" class="calc-btn bg-blue-900 text-white font-medium text-xs py-1.5 rounded-md">COS</button>
+            <button onclick="pressKey('TAN')" class="calc-btn bg-blue-900 text-white font-medium text-xs py-1.5 rounded-md">TAN</button>
+            <button onclick="pressKey('MUL')" class="calc-btn bg-slate-900 text-white font-bold text-base py-1.5 rounded-md hover:bg-slate-800">×</button>
+        </div>
+
+        <!-- Row 5 Secondary Labels -->
+        <div class="grid grid-cols-5 gap-1.5 px-1 text-[8px] font-semibold text-sky-200 text-center">
+            <div>e</div>
+            <div>√</div>
+            <div>x√</div>
+            <div>%</div>
+            <div>,</div>
+        </div>
+
+        <!-- Row 5 Buttons -->
+        <div class="grid grid-cols-5 gap-1.5 mb-2">
+            <button onclick="pressKey('POWER')" class="calc-btn bg-blue-900 text-white font-medium text-xs py-1.5 rounded-md">^</button>
+            <button onclick="pressKey('INVERSE')" class="calc-btn bg-blue-900 text-white font-medium text-xs py-1.5 rounded-md">x⁻¹</button>
+            <button onclick="pressKey('OPEN_PAR')" class="calc-btn bg-blue-900 text-white font-medium text-sm py-1.5 rounded-md">(</button>
+            <button onclick="pressKey('CLOSE_PAR')" class="calc-btn bg-blue-900 text-white font-medium text-sm py-1.5 rounded-md">)</button>
+            <button onclick="pressKey('SUB')" class="calc-btn bg-slate-900 text-white font-bold text-base py-1.5 rounded-md hover:bg-slate-800">-</button>
+        </div>
+
+        <!-- Row 6 Secondary Labels (Above Numbers 7-8-9) -->
+        <div class="grid grid-cols-5 gap-1.5 px-1 text-[8px] font-semibold text-sky-200 text-center">
+            <div>x²</div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+
+        <!-- Row 6: x² and Numbers 7, 8, 9, + -->
+        <div class="grid grid-cols-5 gap-1.5 mb-2">
+            <button onclick="pressKey('SQUARE')" class="calc-btn bg-blue-900 text-white font-medium text-xs py-2 rounded-md">x²</button>
+            <button onclick="pressNum('7')" class="calc-btn bg-white text-slate-900 font-bold text-base py-2 rounded-md hover:bg-slate-100">7</button>
+            <button onclick="pressNum('8')" class="calc-btn bg-white text-slate-900 font-bold text-base py-2 rounded-md hover:bg-slate-100">8</button>
+            <button onclick="pressNum('9')" class="calc-btn bg-white text-slate-900 font-bold text-base py-2 rounded-md hover:bg-slate-100">9</button>
+            <button onclick="pressKey('ADD')" class="calc-btn bg-slate-900 text-white font-bold text-base py-2 rounded-md hover:bg-slate-800">+</button>
+        </div>
+
+        <!-- Row 7 Secondary Labels -->
+        <div class="grid grid-cols-5 gap-1.5 px-1 text-[8px] font-semibold text-sky-200 text-center">
+            <div>CLRVAR</div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+
+        <!-- Row 7: MEMVAR and Numbers 4, 5, 6, [ENTER height space] -->
+        <div class="grid grid-cols-5 gap-1.5 mb-2">
+            <button onclick="pressKey('MEMVAR')" class="calc-btn bg-blue-900 text-white font-medium text-xs py-2 rounded-md">MEMVAR</button>
+            <button onclick="pressNum('4')" class="calc-btn bg-white text-slate-900 font-bold text-base py-2 rounded-md hover:bg-slate-100">4</button>
+            <button onclick="pressNum('5')" class="calc-btn bg-white text-slate-900 font-bold text-base py-2 rounded-md hover:bg-slate-100">5</button>
+            <button onclick="pressNum('6')" class="calc-btn bg-white text-slate-900 font-bold text-base py-2 rounded-md hover:bg-slate-100">6</button>
+            <!-- ENTER key spans rows 7 and 8 on right column -->
+            <button onclick="calculateResult()" class="calc-btn row-span-2 bg-slate-900 text-white font-extrabold text-xs py-2 rounded-md hover:bg-slate-800 flex flex-col items-center justify-center border border-slate-700">
+                <span>ENTER</span>
+                <span class="text-sm">═</span>
+            </button>
+        </div>
+
+        <!-- Row 8 Secondary Labels -->
+        <div class="grid grid-cols-5 gap-1.5 px-1 text-[8px] font-semibold text-sky-200 text-center">
+            <div>RCL</div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+
+        <!-- Row 8: STO► and Numbers 1, 2, 3 -->
+        <div class="grid grid-cols-5 gap-1.5 mb-2">
+            <button onclick="pressKey('STO')" class="calc-btn bg-blue-900 text-white font-medium text-xs py-2 rounded-md">STO►</button>
+            <button onclick="pressNum('1')" class="calc-btn bg-white text-slate-900 font-bold text-base py-2 rounded-md hover:bg-slate-100">1</button>
+            <button onclick="pressNum('2')" class="calc-btn bg-white text-slate-900 font-bold text-base py-2 rounded-md hover:bg-slate-100">2</button>
+            <button onclick="pressNum('3')" class="calc-btn bg-white text-slate-900 font-bold text-base py-2 rounded-md hover:bg-slate-100">3</button>
+            <div></div> <!-- Occupied by row-span-2 ENTER button above -->
+        </div>
+
+        <!-- Row 9 Secondary Labels -->
+        <div class="grid grid-cols-5 gap-1.5 px-1 text-[8px] font-semibold text-sky-200 text-center">
+            <div>OFF</div>
+            <div>RESET</div>
+            <div>FIX</div>
+            <div>ANS</div>
+            <div></div>
+        </div>
+
+        <!-- Row 9: Bottom Row (ON, 0, ., (-)) -->
+        <div class="grid grid-cols-5 gap-1.5">
+            <button onclick="pressKey('ON')" class="calc-btn bg-blue-900 text-white font-bold text-xs py-2 rounded-md hover:bg-blue-800">ON</button>
+            <button onclick="pressNum('0')" class="calc-btn bg-white text-slate-900 font-bold text-base py-2 rounded-md hover:bg-slate-100">0</button>
+            <button onclick="pressNum('.')" class="calc-btn bg-white text-slate-900 font-bold text-base py-2 rounded-md hover:bg-slate-100">.</button>
+            <button onclick="pressKey('NEG')" class="calc-btn bg-white text-slate-900 font-bold text-xs py-2 rounded-md hover:bg-slate-100">(-)</button>
+            <button onclick="pressKey('OFF')" class="calc-btn bg-blue-900 text-sky-300 font-bold text-[10px] py-2 rounded-md">OFF</button>
+        </div>
+    </div>
+
+    <!-- JavaScript Engine -->
+    <script>
+        // Internal State
+        let isPowerOn = true;
+        let is2ndActive = false;
+        let angleMode = 'DEG'; // DEG, RAD, GRAD
+        let expression = '';
+        let cursorPos = 0;
+        let history = [];
+        let historyIndex = -1;
+        let isResultDisplayed = false;
+        let lastAns = 0;
+
+        // Variables state (A, B, C, D, E)
+        let variables = { A: 0, B: 0, C: 0, D: 0, E: 0 };
+        let activeVarIndex = 0;
+        const varNames = ['A', 'B', 'C', 'D', 'E'];
+        let mode = 'NORMAL'; // 'NORMAL', 'STO', 'MEMVAR'
+
+        // Elements
+        const lcdInput = document.getElementById('lcd-input');
+        const lcdOutput = document.getElementById('lcd-output');
+        const ind2nd = document.getElementById('ind-2nd');
+        const indAngle = document.getElementById('ind-angle');
+
+        // Toggle 2nd state modifier
+        function toggle2nd() {
+            is2ndActive = !is2ndActive;
+            if (is2ndActive) {
+                ind2nd.classList.remove('opacity-10');
+                ind2nd.classList.add('opacity-100');
+            } else {
+                ind2nd.classList.remove('opacity-100');
+                ind2nd.classList.add('opacity-10');
+            }
+        }
+
+        function reset2nd() {
+            is2ndActive = false;
+            ind2nd.classList.remove('opacity-100');
+            ind2nd.classList.add('opacity-10');
+        }
+
+        // Render LCD Input line with active blink cursor
+        function updateScreen() {
+            if (!isPowerOn) {
+                lcdInput.innerHTML = '';
+                lcdOutput.innerText = '';
+                return;
+            }
+
+            if (mode === 'STO') {
+                const targetVar = varNames[activeVarIndex];
+                lcdInput.innerHTML = `Store to: <span class="bg-stone-900 text-stone-100 px-1 rounded">${targetVar}</span>`;
+                lcdOutput.innerText = `val = ${lcdOutput.innerText || '0'}`;
+                return;
+            }
+
+            if (mode === 'MEMVAR') {
+                const varName = varNames[activeVarIndex];
+                const val = variables[varName];
+                lcdInput.innerHTML = `VAR: <span class="bg-stone-900 text-stone-100 px-1 rounded">${varName}</span>`;
+                lcdOutput.innerText = `${varName} = ${val}`;
+                return;
+            }
+
+            const str = expression;
+            const pos = Math.min(Math.max(0, cursorPos), str.length);
+
+            const before = str.slice(0, pos);
+            const charAtCursor = str.slice(pos, pos + 1) || ' ';
+            const after = str.slice(pos + 1);
+
+            // Escape HTML characters
+            const esc = (text) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+            lcdInput.innerHTML = `${esc(before)}<span class="bg-stone-800 text-stone-100 border-b-2 border-stone-900 animate-pulse">${esc(charAtCursor)}</span>${esc(after)}`;
+            
+            // Auto scroll LCD container to cursor
+            setTimeout(() => {
+                const activeEl = lcdInput.querySelector('span');
+                if (activeEl) {
+                    activeEl.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+                }
+            }, 0);
+        }
+
+        function insertAtCursor(text) {
+            if (isResultDisplayed) {
+                expression = '';
+                cursorPos = 0;
+                isResultDisplayed = false;
+            }
+            expression = expression.slice(0, cursorPos) + text + expression.slice(cursorPos);
+            cursorPos += text.length;
+            updateScreen();
+        }
+
+        // Handle numeric and basic character inputs
+        function pressNum(char) {
+            if (!isPowerOn) return;
+
+            if (mode !== 'NORMAL') {
+                mode = 'NORMAL';
+            }
+
+            insertAtCursor(char);
+            reset2nd();
+        }
+
+        // Handle functional key presses
+        function pressKey(key) {
+            if (key === 'ON') {
+                isPowerOn = true;
+                expression = '';
+                cursorPos = 0;
+                mode = 'NORMAL';
+                lcdOutput.innerText = '0';
+                updateScreen();
+                return;
+            }
+
+            if (!isPowerOn) return;
+
+            if (key === 'OFF') {
+                isPowerOn = false;
+                reset2nd();
+                updateScreen();
+                return;
+            }
+
+            if (key === '2nd') {
+                toggle2nd();
+                return;
+            }
+
+            if (key === 'CLEAR') {
+                if (mode !== 'NORMAL') {
+                    mode = 'NORMAL';
+                } else {
+                    expression = '';
+                    cursorPos = 0;
+                    lcdOutput.innerText = '0';
+                    isResultDisplayed = false;
+                }
+                reset2nd();
+                updateScreen();
+                return;
+            }
+
+            if (key === 'DEL') {
+                if (mode !== 'NORMAL') {
+                    mode = 'NORMAL';
+                    updateScreen();
+                    return;
+                }
+                if (cursorPos > 0) {
+                    expression = expression.slice(0, cursorPos - 1) + expression.slice(cursorPos);
+                    cursorPos--;
+                    updateScreen();
+                }
+                reset2nd();
+                return;
+            }
+
+            if (key === 'DRG') {
+                if (angleMode === 'DEG') angleMode = 'RAD';
+                else if (angleMode === 'RAD') angleMode = 'GRAD';
+                else angleMode = 'DEG';
+                
+                indAngle.innerText = angleMode;
+                reset2nd();
+                return;
+            }
+
+            // Variable Memory Functions
+            if (key === 'STO') {
+                if (is2ndActive) {
+                    // CLRVAR - Clear all variables
+                    variables = { A: 0, B: 0, C: 0, D: 0, E: 0 };
+                    lcdOutput.innerText = 'VARS CLEARED';
+                    reset2nd();
+                    return;
+                } else {
+                    mode = 'STO';
+                    activeVarIndex = 0;
+                    reset2nd();
+                    updateScreen();
+                    return;
+                }
+            }
+
+            if (key === 'MEMVAR') {
+                if (is2ndActive) {
+                    // Recall variable directly into expression
+                    insertAtCursor(varNames[activeVarIndex]);
+                } else {
+                    mode = 'MEMVAR';
+                    activeVarIndex = 0;
+                }
+                reset2nd();
+                updateScreen();
+                return;
+            }
+
+            // Normal or 2nd mode operations mapping
+            let strToInsert = '';
+            if (is2ndActive) {
+                switch(key) {
+                    case 'LOG': strToInsert = '10^('; break;
+                    case 'LN': strToInsert = 'e^('; break;
+                    case 'SIN': strToInsert = 'asin('; break;
+                    case 'COS': strToInsert = 'acos('; break;
+                    case 'TAN': strToInsert = 'atan('; break;
+                    case 'SQUARE': strToInsert = '√('; break;
+                    case 'POWER': strToInsert = 'e'; break;
+                    case 'PI': strToInsert = 'π'; break;
+                    case 'NEG': strToInsert = 'Ans'; break;
+                    default: break;
+                }
+            } else {
+                switch(key) {
+                    case 'LOG': strToInsert = 'log('; break;
+                    case 'LN': strToInsert = 'ln('; break;
+                    case 'SIN': strToInsert = 'sin('; break;
+                    case 'COS': strToInsert = 'cos('; break;
+                    case 'TAN': strToInsert = 'tan('; break;
+                    case 'PI': strToInsert = 'π'; break;
+                    case 'POWER': strToInsert = '^'; break;
+                    case 'SQUARE': strToInsert = '^2'; break;
+                    case 'INVERSE': strToInsert = '^-1'; break;
+                    case 'ADD': strToInsert = '+'; break;
+                    case 'SUB': strToInsert = '-'; break;
+                    case 'MUL': strToInsert = '×'; break;
+                    case 'DIV': strToInsert = '÷'; break;
+                    case 'OPEN_PAR': strToInsert = '('; break;
+                    case 'CLOSE_PAR': strToInsert = ')'; break;
+                    case 'NEG': strToInsert = '-'; break;
+                    default: break;
+                }
+            }
+
+            if (strToInsert) {
+                if (mode !== 'NORMAL') mode = 'NORMAL';
+                insertAtCursor(strToInsert);
+            }
+
+            reset2nd();
+        }
+
+        // Navigation D-Pad functionality
+        function navigate(direction) {
+            if (!isPowerOn) return;
+
+            // Variable menu navigation
+            if (mode === 'STO' || mode === 'MEMVAR') {
+                if (direction === 'left') {
+                    activeVarIndex = (activeVarIndex - 1 + varNames.length) % varNames.length;
+                } else if (direction === 'right') {
+                    activeVarIndex = (activeVarIndex + 1) % varNames.length;
+                }
+                updateScreen();
+                return;
+            }
+
+            // Normal mode navigation: Left/Right move cursor; Up/Down navigate history
+            if (direction === 'left') {
+                if (cursorPos > 0) {
+                    cursorPos--;
+                    updateScreen();
+                }
+            } else if (direction === 'right') {
+                if (cursorPos < expression.length) {
+                    cursorPos++;
+                    updateScreen();
+                }
+            } else if (direction === 'up' && history.length > 0) {
+                if (historyIndex < history.length - 1) {
+                    historyIndex++;
+                    expression = history[history.length - 1 - historyIndex];
+                    cursorPos = expression.length;
+                    updateScreen();
+                }
+            } else if (direction === 'down') {
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    expression = history[history.length - 1 - historyIndex];
+                    cursorPos = expression.length;
+                    updateScreen();
+                } else if (historyIndex === 0) {
+                    historyIndex = -1;
+                    expression = '';
+                    cursorPos = 0;
+                    updateScreen();
+                }
+            }
+        }
+
+        // Safe mathematical evaluation routine
+        function calculateResult() {
+            if (!isPowerOn) return;
+
+            // Handle STO confirmation
+            if (mode === 'STO') {
+                const targetVar = varNames[activeVarIndex];
+                const currentVal = parseFloat(lcdOutput.innerText) || 0;
+                variables[targetVar] = currentVal;
+                lcdOutput.innerText = `${targetVar} = ${currentVal}`;
+                mode = 'NORMAL';
+                reset2nd();
+                return;
+            }
+
+            if (mode === 'MEMVAR') {
+                const targetVar = varNames[activeVarIndex];
+                insertAtCursor(targetVar);
+                mode = 'NORMAL';
+                reset2nd();
+                return;
+            }
+
+            if (!expression) return;
+
+            try {
+                let parsed = expression;
+
+                // Save to history
+                history.push(expression);
+                historyIndex = -1;
+
+                // Replace variables
+                varNames.forEach(v => {
+                    parsed = parsed.replace(new RegExp(v, 'g'), `(${variables[v]})`);
+                });
+                parsed = parsed.replace(/Ans/g, `(${lastAns})`);
+
+                // Replace mathematical operators & constants
+                parsed = parsed.replace(/π/g, 'Math.PI');
+                parsed = parsed.replace(/e/g, 'Math.E');
+                parsed = parsed.replace(/×/g, '*');
+                parsed = parsed.replace(/÷/g, '/');
+                parsed = parsed.replace(/\^/g, '**');
+
+                // Logarithmic functions
+                parsed = parsed.replace(/log\(/g, 'Math.log10(');
+                parsed = parsed.replace(/ln\(/g, 'Math.log(');
+
+                // Trigonometric modes handling
+                let angleFactor = 1;
+                if (angleMode === 'DEG') angleFactor = Math.PI / 180;
+                else if (angleMode === 'GRAD') angleFactor = Math.PI / 200;
+
+                parsed = parsed.replace(/sin\(([^)]+)\)/g, (match, p1) => `Math.sin((${p1}) * ${angleFactor})`);
+                parsed = parsed.replace(/cos\(([^)]+)\)/g, (match, p1) => `Math.cos((${p1}) * ${angleFactor})`);
+                parsed = parsed.replace(/tan\(([^)]+)\)/g, (match, p1) => `Math.tan((${p1}) * ${angleFactor})`);
+
+                parsed = parsed.replace(/asin\(([^)]+)\)/g, (match, p1) => `(Math.asin(${p1}) / ${angleFactor})`);
+                parsed = parsed.replace(/acos\(([^)]+)\)/g, (match, p1) => `(Math.acos(${p1}) / ${angleFactor})`);
+                parsed = parsed.replace(/atan\(([^)]+)\)/g, (match, p1) => `(Math.atan(${p1}) / ${angleFactor})`);
+
+                // Square roots
+                parsed = parsed.replace(/√\(([^)]+)\)/g, 'Math.sqrt($1)');
+
+                // Evaluate math safely
+                let result = Function(`'use strict'; return (${parsed})`)();
+
+                // Format outcome
+                if (typeof result === 'number') {
+                    if (!isFinite(result) || isNaN(result)) {
+                        lcdOutput.innerText = 'DOMAIN Error';
+                    } else {
+                        let formatted = Number(Math.round(result + 'e10') + 'e-10').toString();
+                        lcdOutput.innerText = formatted;
+                        lastAns = result;
+                    }
+                } else {
+                    lcdOutput.innerText = 'SYNTAX Error';
+                }
+            } catch (err) {
+                lcdOutput.innerText = 'SYNTAX Error';
+            }
+
+            isResultDisplayed = true;
+            reset2nd();
+        }
+
+        // Keyboard Support
+        window.addEventListener('keydown', (e) => {
+            if (!isPowerOn) return;
+
+            if (e.key >= '0' && e.key <= '9') pressNum(e.key);
+            else if (e.key === '.') pressNum('.');
+            else if (e.key === '+') pressKey('ADD');
+            else if (e.key === '-') pressKey('SUB');
+            else if (e.key === '*') pressKey('MUL');
+            else if (e.key === '/') pressKey('DIV');
+            else if (e.key === '(') pressKey('OPEN_PAR');
+            else if (e.key === ')') pressKey('CLOSE_PAR');
+            else if (e.key === 'Enter' || e.key === '=') calculateResult();
+            else if (e.key === 'Backspace') pressKey('DEL');
+            else if (e.key === 'Escape') pressKey('CLEAR');
+            else if (e.key === 'ArrowUp') navigate('up');
+            else if (e.key === 'ArrowDown') navigate('down');
+            else if (e.key === 'ArrowLeft') navigate('left');
+            else if (e.key === 'ArrowRight') navigate('right');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Plugins</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--accent:#0078d4}
+html,body{height:100%;background:#1a1a1a;color:#fff;font-family:'Segoe UI',sans-serif;overflow:hidden}
+body{display:flex;flex-direction:column}
+header{padding:18px 28px 0}
+h1{font-size:34px;font-weight:200;letter-spacing:-.5px}
+.sub{font-size:12px;color:#888;margin-top:2px;font-weight:300}
+.bar{display:flex;flex-wrap:wrap;gap:6px;padding:14px 28px;border-bottom:1px solid #2c2c2c}
+.btn{background:#2d2d2d;border:none;border-bottom:2px solid #444;color:#fff;padding:8px 14px;font:13px 'Segoe UI',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px}
+.btn:hover{background:#3a3a3a;border-bottom-color:var(--accent)}
+.btn.p{background:var(--accent);border-bottom-color:rgba(255,255,255,.4)}
+.btn.p:hover{filter:brightness(1.12)}
+.sp{flex:1}
+#search{background:#2d2d2d;border:none;border-bottom:2px solid #444;color:#fff;padding:8px 12px;font:13px 'Segoe UI',sans-serif;outline:none;width:200px}
+#search:focus{border-bottom-color:var(--accent)}
+main{flex:1;overflow-y:auto;padding:22px 28px}
+main::-webkit-scrollbar{width:6px}main::-webkit-scrollbar-thumb{background:#444}
+.sect{font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:#999;margin:0 0 10px;font-weight:300}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,170px);gap:6px;margin-bottom:28px}
+.tile{position:relative;height:170px;padding:12px;display:flex;flex-direction:column;cursor:pointer;overflow:hidden;transition:transform .1s,filter .12s;animation:pop .22s ease both}
+.tile:hover{filter:brightness(1.15)}.tile:active{transform:scale(.96)}
+@keyframes pop{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:none}}
+.tile .ic{flex:1;display:flex;align-items:center;justify-content:center;font-size:48px}
+.tile .ic img{width:56px;height:56px;object-fit:contain}
+.tile .nm{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .ds{font-size:11px;opacity:.8;margin-top:2px;height:28px;overflow:hidden;line-height:14px}
+.tile .st{position:absolute;top:8px;right:8px;font-size:10px;letter-spacing:1px;text-transform:uppercase;background:rgba(0,0,0,.35);padding:2px 6px;display:none}
+.tile.run .st{display:block;background:#107c10}
+.tile .tag{position:absolute;top:8px;left:8px;font-size:10px;opacity:.7;max-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.empty{color:#777;font-size:13px;margin-bottom:28px}
+#log{height:92px;background:#0c0c0c;border-top:1px solid #2c2c2c;padding:6px 28px;font:12px Consolas,monospace;overflow-y:auto;color:#aaa;flex-shrink:0}
+#log .e{color:#ff6b6b}#log .o{color:#7fd962}
+#ov{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:10}
+#ov.on{display:flex}
+.modal{background:#2a2a2a;width:min(680px,94vw);max-height:92vh;display:flex;flex-direction:column;border-top:3px solid var(--accent)}
+.modal h2{font-size:20px;font-weight:300;padding:12px 22px;background:#1e1e1e}
+.mb{padding:14px 22px;overflow-y:auto;flex:1}
+.mb label{display:block;font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.6px;margin:12px 0 4px}
+.mb label:first-child{margin-top:0}
+.mb input[type=text],.mb input[type=url],.mb textarea,.mb select{width:100%;background:#1a1a1a;border:1px solid #444;border-bottom:2px solid var(--accent);color:#eee;padding:8px 10px;font:13px 'Segoe UI',sans-serif;outline:none}
+.mb textarea{font:12px Consolas,monospace;height:300px;resize:vertical;white-space:pre;tab-size:2}
+.mf{padding:12px 22px;background:#1e1e1e;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.mf .tpl{margin-right:auto}
+.colors{display:flex;gap:5px;flex-wrap:wrap}
+.cs{width:26px;height:26px;cursor:pointer;border:3px solid transparent}.cs.sel{border-color:#fff}
+#ctx{position:fixed;background:#181818;border-top:2px solid var(--accent);display:none;z-index:20;min-width:190px}
+#ctx div{padding:9px 15px;font-size:13px;cursor:pointer}#ctx div:hover{background:#2a2a2a}
+.note{font-size:11px;color:#888;margin-top:6px;line-height:1.5}
+</style>
+<script src="./builtin.js"></script>
+</head>
+<body>
+<header>
+  <h1>Plugins</h1>
+  <div class="sub">A plugin can bundle its own app — running the plugin installs the app, stopping it removes the app.</div>
+</header>
+<div class="bar" id="bar"></div>
+<main id="main"></main>
+<div id="log"></div>
+
+<div id="ov"><div class="modal" id="modal"></div></div>
+<div id="ctx"></div>
+<input type="file" id="f-js" accept=".js,.json" multiple style="display:none">
+<input type="file" id="f-html" accept=".html,.htm" multiple style="display:none">
+
+<script>
+const BUILTIN=()=>(window.MPC_BUILTIN_PLUGINS||[]);
+const COLORS=['#0078d4','#107c10','#e81123','#744da9','#e3008c','#ff8c00','#00b294','#038387','#d13438','#515151','#2d7d9a','#8e562e'];
+
+/* ═══ Host access (mpcsim parent window, same origin) ═══ */
+let P=null;
+try{P=window.parent&&window.parent!==window?window.parent:null;P&&P.document;}catch(e){P=null;}
+const host=()=>{if(!P)throw new Error('Not running inside mpcsim — no host available.');return P;};
+const RT=()=>host().MPC;               // plugin runtime lives in the host page
+const HS=()=>RT().S();
+const GUEST=()=>{try{return !!host().BOOT.guest}catch(e){return false}};
+const isRun=id=>{try{return RT().running.has(id)}catch(e){return false}};
+const autoOn=o=>{try{return RT().isAuto(o)}catch(e){return false}};
+try{document.documentElement.style.setProperty('--accent',HS().accent);}catch(e){}
+
+/* ═══ Storage ═══ */
+const ld=k=>{if(GUEST())return[];try{return JSON.parse(localStorage.getItem(k))||[]}catch(e){return[]}};
+const sv=(k,v)=>{if(GUEST())return;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){log('Storage failed: '+e.message,'e')}};
+let custom=ld('mpc_plugins');
+let q='';
+
+const uid=()=>'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const base=n=>n.replace(/\.[^.]+$/,'');
+function logRaw(tm,m,c){const l=document.getElementById('log');const d=document.createElement('div');if(c)d.className=c;d.textContent=tm+'  '+m;l.appendChild(d);l.scrollTop=l.scrollHeight;}
+function log(m,c){logRaw(new Date().toLocaleTimeString(),m,c);}
+function toast(m){try{host().notify(m)}catch(e){log(m)}}
+
+/* ═══ Running plugins (the host runs them, so they can also start during boot) ═══ */
+const getCode=p=>RT().getCode(p);
+const stopPlugin=p=>{try{RT().stop(p)}catch(e){log(e.message,'e')}};
+const startPlugin=p=>{try{return RT().start(p)}catch(e){log(e.message,'e')}};
+const togglePlugin=p=>{try{RT().running.has(p.id)?RT().stop(p):RT().start(p)}catch(e){log(e.message,'e')}};
+function toggleAuto(p){try{RT().setAuto(p,!autoOn(p));render();log((autoOn(p)?'Will start':'Will not start')+' '+p.name+' at boot');}catch(e){log(e.message,'e')}}
+
+/* Apps a plugin has installed (only known while it runs) */
+function ownedApps(p){
+  try{const r=RT().running.get(p.id);if(!r)return[];return r.apps.map(id=>HS().apps.find(a=>a.id===id)).filter(Boolean);}
+  catch(e){return[];}
+}
+const hasApp=o=>!!(o.hasApp||(o.code&&/mpc\.addApp\s*\(/.test(o.code)));
+function openApp(a){try{host().launchApp(a,false)}catch(e){log(e.message,'e')}}
+
+/* Wrap a plain HTML file as a plugin that bundles it as an app */
+const appPluginCode=(name,html,iconUrl)=>
+  '// Bundled app plugin: '+name.replace(/[\r\n]+/g,' ')+'\n'+
+  '// Starting this plugin installs the app; stopping it removes the app.\n'+
+  'const HTML = '+JSON.stringify(html)+';\n'+
+  'mpc.addApp({ name: '+JSON.stringify(name)+', html: HTML'+(iconUrl?', iconUrl: '+JSON.stringify(iconUrl):'')+', desktop: true });\n';
+
+/* ═══ Render ═══ */
+function bar(){
+  const b=document.getElementById('bar');
+  b.innerHTML=`
+    <button class="btn p" id="b-imp"><i class="fa fa-upload"></i> Import plugin</button>
+    <button class="btn" id="b-app"><i class="fa fa-window-maximize"></i> Import app (.html)</button>
+    <button class="btn" id="b-new"><i class="fa fa-plus"></i> Create plugin</button>
+    <button class="btn" id="b-exp"><i class="fa fa-download"></i> Export plugins</button>
+    <span class="sp"></span>
+    <input id="search" placeholder="Search…" value="${esc(q)}">`;
+  b.querySelector('#b-imp').onclick=()=>document.getElementById('f-js').click();
+  b.querySelector('#b-app').onclick=()=>document.getElementById('f-html').click();
+  b.querySelector('#b-new').onclick=()=>editPlugin();
+  b.querySelector('#b-exp').onclick=()=>exportAll();
+  const s=b.querySelector('#search');
+  s.oninput=()=>{q=s.value;render(true);};
+}
+function match(o){return !q||(o.name+' '+(o.desc||'')).toLowerCase().includes(q.toLowerCase());}
+function tile(o,i){
+  const el=document.createElement('div');
+  el.className='tile'+(isRun(o.id)?' run':'');
+  el.style.background=o.color||COLORS[i%COLORS.length];
+  el.style.animationDelay=Math.min(i*25,300)+'ms';
+  const n=ownedApps(o).length;
+  const tag=(o.builtin?'built-in':'custom')+(autoOn(o)?' · boot':'')+(hasApp(o)?(n?' · '+n+' app'+(n>1?'s':''):' · app'):'');
+  el.innerHTML=`<span class="tag">${esc(tag)}</span><span class="st">running</span><div class="ic"><i class="${esc(o.icon||'fa-solid fa-puzzle-piece')}"></i></div><div class="nm">${esc(o.name)}</div><div class="ds">${esc(o.desc||'')}</div>`;
+  return el;
+}
+function pluginMenu(p,isCustom){
+  const items=[['Run / stop',()=>togglePlugin(p)]];
+  ownedApps(p).forEach(a=>items.push(['Open '+a.name,()=>openApp(a)]));
+  items.push([autoOn(p)?'Disable autostart on boot':'Autostart on boot',()=>toggleAuto(p)]);
+  if(isCustom){
+    items.push(['Edit',()=>editPlugin(p)]);
+    items.push(['Export .js',()=>dl(p.name.replace(/\W+/g,'_')+'.js',p.code,'text/javascript')]);
+    items.push(['Delete',()=>{stopPlugin(p);custom=custom.filter(x=>x.id!==p.id);sv('mpc_plugins',custom);render();}]);
+  }else items.push(['View source',()=>viewSource(p)]);
+  return items;
+}
+function render(keepBar){
+  if(!keepBar)bar();
+  const m=document.getElementById('main');m.innerHTML='';
+  section(m,'Built-in plugins',BUILTIN().filter(match).map(p=>({...p,builtin:true})),false);
+  section(m,'Custom plugins',custom.filter(match),true,'No custom plugins yet. Import a .js file, import an .html app, or create one.');
+}
+function section(m,title,list,isCustom,emptyMsg){
+  if(!list.length&&!emptyMsg)return;
+  const h=document.createElement('div');h.className='sect';h.textContent=title;m.appendChild(h);
+  if(!list.length){const e=document.createElement('div');e.className='empty';e.textContent=emptyMsg;m.appendChild(e);return;}
+  const g=document.createElement('div');g.className='grid';
+  list.forEach((o,i)=>{
+    const t=tile(o,i);
+    t.onclick=()=>togglePlugin(o);
+    t.oncontextmenu=e=>{e.preventDefault();ctx(e,pluginMenu(o,isCustom));};
+    g.appendChild(t);
+  });
+  m.appendChild(g);
+}
+
+/* ═══ Context menu / modal / download ═══ */
+function ctx(e,items){
+  const c=document.getElementById('ctx');c.innerHTML='';
+  items.forEach(([l,fn])=>{const d=document.createElement('div');d.textContent=l;d.onclick=()=>{c.style.display='none';fn();};c.appendChild(d);});
+  c.style.left=Math.min(e.clientX,innerWidth-210)+'px';c.style.top=Math.min(e.clientY,innerHeight-items.length*36-10)+'px';c.style.display='block';
+}
+document.addEventListener('click',()=>document.getElementById('ctx').style.display='none');
+function openM(html){document.getElementById('modal').innerHTML=html;document.getElementById('ov').classList.add('on');}
+function closeM(){document.getElementById('ov').classList.remove('on');}
+document.getElementById('ov').onclick=e=>{if(e.target.id==='ov')closeM();};
+function dl(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:type||'text/plain'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);}
+function viewSource(p){
+  getCode(p).then(c=>openM(`<h2>${esc(p.name)} — source</h2><div class="mb"><textarea readonly>${esc(c)}</textarea></div><div class="mf"><button class="btn" onclick="closeM()">Close</button></div>`)).catch(e=>log(e.message,'e'));
+}
+
+/* ═══ Plugin editor ═══ */
+const PLUGIN_TPL=`// Plugin template. \`mpc\` is the host API:
+//   mpc.notify(msg)            show a notification
+//   mpc.S()                    mpcsim state object (accent, apps, tiles…)
+//   mpc.doc()                  the desktop's document
+//   mpc.setAccent('#e74856')   mpc.setWallpaper(url)   mpc.setTheme('win11')
+//   mpc.launchApp('Calculator')
+//   mpc.addApp({name,html,iconUrl,desktop})
+//                              bundle an app: it is installed while the plugin
+//                              runs and removed when the plugin stops
+//   mpc.injectCSS(css)         add CSS to the desktop (removed on stop)
+//   mpc.interval(fn,ms)        timer that is cleared when the plugin stops
+//   mpc.onStop(fn)             run cleanup when stopped
+//   mpc.save() / mpc.refresh() persist / re-render
+// A plugin stays "running" while it has an interval, an onStop hook or an app.
+// Turn on "Autostart on boot" (right-click the tile) to have it load with mpcsim.
+
+mpc.notify('Hello from my plugin!');
+`;
+const APP_SNIPPET=[
+  '',
+  '// ── Bundled app ─────────────────────────────────────────',
+  'const APP_HTML = `<!DOCTYPE html>',
+  '<html>',
+  '<head><meta charset="UTF-8"><title>My App</title>',
+  '<style>',
+  '  body{margin:0;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;',
+  "       font-family:'Segoe UI',sans-serif;background:#1a1a1a;color:#fff}",
+  '  h1{font-weight:200;font-size:40px}',
+  '  button{background:#0078d4;color:#fff;border:0;padding:10px 22px;font-size:14px;cursor:pointer}',
+  '</style></head>',
+  '<body>',
+  '  <h1>Hello from a plugin app!</h1>',
+  '  <p id="c">Clicks: 0</p>',
+  '  <button onclick="n++;c.textContent=\'Clicks: \'+n">Click me</button>',
+  '  <script>var n=0;<\\/script>',
+  '</body>',
+  '</html>`;',
+  "mpc.addApp({ name: 'My App', html: APP_HTML, desktop: true });",
+  ''
+].join('\n');
+function editPlugin(p){
+  p=p||{id:uid(),name:'',desc:'',code:PLUGIN_TPL,color:COLORS[custom.length%COLORS.length],isNew:true};
+  openM(`<h2>${p.isNew?'Create':'Edit'} plugin</h2><div class="mb">
+    <label>Name</label><input type="text" id="e-name" value="${esc(p.name)}" placeholder="My plugin">
+    <label>Description</label><input type="text" id="e-desc" value="${esc(p.desc||'')}">
+    <label>Tile colour</label><div class="colors" id="e-col"></div>
+    <label>Code (JavaScript)</label><textarea id="e-code" spellcheck="false">${esc(p.code)}</textarea>
+    <div class="note">Use <b>Add app block</b> to bundle an app (your own HTML) inside this plugin. Plugins run with full access to the desktop page — only run code you trust.</div></div>
+    <div class="mf"><button class="btn tpl" id="e-tpl">Reset to template</button><button class="btn" id="e-app"><i class="fa fa-window-maximize"></i> Add app block</button><button class="btn p" id="e-save">Save</button><button class="btn" onclick="closeM()">Cancel</button></div>`);
+  let col=p.color;
+  const cg=document.getElementById('e-col');
+  COLORS.forEach(c=>{const s=document.createElement('div');s.className='cs'+(c===col?' sel':'');s.style.background=c;s.onclick=()=>{col=c;cg.querySelectorAll('.cs').forEach(x=>x.classList.remove('sel'));s.classList.add('sel');};cg.appendChild(s);});
+  const ta=document.getElementById('e-code');
+  ta.onkeydown=e=>{if(e.key==='Tab'){e.preventDefault();ta.setRangeText('  ',ta.selectionStart,ta.selectionEnd,'end');}};
+  document.getElementById('e-tpl').onclick=()=>ta.value=PLUGIN_TPL;
+  document.getElementById('e-app').onclick=()=>{ta.value=ta.value.replace(/\s*$/,'\n')+APP_SNIPPET;ta.scrollTop=ta.scrollHeight;};
+  document.getElementById('e-save').onclick=()=>{
+    const code=ta.value;
+    try{new Function('mpc',code);}catch(e){log('Syntax error: '+e.message,'e');alert('Syntax error: '+e.message);return;}
+    const o={id:p.id,name:document.getElementById('e-name').value.trim()||'Untitled',desc:document.getElementById('e-desc').value.trim(),code,color:col};
+    const i=custom.findIndex(x=>x.id===p.id);i>=0?custom[i]=o:custom.push(o);
+    sv('mpc_plugins',custom);closeM();render();log('Saved plugin '+o.name+(isRun(o.id)?' (stop and run it again to apply changes)':''),'o');
+  };
+}
+
+/* ═══ Import / export ═══ */
+document.getElementById('f-js').onchange=async e=>{
+  for(const f of e.target.files){
+    const t=await f.text();
+    if(f.name.endsWith('.json')){importBundle(t);continue;}
+    try{new Function('mpc',t);}catch(er){log(f.name+': syntax error — '+er.message,'e');continue;}
+    custom.push({id:uid(),name:base(f.name),desc:'Imported from '+f.name,code:t,color:COLORS[custom.length%COLORS.length]});
+    log('Imported '+f.name,'o');
+  }
+  sv('mpc_plugins',custom);e.target.value='';render();
+};
+/* Importing an .html file creates a plugin that bundles it as an app, turned on right away */
+document.getElementById('f-html').onchange=async e=>{
+  for(const f of e.target.files){
+    const html=await f.text(),nm=base(f.name);
+    const p={id:uid(),name:nm,desc:'Bundled app imported from '+f.name,code:appPluginCode(nm,html,''),color:COLORS[(custom.length+3)%COLORS.length]};
+    custom.push(p);sv('mpc_plugins',custom);
+    try{RT().setAuto(p,true);}catch(er){}
+    startPlugin(p);
+    log('Imported app '+f.name+' as a plugin','o');
+  }
+  e.target.value='';render();
+};
+function importBundle(t){
+  try{
+    const d=JSON.parse(t);
+    (d.plugins||[]).forEach(p=>custom.push({...p,id:uid()}));
+    (d.apps||[]).forEach(a=>custom.push({id:uid(),name:a.name,desc:'Bundled app',code:appPluginCode(a.name,a.html,a.iconUrl||''),color:a.color||COLORS[custom.length%COLORS.length]}));
+    sv('mpc_plugins',custom);log('Imported bundle','o');
+  }catch(er){log('Bad bundle: '+er.message,'e');}
+}
+function exportAll(){
+  if(!custom.length){log('Nothing to export.','e');return;}
+  dl('mpc-plugins.json',JSON.stringify({plugins:custom},null,2),'application/json');
+  log('Exported '+custom.length+' custom plugin(s) (right-click a tile for a single .js export)','o');
+}
+
+/* ═══ One-time migration: apps saved by the old Apps tab become bundled-app plugins ═══ */
+(function migrateApps(){
+  const legacy=ld('mpc_apps');
+  if(!legacy.length)return;
+  legacy.forEach(a=>{
+    const p={id:uid(),name:a.name,desc:'Bundled app (migrated from the Apps tab)',code:appPluginCode(a.name,a.html,a.iconUrl||''),color:a.color||COLORS[custom.length%COLORS.length]};
+    custom.push(p);
+    try{RT().uninstallApp('app-'+a.id);RT().setAuto(p,true);}catch(e){}
+  });
+  sv('mpc_plugins',custom);
+  try{localStorage.removeItem('mpc_apps');}catch(e){}
+  log('Migrated '+legacy.length+' app(s) into plugins (autostart enabled).','o');
+})();
+
+try{const rt=RT();rt.logs.forEach(e=>logRaw(e.t,e.m,e.c));rt.onLog=e=>logRaw(e.t,e.m,e.c);rt.onChange=()=>render(true);}catch(e){}
+render();
+try{const b=host().BOOT;if(b.guest)log('Guest mode: custom plugins are not loaded or saved.');if(!b.plugins)log('Safe mode: plugins are disabled.','e');}catch(e){}
+log('Plugins ready. '+(P?'Host connected.':'Host NOT connected (open inside mpcsim).'),P?'o':'e');
+</script>
+</body>
+</html>

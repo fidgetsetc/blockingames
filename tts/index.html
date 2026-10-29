@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Text to Speech</title>
+<style>
+  body{font-family:system-ui,sans-serif;max-width:600px;margin:40px auto;padding:0 20px;}
+  textarea{width:100%;min-height:120px;padding:10px;font-size:1rem;}
+  button{padding:10px 18px;font-size:1rem;margin-top:12px;cursor:pointer;}
+  #status{color:#666;margin-top:10px;font-size:.9rem;}
+</style>
+</head>
+<body>
+<h1>TTS</h1>
+<p>There needs to be more than one word in your text.</p>
+<textarea id="text">Replace this text with literally ANYTHING. ANY. THING.</textarea>
+<br>
+<label for="voice" style="display:inline-block;margin-top:12px">Voice:</label>
+<select id="voice" style="padding:8px;font-size:1rem;margin-left:6px">
+  <option value="slt" selected>slt (female, US)</option>
+  <option value="awb">awb (male, Scottish)</option>
+  <option value="rms">rms (male, US)</option>
+  <option value="kal">kal (male, US)</option>
+  <option value="kal16">kal16 (male, US, 16kHz)</option>
+</select>
+<br>
+<button id="go">Speak</button>
+<div id="status"></div>
+<audio id="player" controls style="width:100%;margin-top:12px;display:none"></audio>
+
+<script type="module" src="./tts.js"></script>
+</body>
+</html>

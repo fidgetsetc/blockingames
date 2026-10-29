@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Extra Wallpapers</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--th:clamp(100px,calc((100vh - 250px)/2),220px);--tw:calc(var(--th)*1.7778);--accent:#8e44ad}
+html,body{height:100%;background:#1b1b1f;color:#fff;font-family:'Segoe UI','Segoe UI Light',system-ui,sans-serif;user-select:none}
+body{display:flex;flex-direction:column;overflow:hidden}
+header{padding:24px 48px 0;flex-shrink:0}
+h1{font-size:42px;font-weight:200;letter-spacing:-1px;line-height:1}
+.sub{font-size:13px;color:rgba(255,255,255,.55);margin-top:8px;font-weight:300}
+#scroller{flex:1;overflow-x:auto;overflow-y:hidden;display:flex;gap:56px;padding:22px 48px 16px;align-items:flex-start}
+#scroller::-webkit-scrollbar{height:8px}
+#scroller::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25)}
+.group{flex-shrink:0}
+.group h2{font-size:15px;font-weight:300;color:rgba(255,255,255,.75);margin-bottom:12px}
+.grid{display:grid;grid-auto-flow:column;grid-template-rows:repeat(2,var(--th));grid-auto-columns:var(--tw);gap:6px;justify-content:start}
+.t{position:relative;width:var(--tw);height:var(--th);flex:none;background-color:#000;background-size:cover;background-position:center;background-repeat:no-repeat;cursor:pointer;overflow:hidden;border:2px solid transparent;transition:transform .1s}
+.t:hover{border-color:rgba(255,255,255,.55)}
+.t:active{transform:scale(.97)}
+.t .n{position:absolute;left:0;right:0;bottom:0;padding:20px 10px 6px;font-size:12px;font-weight:400;background:linear-gradient(transparent,rgba(0,0,0,.65));pointer-events:none}
+.t.on{border-color:#fff}
+.chips{position:absolute;top:0;right:0;display:flex;pointer-events:none}
+.chips b{background:var(--accent);color:#fff;font-size:10px;font-weight:600;padding:3px 7px;letter-spacing:.5px;text-transform:uppercase}
+footer{flex-shrink:0;height:50px;display:flex;align-items:center;gap:6px;padding:0 48px;background:#111114;border-top:1px solid rgba(255,255,255,.08)}
+footer .lbl{font-size:12px;color:rgba(255,255,255,.55);margin-right:8px}
+footer button{background:none;border:none;color:rgba(255,255,255,.7);font:inherit;font-size:13px;padding:8px 14px;cursor:pointer;border-bottom:2px solid transparent}
+footer button:hover{color:#fff;background:rgba(255,255,255,.08)}
+footer button[hidden]{display:none}
+footer button.on{color:#fff;border-bottom-color:var(--accent)}
+#msg{margin-left:auto;font-size:12px;color:rgba(255,255,255,.7);opacity:0;transition:opacity .25s}
+#msg.show{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <h1>extra wallpapers</h1>
+  <div class="sub" id="hint">Click a tile to set it as your wallpaper. These wallpapers are here for any extra wallpapers specific to things!</div>
+</header>
+<div id="scroller"></div>
+<footer>
+  <span class="lbl" id="lbl">Click sets:</span>
+  <button data-m="desktop" class="on">Desktop</button>
+  <button data-m="start" hidden>Start screen</button>
+  <button data-m="both" hidden>Both</button>
+  <span id="msg"></span>
+</footer>
+<script>
+/* ═══ EDIT THIS LIST ═══
+   Every wallpaper is the same kind of entry: {name, group, url}
+   url = path relative to the main index.html (e.g. './wp/mypic.jpg') or a full https:// link.
+   Entries with the same group appear together. Add, remove or reorder freely. */
+const WALLPAPERS=[
+  {name:'BFDI Background 1', group:'Wallpapers', url:'https://i.pinimg.com/736x/ae/e4/0c/aee40cb185ef7ca3261e3dd92e66e54e.jpg'},
+  {name:'BFDI Background 2', group:'Wallpapers', url:'./extrawp/wp/images.jpg'},
+  {name:'II Background 1', group:'Wallpapers', url:'https://wallpapercave.com/wp/wp8788904.png'},
+  {name:'II Background 2', group:'Wallpapers', url:'https://wallpapercave.com/wp/wp14130322.jpg'},
+  {name:'Animatic Battle Background 1', group:'Wallpapers', url:'https://wallpapercave.com/wp/wp14278016.jpg'},
+  {name:'Animatic Battle Background 2', group:'Wallpapers', url:'https://static.wikia.nocookie.net/bc362fc5-7502-4428-935b-d868982d9373'},
+  {name:'More extra wallpapers coming soon...', group:'Wallpapers', url:'.'},
+]
+
+let mode='desktop',cur={desktop:'',start:'',startSupported:false};
+const thumb=u=>u.startsWith('./')?'.'+u:u;   // this page lives one folder below index.html
+const scroller=document.getElementById('scroller'),msg=document.getElementById('msg'),tiles=[],groups={};
+WALLPAPERS.forEach((w,i)=>{
+  const gname=w.group||'Wallpapers';
+  if(!groups[gname]){
+    const g=document.createElement('div');g.className='group';
+    g.innerHTML='<h2></h2><div class="grid"></div>';
+    g.querySelector('h2').textContent=gname;
+    scroller.appendChild(g);groups[gname]=g.querySelector('.grid');
+  }
+  const t=document.createElement('div');t.className='t';
+  t.style.backgroundImage='url("'+thumb(w.url)+'")';
+  t.innerHTML='<span class="n"></span><div class="chips"></div>';
+  t.querySelector('.n').textContent=w.name;
+  t.onclick=e=>setWall(i,e.shiftKey&&cur.startSupported?'both':mode);
+  groups[gname].appendChild(t);tiles.push(t);
+});
+
+function setMode(m){
+  mode=m;
+  document.querySelectorAll('footer button').forEach(x=>x.classList.toggle('on',x.dataset.m===m));
+}
+function mark(){
+  const sp=!!cur.startSupported;
+  document.querySelectorAll('footer button[data-m="start"],footer button[data-m="both"]').forEach(b=>b.hidden=!sp);
+  if(!sp&&mode!=='desktop')setMode('desktop');
+  document.getElementById('hint').textContent=sp?'Click a tile to set it. Shift+click sets Desktop & Start screen.':'Click a tile to set it as your desktop wallpaper.';
+  tiles.forEach((t,i)=>{
+    const d=WALLPAPERS[i].url===cur.desktop,s=sp&&WALLPAPERS[i].url===cur.start;
+    t.classList.toggle('on',d||s);
+    t.querySelector('.chips').innerHTML=(d?'<b>Desktop</b>':'')+(s?'<b>Start</b>':'');
+  });
+}
+function toast(s){msg.textContent=s;msg.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>msg.classList.remove('show'),2200)}
+function setWall(i,target){
+  if(window.parent===window){toast('Open this inside mpcsim to apply wallpapers');return}
+  if(!cur.startSupported)target='desktop';
+  parent.postMessage({type:'extrawp:set',url:WALLPAPERS[i].url,target,name:WALLPAPERS[i].name},'*');
+  toast(WALLPAPERS[i].name+' set');
+}
+document.querySelectorAll('footer button').forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+scroller.addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){scroller.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});
+window.addEventListener('message',e=>{const d=e.data;if(d&&d.type==='extrawp:state'){cur=d;mark()}});
+if(window.parent!==window)parent.postMessage({type:'extrawp:hello'},'*');
+</script>
+</body>
+</html>

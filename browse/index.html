@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full Screen External SVG</title>
+    <style>
+        /* Force the HTML frame to drop all spacing borders */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #1e1b4b;
+        }
+
+        /* Scale the object container to seize the viewport */
+        .svg-fullscreen-embed {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Embed using object tag to preserve foreignObject engine permissions -->
+    <object type="image/svg+xml" data="https://testingcf.jsdelivr.net/gh/dogeub/-/index.svg#/search" class="svg-fullscreen-embed"></object>
+
+</body>
+</html>
