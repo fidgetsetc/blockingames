@@ -2,7 +2,7 @@
 
 # Target directory
 TARGET_DIR="/home/scrappy73/Projects/win81"
-DOMAINS_FILE="$TARGET_DIR/big.txt"
+DOMAINS_FILE="$TARGET_DIR/domains.txt"
 WEBHOOK_URL=""
 
 # Check if target directory exists
@@ -16,7 +16,7 @@ cd "$TARGET_DIR" || exit 1
 echo "📁 Switched to directory: $(pwd)"
 
 # Check if big.txt exists
-if [ ! -f "big.txt" ]; then
+if [ ! -f "domains.txt" ]; then
     echo "❌ Error: big.txt not found in $TARGET_DIR"
     exit 1
 fi
@@ -52,7 +52,7 @@ while IFS= read -r domain || [ -n "$domain" ]; do
              -d "{\"content\": \"Couldn't deploy latest commit to $domain\"}" \
              "$WEBHOOK_URL" > /dev/null 2>&1
     fi
-done < "big.txt"
+done < "domains.txt"
 
 echo "========================================"
 echo "🎉 All deployments completed!"

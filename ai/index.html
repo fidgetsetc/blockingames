@@ -589,6 +589,7 @@
 
         /* Responsive */
         @media (max-width: 768px) {
+            #btnMenu { display: flex !important; }
             .sidebar {
                 position: absolute;
                 left: 0;
@@ -619,6 +620,25 @@
             .app-container {
                 flex-direction: column;
             }
+        }
+
+        /* Code blocks with preview */
+        .code-block { margin: var(--spacing-md) 0; border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; }
+        .code-block-header { display: flex; justify-content: space-between; align-items: center; padding: var(--spacing-xs) var(--spacing-md); background: var(--color-surface-alt); font-size: 12px; color: var(--color-text-tertiary); }
+        .code-block pre { margin: 0 !important; border: none !important; border-radius: 0 !important; }
+        .btn-preview { background: var(--color-primary); color: #fff; border: none; padding: 4px 12px; font-size: 12px; font-weight: 600; cursor: pointer; border-radius: var(--radius-sm); }
+        .btn-preview:hover { background: var(--color-primary-dark); }
+
+        /* Side preview panel */
+        .preview-panel { width: 0; display: none; flex-direction: column; background: var(--color-surface); border-left: 1px solid var(--color-border); overflow: hidden; }
+        .preview-panel.open { display: flex; width: 45%; min-width: 320px; }
+        .preview-header { display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-md); border-bottom: 1px solid var(--color-border); }
+        .preview-title { flex: 1; font-weight: 600; font-size: 14px; }
+        .preview-toggle { font-size: 12px; color: var(--color-text-secondary); display: flex; align-items: center; gap: 4px; cursor: pointer; }
+        .preview-note { font-size: 12px; padding: var(--spacing-sm) var(--spacing-md); color: var(--color-text-tertiary); border-bottom: 1px solid var(--color-border); }
+        .preview-frame { flex: 1; width: 100%; border: none; background: #fff; }
+        @media (max-width: 768px) {
+            .preview-panel.open { position: fixed; inset: 0; width: 100%; z-index: 500; }
         }
 
         /* Empty State */
@@ -815,6 +835,7 @@
         <div class="main-content">
             <!-- Header -->
             <div class="header">
+                <button class="btn-icon" id="btnMenu" title="Chats" style="display:none;">☰</button>
                 <div class="header-title" id="currentChatTitle">Start a conversation</div>
                 <div class="header-controls">
                     <button class="btn-icon" id="btnApiInfo" title="API Key Info">ℹ️</button>
@@ -839,8 +860,20 @@
                 </div>
             </div>
         </div>
+
+        <!-- HTML Preview Panel -->
+        <div class="preview-panel" id="previewPanel">
+            <div class="preview-header">
+                <div class="preview-title">HTML Preview</div>
+                <label class="preview-toggle"><input type="checkbox" id="previewScripts"> Allow scripts</label>
+                <button class="btn-icon" id="btnClosePreview" title="Close preview">✕</button>
+            </div>
+            <div class="preview-note">Sandboxed: no access to this app, cookies, storage or the network. Scripts are off unless you enable them.</div>
+            <iframe class="preview-frame" id="previewFrame" sandbox=""></iframe>
+        </div>
     </div>
 
+    <!-- Preview panel is appended inside .app-container by JS-free markup below -->
     <!-- API Key Modal -->
     <div class="modal-overlay" id="apiModal" style="display: none;">
         <div class="modal">
@@ -984,18 +1017,75 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
     <script>
         // Configure marked for security and styling
-        marked.setOptions({
-            breaks: true,
-            gfm: true
-        });
+        const hasMarked = typeof marked !== 'undefined';
+        let codeBlocks = []; // raw code of HTML blocks for the current render pass
+
+        function isSafeUrl(href) {
+            if (!href) return false;
+            return /^(https?:|mailto:|#|\/|\.\/|\.\.\/)/i.test(href.trim());
+        }
+
+        function looksLikeHtml(code, lang) {
+            lang = (lang || '').toLowerCase();
+            if (lang === 'html' || lang === 'htm' || lang === 'xhtml') return true;
+            if (lang) return false;
+            return /^\s*(<!doctype html|<html[\s>])/i.test(code);
+        }
+
+        if (hasMarked) {
+            marked.setOptions({ breaks: true, gfm: true });
+            const renderer = new marked.Renderer();
+            // Raw HTML from the model is shown as text, never injected
+            renderer.html = (html) => escapeHtml(typeof html === 'string' ? html : (html.text || html.raw || ''));
+            renderer.link = (href, title, text) => {
+                if (!isSafeUrl(href)) return text;
+                const t = title ? ` title="${escapeHtml(title)}"` : '';
+                return `<a href="${escapeHtml(href)}"${t} target="_blank" rel="noopener noreferrer">${text}</a>`;
+            };
+            renderer.image = (href, title, text) => escapeHtml(text || '[image]'); // no remote loads
+            renderer.code = (code, infostring) => {
+                const lang = (infostring || '').trim().split(/\s+/)[0];
+                const label = escapeHtml(lang || 'code');
+                let button = '';
+                if (looksLikeHtml(code, lang)) {
+                    const idx = codeBlocks.push(code) - 1;
+                    button = `<button class="btn-preview" data-preview="${idx}">▶ Preview</button>`;
+                }
+                return `<div class="code-block"><div class="code-block-header"><span>${label}</span>${button}</div><pre><code>${escapeHtml(code)}</code></pre></div>`;
+            };
+            marked.use({ renderer });
+        } else {
+            console.warn('marked failed to load; falling back to plain text rendering');
+        }
+
+        // Defense in depth: strip anything dangerous that slipped through
+        function sanitizeHtml(html) {
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            doc.querySelectorAll('script,style,iframe,frame,object,embed,form,link,meta,base,svg,math,template').forEach(n => n.remove());
+            doc.body.querySelectorAll('*').forEach(el => {
+                [...el.attributes].forEach(a => {
+                    const n = a.name.toLowerCase();
+                    if (n.startsWith('on') || n === 'srcdoc' || n === 'style' ||
+                        ((n === 'href' || n === 'src' || n === 'xlink:href') && !isSafeUrl(a.value))) {
+                        el.removeAttribute(a.name);
+                    }
+                });
+            });
+            return doc.body.innerHTML;
+        }
+
+        function renderMarkdown(text) {
+            if (!hasMarked) return escapeHtml(text).replace(/\n/g, '<br>');
+            return sanitizeHtml(marked.parse(text));
+        }
 
         // Initialize app
         const app = {
             apiKey: localStorage.getItem('openrouter_api_key') || '',
-            chats: JSON.parse(localStorage.getItem('chats')) || {},
+            chats: (() => { try { return JSON.parse(localStorage.getItem('chats')) || {}; } catch (e) { return {}; } })(),
             currentChatId: localStorage.getItem('currentChatId') || null,
             personality: localStorage.getItem('personality') || 'You are a helpful, friendly, and knowledgeable assistant. Answer questions accurately and concisely.',
             model: localStorage.getItem('model') || 'openrouter/free',
@@ -1026,6 +1116,11 @@
                     textarea.style.height = 'auto';
                     textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
                 });
+
+                document.getElementById('btnMenu').addEventListener('click', () => document.querySelector('.sidebar').classList.toggle('open'));
+
+                document.getElementById('btnClosePreview').addEventListener('click', () => this.closePreview());
+                document.getElementById('previewScripts').addEventListener('change', () => this.updatePreviewFrame());
 
                 // Modal controls
                 document.getElementById('btnSettings').addEventListener('click', () => this.showSettingsModal());
@@ -1077,6 +1172,7 @@
             },
 
             loadChat(chatId) {
+                document.querySelector('.sidebar').classList.remove('open');
                 if (!chatId || !this.chats[chatId]) {
                     chatId = this.createNewChat();
                 }
@@ -1102,7 +1198,7 @@
                         const li = document.createElement('li');
                         li.className = `chat-item ${chat.id === this.currentChatId ? 'active' : ''}`;
                         li.innerHTML = `
-                            <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${chat.title}</span>
+                            <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(chat.title)}</span>
                             <button class="chat-item-delete" data-id="${chat.id}">✕</button>
                         `;
                         li.addEventListener('click', (e) => {
@@ -1145,6 +1241,7 @@
                 }
 
                 container.innerHTML = '';
+                codeBlocks = [];
                 chat.messages.forEach(msg => {
                     const div = document.createElement('div');
                     div.className = `message ${msg.role}`;
@@ -1153,7 +1250,7 @@
                     // Render markdown for assistant messages, plain text for user
                     let contentHtml;
                     if (msg.role === 'assistant') {
-                        contentHtml = marked.parse(msg.content);
+                        contentHtml = renderMarkdown(msg.content);
                     } else {
                         contentHtml = escapeHtml(msg.content);
                     }
@@ -1168,14 +1265,42 @@
                     container.appendChild(div);
                 });
 
+                container.querySelectorAll('[data-preview]').forEach(btn => {
+                    btn.addEventListener('click', () => this.openPreview(codeBlocks[Number(btn.dataset.preview)]));
+                });
+
                 container.scrollTop = container.scrollHeight;
+            },
+
+            openPreview(code) {
+                if (typeof code !== 'string') return;
+                this.previewCode = code;
+                this.updatePreviewFrame();
+                document.getElementById('previewPanel').classList.add('open');
+            },
+
+            updatePreviewFrame() {
+                const frame = document.getElementById('previewFrame');
+                const allowScripts = document.getElementById('previewScripts').checked;
+                // Opaque origin (no allow-same-origin) + CSP blocks network access
+                frame.setAttribute('sandbox', allowScripts ? 'allow-scripts' : '');
+                const csp = `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'unsafe-inline'; font-src data:; ${allowScripts ? "script-src 'unsafe-inline';" : ''}">`;
+                frame.srcdoc = csp + (this.previewCode || '');
+            },
+
+            closePreview() {
+                document.getElementById('previewPanel').classList.remove('open');
+                document.getElementById('previewFrame').srcdoc = '';
             },
 
             async sendMessage() {
                 const input = document.getElementById('messageInput');
                 const message = input.value.trim();
 
-                if (!message || !this.apiKey) return;
+                if (!message) return;
+                if (!this.apiKey) { this.showApiModal(); return; }
+                if (this.sending) return;
+                this.sending = true;
 
                 const chat = this.chats[this.currentChatId];
                 chat.messages.push({
@@ -1258,6 +1383,8 @@
                     });
                     this.saveChatToStorage();
                     this.renderMessages();
+                } finally {
+                    this.sending = false;
                 }
             },
 

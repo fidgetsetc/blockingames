@@ -899,6 +899,7 @@ body.oneapp{--off-top:0px!important;--off-bot:0px!important;--fs-top:0px!importa
   <div id="dn-all">
     <div class="dn-all-head">ALL APPS</div>
     <div id="dn-grid"></div>
+    <p style="margin-left: 150px;">Remember: This service is provided for completely free. There isn't a way to donate, but if you know how to code, you can help in our GitHub repository: fidgetsetc/mpcsim. You can also help by coding plugins and submitting them in our DC server: tAvCFWFUJs. YOUR plugins may be added if I find them nice!</p>
   </div>
   <div id="dn-menu">
     <div id="dn-list"></div>
@@ -926,6 +927,8 @@ body.oneapp{--off-top:0px!important;--off-bot:0px!important;--fs-top:0px!importa
   <!-- Settings -->
   <div class="modal" id="m-settings" style="display:none">
     <div class="modal-head"><h2>Personalize</h2></div>
+    <br>
+    <p>Remember: This service is provided for completely free. There isn't a way to donate, but if you know how to code, you can help in our GitHub repository: fidgetsetc/blockingames. You can also help by coding plugins and submitting them in our DC server: tAvCFWFUJs. Plugins will be added if I find them nice!</p>
     <div class="modal-body">
       <span class="f-label">Accent color</span>
       <div class="color-grid" id="g-accent"></div>
@@ -985,6 +988,13 @@ body.oneapp{--off-top:0px!important;--off-bot:0px!important;--fs-top:0px!importa
       <div id="wobble-amt-row" style="opacity:.4">
         <span class="f-label">Wobbliness <span id="s-wobble-val">40</span>%</span>
         <input class="f-inp" type="range" min="0" max="100" id="s-wobble-amt" oninput="document.getElementById('s-wobble-val').textContent=this.value">
+      </div>
+      <label class="f-label" style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+        <input type="checkbox" id="s-sound" style="width:auto;" onchange="document.getElementById('sound-vol-row').style.opacity=this.checked?'1':'.4'"> System sounds
+      </label>
+      <div id="sound-vol-row">
+        <span class="f-label">Volume <span id="s-sound-val">70</span>%</span>
+        <input class="f-inp no-sfx" type="range" min="0" max="100" id="s-sound-vol" oninput="document.getElementById('s-sound-val').textContent=this.value" onchange="SFX.play('notify',{vol:this.value/100})">
       </div>
     </div>
     <div class="modal-foot">
@@ -2007,7 +2017,7 @@ const DEFAULT_APPS = [
   {
     id: 'app-yio',
     name: 'YellItOut',
-    url: './big-tmp/playing/html/yio/index.html',
+    url: './big-tmp/playing/html/yio/index.html?x=1',
     icon: 'gamepad',
     cat: 'Games',
     iconUrl: './big-tmp/playing/img/yio.png',
@@ -2053,6 +2063,87 @@ let S = {
   openWins:[], nextWin:1,
 };
 const S_DEFAULTS=JSON.parse(JSON.stringify(S));
+
+/* ══════════════════════════════════
+   SOUND SYSTEM
+   Put your sound files in a ./sounds/ folder (or change the paths below).
+   Set a path to '' to turn that one sound off. Missing files just stay silent.
+   Optional per-sound loudness (0-1) goes in SOUND_VOL.
+   Plugins can use it too:  mpc.sound('notify')   or   window.SFX.play('click')
+══════════════════════════════════ */
+const SOUND_FILES={
+  boot:          './sounds/boot.mp3',            // you click the "click to start" screen
+  startup:       './sounds/startup.mp3',         // boot finished, lock screen appears
+  unlock:        './sounds/unlock.mp3',          // lock screen dismissed / logging in
+  lock:          './sounds/lock.mp3',            // Power > Lock
+  shutdown:      './sounds/shutdown.mp3',        // Power > Shut Down (plays with the outro video)
+  startOpen:     './sounds/open.wav',      // Start screen / Menu panel opens
+  startClose:    './sounds/close.wav',     // Start screen / Menu panel closes
+  appsOpen:      './sounds/open.wav',       // All apps list opens
+  windowOpen:    './sounds/open.wav',     // an app window opens
+  windowClose:   './sounds/close.wav',    // an app window closes
+  windowMinimize:'./sounds/window-minimize.mp3', // window minimized
+  windowRestore: './sounds/window-restore.mp3',  // window restored from taskbar / un-maximized
+  windowMaximize:'./sounds/window-maximize.mp3', // window maximized
+  click:         './sounds/click.ogg',           // buttons, tiles, icons, taskbar buttons, menu items
+  contextMenu:   './sounds/context-menu.mp3',    // right-click menu opens
+  modalOpen:     './sounds/modal-open.mp3',      // dialog opens (Personalize, Add tile, ...)
+  modalClose:    './sounds/modal-close.mp3',     // dialog closes
+  notify:        './sounds/notify.ogg',          // notification toast appears
+  error:         './sounds/error.wav',           // error dialog (Window Avalanche notice)
+  avalanche:     './sounds/avalanche.mp3',       // Window Avalanche starts
+  bounce:        './sounds/bounce.mp3',          // a window hits the floor during Window Avalanche
+  menuMove:      './sounds/moveboot.wav',       // boot manager: move selection
+  menuSelect:    './sounds/selectboot.wav',     // boot manager: choose an entry
+};
+const SOUND_VOL={ /* e.g. click:.4, startup:.8 */ };
+
+const SFX={
+  vol:.7,muted:false,_base:{},_bad:{},_last:{},_live:{},
+  load(){try{const o=JSON.parse(localStorage.getItem('mpc_sound')||'null');if(o){if(typeof o.vol==='number')SFX.vol=Math.max(0,Math.min(1,o.vol));if(typeof o.muted==='boolean')SFX.muted=o.muted;}}catch(e){}},
+  save(){try{localStorage.setItem('mpc_sound',JSON.stringify({vol:SFX.vol,muted:SFX.muted}));}catch(e){}},
+  set(o){if(o.vol!==undefined)SFX.vol=Math.max(0,Math.min(1,+o.vol||0));if(o.muted!==undefined)SFX.muted=!!o.muted;SFX.save();if(SFX.muted)SFX.stopAll();},
+  _get(name){
+    const url=SOUND_FILES[name];if(!url||SFX._bad[name])return null;
+    let a=SFX._base[name];
+    if(!a){
+      try{a=new Audio();a.preload='auto';a.addEventListener('error',()=>{SFX._bad[name]=true;},{once:true});a.src=url;}catch(e){SFX._bad[name]=true;return null;}
+      SFX._base[name]=a;
+    }
+    return a;
+  },
+  preload(){Object.keys(SOUND_FILES).forEach(n=>SFX._get(n));},
+  play(name,o){
+    o=o||{};
+    if(SFX.muted&&o.vol===undefined)return;
+    const now=Date.now();
+    if(o.throttle&&now-(SFX._last[name]||0)<o.throttle)return;
+    SFX._last[name]=now;
+    const base=SFX._get(name);if(!base)return;
+    try{
+      const a=base.cloneNode(true);   // clone so quick repeats can overlap
+      const master=(o.vol!==undefined)?o.vol:SFX.vol;
+      a.volume=Math.max(0,Math.min(1,master*(SOUND_VOL[name]!==undefined?SOUND_VOL[name]:1)));
+      const set=SFX._live[name]||(SFX._live[name]=new Set());
+      set.add(a);a.addEventListener('ended',()=>set.delete(a),{once:true});a.addEventListener('error',()=>set.delete(a),{once:true});
+      const p=a.play();if(p&&p.catch)p.catch(()=>{set.delete(a);});
+    }catch(e){}
+  },
+  stop(name){const s=SFX._live[name];if(!s)return;s.forEach(a=>{try{a.pause();}catch(e){}});s.clear();},
+  stopAll(){Object.keys(SFX._live).forEach(SFX.stop);},
+};
+SFX.load();
+window.SFX=SFX;
+// generic UI click sound (windows have their own sounds, so their buttons are skipped)
+(function(){
+  const CLICKABLE='button,[onclick],.tile,.desktop-icon,.tb-btn,.app-entry,.dn-row,.popt,#ctx>div,#start-orb,select,input[type=checkbox]';
+  const SKIP='.win-ctrl,#lockscreen,#boot,.no-sfx,input[type=range]';
+  document.addEventListener('click',e=>{
+    const t=e.target;if(!t||!t.closest||t.closest(SKIP))return;
+    if(t.closest(CLICKABLE))SFX.play('click',{throttle:60});
+  },true);
+})();
+
 
 /* ══════════════════════════════════
    PERSIST
@@ -2279,6 +2370,7 @@ function tickClock(){
 let currentView='lock';
 let _stT=null;
 function unlock(){
+  SFX.play('unlock');
   try{const de=document.documentElement;if(!document.fullscreenElement){const r=de.requestFullscreen||de.webkitRequestFullscreen;if(r){const p=r.call(de);if(p&&p.catch)p.catch(()=>{});}}}catch(e){}
   const ls=document.getElementById('lockscreen');
   ls.classList.add('unlocking');ls.style.pointerEvents='none';
@@ -2411,7 +2503,7 @@ function renderWin7StartMenu(){
 }
 
 function showStart(){
-  if(S.theme==='defaultnew'){goDesktop();dnSetMenu(true);return;}
+  if(S.theme==='defaultnew'){goDesktop();dnSetMenu(true,true);return;}
   currentView='start';
   clearTimeout(_stT);
   const s=document.getElementById('start');
@@ -2453,10 +2545,11 @@ function goDesktop(){
 function toggleStart(){
   if(S.theme==='defaultnew'){dnSetMenu(!document.body.classList.contains('dn-open'));return;}
   const s=document.getElementById('start');
-  if(S.theme!=='default'&&s.style.display==='flex'&&!s.classList.contains('start-leaving'))goDesktop();
-  else showStart();
+  if(S.theme!=='default'&&s.style.display==='flex'&&!s.classList.contains('start-leaving')){SFX.play('startClose');goDesktop();}
+  else{SFX.play('startOpen');showStart();}
 }
 function showApps(){
+  SFX.play('appsOpen');
   if(S.theme==='win7'){
     document.getElementById('apps-screen-win7').style.display='flex';
     renderAppsWin7List();
@@ -2477,19 +2570,22 @@ function dnSyncHeight(){
   document.body.style.setProperty('--dn-mh',h+'px');
 }
 window.addEventListener('resize',dnSyncHeight);
-function dnSetMenu(open){
+function dnSetMenu(open,silent){
   const b=document.body;
   if(!open&&b.classList.contains('dn-closing')&&_dnCloseT)return; // already closing: keep its timer
   clearTimeout(_dnCloseT);_dnCloseT=null;
   if(open){
+    const wasOpen=b.classList.contains('dn-open')&&!b.classList.contains('dn-closing');
     b.classList.remove('dn-closing');
     b.classList.add('dn-open');
+    if(!wasOpen&&!silent)SFX.play('startOpen');
     dnSyncHeight();
     dnMeasureLabels(document.getElementById('dn-list'));
     return;
   }
   if(!b.classList.contains('dn-open')){b.classList.remove('dn-all','dn-closing','dn-all-closing');return;}
   if(b.classList.contains('dn-closing'))return;
+  if(!silent)SFX.play('startClose');
   b.classList.add('dn-closing');
   _dnCloseT=setTimeout(()=>{
     _dnCloseT=null;
@@ -2993,7 +3089,9 @@ function renderTaskbar(){
    LAUNCH / WINDOWS
 ══════════════════════════════════ */
 function launchApp(app,fromStart=true){
-  dnSetMenu(false);
+  // opening an app from the Menu/Start plays only the app-open sound (no click, no menu-close)
+  if(fromStart)SFX.stop('click');
+  dnSetMenu(false,fromStart);
   if(app.url==='__desktop__'){goDesktop();return;}
   if(app.url==='__physics__'){goDesktop();triggerWindowCrash();return;}
   if(!app.url&&app.id==='app-set'){openModal('m-settings');return;}
@@ -3001,7 +3099,7 @@ function launchApp(app,fromStart=true){
   goDesktop();
   const id='w'+(S.nextWin++);
   const w={id,name:app.name,url:app.url,icon:app.icon,appId:app.id,minimized:false};
-  S.openWins.push(w);buildWindow(w,fromStart);renderTaskbar();
+  S.openWins.push(w);buildWindow(w,fromStart);renderTaskbar();SFX.play('windowOpen');
 }
 function winRect(idx){
   const off=idx*26%150;
@@ -3094,6 +3192,7 @@ function triggerWindowCrash(){
   });
   if(!crashActive){
     crashActive=true;
+    SFX.play('avalanche');
     document.getElementById('tray-crash').style.display='flex';
     openModal('m-crash-error');
     crashLoop();
@@ -3105,7 +3204,7 @@ function crashLoop(){
   crashBodies.forEach(b=>{
     b.vy+=b.g;b.x+=b.vx;b.y+=b.vy;b.rot+=b.vr;
     if(b.y>b.floor){
-      b.y=b.floor;b.vy=-b.vy*b.bounce;b.vr*=0.75;
+      if(Math.abs(b.vy)>7)SFX.play('bounce',{throttle:120});b.y=b.floor;b.vy=-b.vy*b.bounce;b.vr*=0.75;
       // keep it lively forever: a small random nudge whenever it nearly rests
       if(Math.abs(b.vy)<2.2){b.vy=-(2+Math.random()*4);b.vx+=(Math.random()-0.5)*3;b.vr+=(Math.random()-0.5)*4;}
     }
@@ -3458,13 +3557,14 @@ function bringFront(el){let mx=1;document.querySelectorAll('.app-win').forEach(w
 function minWin(id){
   const w=S.openWins.find(x=>x.id===id);if(!w)return;
   const el=document.getElementById(id);if(!el)return;
+  SFX.play('windowMinimize');
   el.classList.remove('win-settled');wobbleKill(el);el.classList.add('win-minimizing');
   setTimeout(()=>{el.classList.remove('win-minimizing');w.minimized=true;el.classList.add('win-min');renderTaskbar();},170);
 }
-function maxWin(id){const el=document.getElementById(id);if(!el)return;const fs=el.classList.toggle('win-fs');if(!fs){const r=winRect(0);el.style.left=r.left+'px';el.style.top=r.top+'px';el.style.width=r.width+'px';el.style.height=r.height+'px';}}
+function maxWin(id){const el=document.getElementById(id);if(!el)return;const fs=el.classList.toggle('win-fs');SFX.play(fs?'windowMaximize':'windowRestore');if(!fs){const r=winRect(0);el.style.left=r.left+'px';el.style.top=r.top+'px';el.style.width=r.width+'px';el.style.height=r.height+'px';}}
 function closeWin(id){
   const el=document.getElementById(id);if(!el)return;
-  el.classList.remove('win-settled');wobbleKill(el);el.classList.add('win-closing');
+  SFX.play('windowClose');el.classList.remove('win-settled');wobbleKill(el);el.classList.add('win-closing');
   crashBodies=crashBodies.filter(b=>b.el!==el);
   setTimeout(()=>{el.remove();S.openWins=S.openWins.filter(w=>w.id!==id);renderTaskbar();if(BOOT.oneApp&&!S.openWins.length)shutDown();},160);
 }
@@ -3472,11 +3572,12 @@ function toggleWin(id){
   const w=S.openWins.find(x=>x.id===id);if(!w)return;
   const el=document.getElementById(id);
   if(w.minimized){
-    w.minimized=false;el.classList.remove('win-min','win-settled');
+    w.minimized=false;el.classList.remove('win-min','win-settled');SFX.play('windowRestore');
     el.classList.add('win-restoring');
     setTimeout(()=>el.classList.remove('win-restoring'),200);
     bringFront(el);
   }else{
+    SFX.play('windowMinimize');
     el.classList.remove('win-settled');wobbleKill(el);el.classList.add('win-minimizing');
     setTimeout(()=>{el.classList.remove('win-minimizing');w.minimized=true;el.classList.add('win-min');},170);
   }
@@ -3487,6 +3588,7 @@ function toggleWin(id){
    CONTEXT MENUS
 ══════════════════════════════════ */
 function showCtx(e,items){
+  SFX.play('contextMenu');
   const menu=document.getElementById('ctx');menu.innerHTML='';menu.style.borderTopColor=S.accent;
   items.forEach(item=>{
     if(item==='-'){const s=document.createElement('div');s.className='sep';menu.appendChild(s);return;}
@@ -3870,6 +3972,10 @@ function populateSettingsModal(){
   document.getElementById('s-wobble-amt').value=S.wobbleAmt??40;
   document.getElementById('s-wobble-val').textContent=S.wobbleAmt??40;
   document.getElementById('wobble-amt-row').style.opacity=S.wobbly?'1':'.4';
+  document.getElementById('s-sound').checked=!SFX.muted;
+  document.getElementById('s-sound-vol').value=Math.round(SFX.vol*100);
+  document.getElementById('s-sound-val').textContent=Math.round(SFX.vol*100);
+  document.getElementById('sound-vol-row').style.opacity=SFX.muted?'.4':'1';
   renderWallpaperPresets();
 }
 function saveSettings(){
@@ -3889,6 +3995,7 @@ function saveSettings(){
   S.wobbly=document.getElementById('s-wobbly').checked;
   S.wobbleAmt=parseInt(document.getElementById('s-wobble-amt').value)||0;
   S.wobbleMode=document.getElementById('s-wobble-mode').value||'compiz';
+  SFX.set({muted:!document.getElementById('s-sound').checked,vol:(parseInt(document.getElementById('s-sound-vol').value)||0)/100});
   if(!S.wobbly)document.querySelectorAll('.app-win.wobbling').forEach(w=>w.classList.remove('wobbling'));
   saveS();applyViewport();applyTheme();tickClock();renderTiles();renderDesktopIcons();renderTaskbar();renderWin7StartMenu();closeModal();notify('Personalization applied!');
 }
@@ -3902,12 +4009,13 @@ document.getElementById('a-resolution').addEventListener('input',e=>{
   document.getElementById('a-res-preview').textContent=v+'%';
 });
 function openModal(id){
+  SFX.play(/error/.test(id)?'error':'modalOpen');
   document.getElementById('overlay').classList.add('on');
   document.querySelectorAll('.modal').forEach(m=>m.style.display='none');
   document.getElementById(id).style.display='flex';
   if(id==='m-settings')populateSettingsModal();
 }
-function closeModal(){document.getElementById('overlay').classList.remove('on');document.querySelectorAll('.modal').forEach(m=>m.style.display='none');}
+function closeModal(){if(document.getElementById('overlay').classList.contains('on'))SFX.play('modalClose');document.getElementById('overlay').classList.remove('on');document.querySelectorAll('.modal').forEach(m=>m.style.display='none');}
 function overlayClick(e){if(e.target===document.getElementById('overlay'))closeModal();}
 
 /* ══════════════════════════════════
@@ -3918,6 +4026,7 @@ document.getElementById('start-search').addEventListener('keydown',e=>{
 });
 function notify(msg,dur=2800){
   const area=document.getElementById('notifs');
+  SFX.play('notify');
   const n=document.createElement('div');n.className='notif';n.style.borderLeftColor=S.accent;n.textContent=msg;
   n.onclick=()=>n.remove();area.appendChild(n);
   setTimeout(()=>{n.style.transition='opacity .3s';n.style.opacity='0';setTimeout(()=>n.remove(),320);},dur);
@@ -4047,6 +4156,7 @@ const MPC={
     return {
       host:window,S:()=>S,doc:()=>document,
       notify:m=>notify(String(m)),
+      sound:(n,o)=>SFX.play(n,o),
       log:m=>MPC.log('['+id+'] '+m),
       save:()=>saveS(),
       refresh:()=>{applyTheme();renderAll();},
@@ -4252,6 +4362,7 @@ function grubConfirm(m){
   bootRun(true);
 }
 function grubActivate(i){
+  SFX.play('menuSelect');
   const v=GS.view;
   if(v==='main'){
     if(i===0)return grubConfirm({});
@@ -4294,8 +4405,8 @@ function grubBack(){
 function grubKey(e){
   e.preventDefault();e.stopPropagation();
   const n=grubItems().length;
-  if(e.key==='ArrowDown')GS.idx=(GS.idx+1)%n;
-  else if(e.key==='ArrowUp')GS.idx=(GS.idx-1+n)%n;
+  if(e.key==='ArrowDown'){GS.idx=(GS.idx+1)%n;SFX.play('menuMove');}
+  else if(e.key==='ArrowUp'){GS.idx=(GS.idx-1+n)%n;SFX.play('menuMove');}
   else if(e.key==='Enter'||e.code==='Space'){if(!e.repeat)grubActivate(GS.idx);return;}
   else if(e.key==='Escape'){if(!e.repeat)grubBack();return;}
   else if(/^[1-9]$/.test(e.key)){
@@ -4313,6 +4424,7 @@ function bootFinish(){
   closeGrub();
   applyBootMode();startBootPlugins();
   bootPhase='done';
+  SFX.play('startup');
   vpReady=true;applyViewport();renderAll();
   scheduleIconInvert();
   bootLaunchOneApp();
@@ -4392,6 +4504,7 @@ function bootPlayVideo(){
 async function bootStart(){
   if(bootPhase!=='click')return;
   bootPhase='load';
+  SFX.preload();SFX.play('boot');
   try{const de=document.documentElement;if(!document.fullscreenElement){const r=de.requestFullscreen||de.webkitRequestFullscreen;if(r){const p=r.call(de);if(p&&p.catch)p.catch(()=>{});}}}catch(e){}
   if(key1Held&&!grubUsed){openGrub();return;}   // 1 held while clicking: straight to the boot menu
   bootRun(false);
@@ -4414,6 +4527,7 @@ let shuttingDown=false;
 function shutDown(){
   if(shuttingDown)return;
   shuttingDown=true;
+  SFX.play('shutdown');
   closeModal();hideApps();dnSetMenu(false);
   document.getElementById('ctx').style.display='none';
   stopWindowCrash();
@@ -4476,6 +4590,7 @@ function powerReboot(){
   location.reload();   // a full restart: the boot sequence runs again from the start
 }
 function powerLock(){
+  SFX.play('lock');
   dnSetMenu(false);
   closeModal();hideApps();
   document.getElementById('ctx').style.display='none';
